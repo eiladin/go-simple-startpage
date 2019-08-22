@@ -16,6 +16,8 @@ func main() {
 
 	r.GET("/api/config", handlers.GetConfigHandler)
 	r.POST("/api/config", handlers.AddConfigHandler)
+	r.GET("/api/status", handlers.GetStatusHandler)
+	r.POST("/api/status", handlers.UpdateStatusHandler)
 
 	err := r.Run(":3000")
 	if err != nil {
