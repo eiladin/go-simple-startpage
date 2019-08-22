@@ -22,3 +22,67 @@ h3 {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+@import '~@angular/material/_theming';
+@include mat-core();
+
+$candy-app-primary: mat-palette($mat-indigo);
+$candy-app-accent:  mat-palette($mat-pink, A200, A100, A400);
+$candy-app-theme:   mat-light-theme($candy-app-primary, $candy-app-accent);
+
+// Include the default theme styles.
+
+$dark-primary: mat-palette($mat-blue-grey);
+$dark-accent:  mat-palette($mat-amber, A200, A100, A400);
+$dark-warn:    mat-palette($mat-deep-orange);
+$dark-theme:   mat-dark-theme($dark-primary, $dark-accent, $dark-warn);
+@include angular-material-theme($dark-theme);
+.dark-theme {
+  @include angular-material-theme($candy-app-theme);
+   
+}
+
+html {
+    height: 100vh;
+}
+
+body {
+    margin: 0px;
+    margin-bottom: -16px;
+    height: 100vh;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+body.dark-theme {
+    background: #303030;
+    color: white;
+}
+
+app-root {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+app-dashboard, app-config {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+}
+
+.toolbar-gap {
+    min-height:64px;
+    @media screen and (max-width: 600px) {
+        min-height: 56px;
+    }
+}
+
+.link-list-item > .mat-list-item-content {
+    padding: 0 !important;
+}
+
+.dark-theme .mat-form-field,
+.mat-form-field {
+    width: initial;
+}

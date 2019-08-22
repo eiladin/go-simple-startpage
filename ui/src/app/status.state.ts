@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { StatusSite } from './shared/models/statusSite.model';
+import { environment } from '../environments/environment';
 
 export class LoadData {
   static type = 'LoadData';
@@ -54,7 +55,7 @@ export class StatusState {
 
   @Action(LoadData)
   loadData(ctx: StateContext<Status>, action: LoadData) {
-    return this.http.get<Status>('api/status/').pipe(
+    return this.http.get<Status>(environment.gateway+'/api/status').pipe(
       tap(newStatus => {
         const state = ctx.getState();
         ctx.setState(Object.assign(new Status(newStatus.network, newStatus.links, newStatus.sites)));
@@ -71,7 +72,7 @@ export class StatusState {
   updateStatus({ getState, patchState }: StateContext<Status>, action: UpdateStatus) {
     getState().sites
       .map(site =>
-        this.http.post<StatusSite>('api/status', site)
+        this.http.post<StatusSite>(environment.gateway+'/api/status', site)
           .pipe(
             tap(resultSite => {
               patchState({

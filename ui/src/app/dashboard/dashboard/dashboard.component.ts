@@ -102,6 +102,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   changeTheme() {
     const body = document.body;
     const meta = document.querySelector('meta[name=theme-color]');
+    console.log(body);
+    console.log(meta);
     if (!body || !meta) { return; }
     if (body.classList.contains('dark-theme')) {
       body.classList.remove('dark-theme');
