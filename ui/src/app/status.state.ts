@@ -14,21 +14,9 @@ export class UpdateStatus {
   static type = 'UpdateStatus';
 }
 
-/**
- * Interface for tracking the Count of sites
- */
 export interface ICounts {
-  /**
-   * Total number of sites
-   */
   total: number;
-  /**
-   * Number of sites where isUp is truthy
-   */
   up: number;
-  /**
-   * Number of sites where isUp is not truthy
-   */
   down: number;
 }
 
@@ -55,7 +43,7 @@ export class StatusState {
 
   @Action(LoadData)
   loadData(ctx: StateContext<Status>, action: LoadData) {
-    return this.http.get<Status>(environment.gateway+'/api/status').pipe(
+    return this.http.get<Status>(environment.gateway + '/api/status').pipe(
       tap(newStatus => {
         const state = ctx.getState();
         ctx.setState(Object.assign(new Status(newStatus.network, newStatus.links, newStatus.sites)));
@@ -72,7 +60,7 @@ export class StatusState {
   updateStatus({ getState, patchState }: StateContext<Status>, action: UpdateStatus) {
     getState().sites
       .map(site =>
-        this.http.post<StatusSite>(environment.gateway+'/api/status', site)
+        this.http.post<StatusSite>(environment.gateway + '/api/status', site)
           .pipe(
             tap(resultSite => {
               patchState({

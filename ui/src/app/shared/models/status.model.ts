@@ -11,22 +11,17 @@ export class Status extends Config {
    */
   public sites: StatusSite[];
 
-    /**
-   * Create an instance of {@link Config}
-   * @param {string} network Network name/description
-   * @param {Array<Link>} links Array of Link
-   * @param {Array<Site>} sites Array of Site
-   */
   constructor(
     network: string = '',
     links: Link[] = [],
     sites: StatusSite[] = []
   ) {
     super(network, links, []);
-    sites.forEach((site) => {
-      this.sites.push(Object.assign(new StatusSite(), site));
-    });
-
+    if (sites !== null) {
+      sites.forEach((site) => {
+        this.sites.push(Object.assign(new StatusSite(), site));
+      });
+    }
   }
 
 }

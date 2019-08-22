@@ -1,21 +1,18 @@
 import { Link } from './link.model';
 import { Site } from './site.model';
 
-/**
- * Config
- */
 export class Config {
-  /**
-   * Create an instance of {@link Config}
-   * @param {string} network Network name/description
-   * @param {Array<Link>} links Array of Link
-   * @param {Array<Site>} sites Array of Site
-   */
   constructor(
     network: string = '',
     links: Link[] = [],
     sites: Site[] = []
   ) {
+    if (links == null) {
+      links = [];
+    }
+    if (sites == null) {
+      sites = [];
+    }
     sites.forEach((site) => {
       this.sites.push(Object.assign(new Site(), site));
     });
@@ -42,9 +39,6 @@ export class Config {
     });
   }
 
-  /**
-  * Internal method to sort Sites by sortOrder
-  */
   private sortSites() {
     this.sites.sort((a, b) => {
       if (a.sortOrder < b.sortOrder) { return -1; }
@@ -53,9 +47,6 @@ export class Config {
     });
   }
 
-  /**
-   * Internal method to sort Links and Sites
-   */
   public sortChildren() {
     this.sortLinks();
     this.sortSites();
