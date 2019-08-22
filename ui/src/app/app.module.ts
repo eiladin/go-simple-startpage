@@ -1,35 +1,33 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatListModule } from '@angular/material/list';
+import { NgxsModule } from '@ngxs/store';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { TodoComponent } from './todo/todo.component';
-import { TodoService } from './todo/todo.service';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { ConfigModule } from './config/config.module';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { SharedModule } from './shared/shared.module';
+import { StatusState } from './status.state';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TodoComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
-    MatButtonModule,
-    MatIconModule,
-    MatInputModule,
-    MatListModule,
     BrowserAnimationsModule,
+    NgxsModule.forRoot([StatusState]),
+    SharedModule.forRoot(),
+    DashboardModule,
+    ConfigModule
   ],
-  providers: [TodoService],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

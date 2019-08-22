@@ -1,0 +1,31 @@
+.status-icon {
+    position: absolute;
+    right: 16px;
+}
+
+p.small {
+    opacity: .75;
+    font-size: 10px !important;
+}
+
+.status-up {
+    background-color: #3f990b;
+}
+
+.status-down {
+    background-color: #ff5722;
+}
+
+.status {
+    width: 6px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+}
+
+
+.site-image {
+    height: 24px;
+    width: 24px;
+}

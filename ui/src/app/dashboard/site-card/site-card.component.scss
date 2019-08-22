@@ -1,0 +1,128 @@
+.icon-bg {
+    background: #577484;
+}
+
+::ng-deep .mat-mini-fab.mat-accent {
+    background-color: #626262;
+    &.status-up {
+        background-color: #3f990b;
+        color: white;
+    }
+    &.status-down {
+        background-color: #ff5722;
+        color: white;
+    }
+}
+
+::ng-deep .mat-mini-fab.mat-accent {
+    background-color: #7794a4;
+    &.status-up {
+        background-color: #3f990b;
+        color: white;
+    }
+    &.status-down {
+        background-color: #ff5722;
+        color: white;
+    }
+}
+
+.status {
+    position: absolute;
+    top: 100px;
+    right: 15px;    
+}
+
+::ng-deep .search-input .mat-input-element {
+    caret-color: white;
+}
+
+::ng-deep .search-input label { 
+    color: lightgrey;
+}
+
+::ng-deep .dark-theme {
+    .icon-bg {
+        background: #577484;
+    }
+}
+
+.site-link {
+    padding: 0;
+    margin: 15px;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+}
+
+mat-card {
+    padding: 0;
+    height: 200px;
+    width: 200px;
+
+    .icon-bg {
+        display: flex;
+        height: 120px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    // .status {
+    //     width: 6px;
+    // }
+
+    div.icon {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .site-icon {
+        font-size: 80px;
+        height: 80px;
+        width: 80px;
+        color: white;
+    }
+
+    .site-image {
+        height: 80px;
+        width: 80px;
+    }
+
+    .spinner {
+        height: 10px;
+        width: 10px;
+    }
+
+    .status-icon {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+    }
+
+    .site-info {
+        padding-top: 0;
+        display:flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        place-content: center center;
+    
+        .title {
+            color: rgb(101, 170, 207);
+            line-height: 20px;
+            font-size: 20px;
+            font-weight: 300;
+        }
+        
+        .small {
+            line-height: 12px;
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+    }    
+}
+
+::ng-deep .dark-theme mat-card .icon .icon-bg .site-icon {
+    //color: #424242;
+    color:#1f1f1f;
+}

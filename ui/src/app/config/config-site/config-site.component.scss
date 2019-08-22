@@ -1,0 +1,20 @@
+@media(min-width: 961px) {
+    .card-input mat-form-field {
+        margin-right: 20px;
+    }
+}
+
+.tag-input {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+
+.card-input {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-input > * {
+    width: 100%;
+}

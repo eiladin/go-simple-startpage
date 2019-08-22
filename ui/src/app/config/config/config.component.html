@@ -1,0 +1,73 @@
+<div>
+    <mat-toolbar color='primary' id="top">
+        <a mat-icon-button routerLink="/dashboard">
+            <mat-icon>home</mat-icon>
+        </a>
+        <span>{{title}}</span>
+        <span class="spacer"></span>
+        <button mat-icon-button (click)='saveConfig()'>
+            <mat-icon>save</mat-icon>
+        </button>
+        <button mat-icon-button (click)='exportConfig()'>
+            <mat-icon>file_download</mat-icon>
+        </button>
+        <button mat-icon-button (click)='importConfig()'>
+            <mat-icon>file_upload</mat-icon>
+        </button>
+    </mat-toolbar>
+
+    <div class="card-container">
+        <mat-card class="network-name">
+            <mat-form-field>
+                <input matInput placeholder="Network" [(ngModel)]="config.network">
+            </mat-form-field>
+        </mat-card>
+
+        <h3 class="mat-subheading-1">Links</h3>
+        <mat-accordion>
+            <mat-expansion-panel *ngFor="let link of config.links">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        {{link.name || 'Unknown'}}
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <app-config-link [link]="link"></app-config-link>
+                <mat-action-row>
+                    <button mat-button color="warn" (click)="deleteLink(link)">Delete</button>
+                </mat-action-row>
+            </mat-expansion-panel>
+        </mat-accordion>
+        <div class="actions">
+            <span class="spacer"></span>
+            <button mat-button color="primary" (click)="addLink()">Add Link</button>
+        </div>
+
+        <h3 class="mat-subheading-1">Sites</h3>
+        <mat-accordion>
+            <mat-expansion-panel *ngFor="let site of config.sites; let i = index" hideToggle>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <mat-icon *ngIf="!site.isSupportedApp">{{site.icon}}</mat-icon>
+                        <img *ngIf="site.isSupportedApp" class="site-image" src="/assets{{site.imageName}}" />
+                        <span class="friendly-name">{{site.friendlyName || 'Unknown'}}</span>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <app-config-site [site]="site"></app-config-site>
+                <mat-action-row>
+                    <button mat-button color="warn" (click)="deleteSite(site)">Delete</button>
+                </mat-action-row>
+            </mat-expansion-panel>
+        </mat-accordion>
+
+        <div class="actions">
+            <span class="spacer"></span>
+            <button mat-button color="primary" (click)="addSite()">Add Site</button>
+        </div>
+    </div>
+
+    <button *isDesktop id="config-scroll-to-top" mat-icon-button color="primary" pageScroll href="#top" [pageScrollDuration]="750" [pageScrollEasing]="myEasing">
+        <mat-icon>
+            arrow_upward
+        </mat-icon>
+    </button>
+</div>

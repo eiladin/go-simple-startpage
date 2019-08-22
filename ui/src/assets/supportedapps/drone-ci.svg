@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="200px"
+   height="200px"
+   viewBox="0 0 200 200"
+   version="1.1"
+   id="svg2748"
+   sodipodi:docname="drone-ci.svg"
+   inkscape:version="0.92.4 5da689c313, 2019-01-14">
+  <metadata
+     id="metadata2754">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2752" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1023"
+     id="namedview2750"
+     showgrid="false"
+     inkscape:zoom="1.18"
+     inkscape:cx="100"
+     inkscape:cy="100"
+     inkscape:window-x="1920"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2748" />
+  <!-- Generator: Sketch 53.1 (72631) - https://sketchapp.com -->
+  <title
+     id="title2741">drone-logo-vector-dark</title>
+  <desc
+     id="desc2743">Created with Sketch.</desc>
+  <g
+     id="Landing"
+     stroke="none"
+     stroke-width="1"
+     fill="none"
+     fill-rule="evenodd">
+    <g
+       id="logos"
+       transform="translate(-50.000000, -50.000000)"
+       fill="#1E375A">
+      <path
+         d="M90.2882214,69.3797473 L89.4295832,70.2383855 L124.476463,105.285265 C119.520903,113.022443 116.666667,122.524707 116.666667,133.333333 C116.666667,163.38141 138.72549,183.333333 166.666667,183.333333 C177.107498,183.333333 186.726972,180.547433 194.681066,175.489868 L229.90668,210.715482 C211.655003,234.822389 182.652657,250 150,250 C94.7802198,250 50,206.593407 50,150 C50,116.344376 65.8368878,87.3523756 90.2882214,69.3797473 Z M106.958511,59.4830419 C119.995354,53.3798856 134.591235,50 150,50 C205.21978,50 250,93.4065934 250,150 C250,165.565882 246.612323,180.134166 240.551518,193.076049 L208.85687,161.381401 C213.81243,153.644224 216.666667,144.14196 216.666667,133.333333 C216.666667,103.285256 194.607843,83.3333333 166.666667,83.3333333 C156.225835,83.3333333 146.606361,86.1192334 138.652268,91.1767986 L106.958511,59.4830419 Z M166.666667,163.333333 C149.901961,163.333333 136.666667,151.362179 136.666667,133.333333 C136.666667,115.304487 149.901961,103.333333 166.666667,103.333333 C183.431373,103.333333 196.666667,115.304487 196.666667,133.333333 C196.666667,151.362179 183.431373,163.333333 166.666667,163.333333 Z"
+         id="drone-logo-vector-dark" />
+    </g>
+  </g>
+  <path
+     style="opacity:1;vector-effect:none;fill:#1f1f1f;fill-opacity:1;stroke:#ffffff;stroke-width:0.84745765;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     d="M 92.118644,200.18472 C 74.344131,197.73664 64.660375,194.92777 52.997125,188.83711 22.790564,173.06295 3.9193414,144.76792 0.12958559,109.5689 -3.2588964,78.096885 10.028838,44.253648 33.617753,24.27611 l 5.90589,-5.001719 17.708005,17.708006 17.708006,17.708006 -2.684339,5.624525 c -6.786534,14.219905 -6.773586,31.745263 0.03404,46.079752 3.495645,7.36061 13.417422,17.43565 20.526879,20.84398 8.644186,4.14409 17.613076,5.93856 26.837186,5.3695 8.80882,-0.54344 13.13023,-1.6611 20.58044,-5.3228 l 4.89486,-2.40578 17.44467,17.44468 c 14.59736,14.59736 17.35206,17.73647 16.87726,19.23243 -0.80573,2.53864 -12.51458,14.19761 -19.5354,19.45216 -11.05413,8.2732 -28.85661,15.73079 -42.79579,17.9275 -6.41833,1.01147 -21.31876,1.7555 -25.000819,1.24837 z"
+     id="path3299"
+     inkscape:connector-curvature="0" />
+  <path
+     style="opacity:1;vector-effect:none;fill:#1f1f1f;fill-opacity:1;stroke:#ffffff;stroke-width:0.84745765;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     d="m 106.16873,112.04478 c -7.959401,-2.88699 -13.987749,-8.29364 -17.350377,-15.561047 -1.472418,-3.182232 -1.784455,-5.486701 -1.784455,-13.178648 0,-8.499232 0.209901,-9.749475 2.378094,-14.164779 2.661302,-5.419471 7.944554,-10.525108 13.963978,-13.494534 3.40839,-1.681384 5.30907,-1.973912 12.90842,-1.986704 8.37884,-0.0141 9.25053,0.151759 14.58308,2.774829 6.1686,3.034325 10.3771,7.270914 13.52991,13.620234 1.67994,3.383139 1.95095,5.223878 1.95095,13.250954 0,8.195132 -0.25238,9.834262 -2.08778,13.559322 -2.68726,5.453983 -8.6297,11.372393 -14.00631,13.949693 -5.54658,2.65877 -18.3453,3.31274 -24.08551,1.23068 z"
+     id="path3301"
+     inkscape:connector-curvature="0" />
+  <path
+     style="opacity:1;vector-effect:none;fill:#1f1f1f;fill-opacity:1;stroke:#ffffff;stroke-width:0.84745765;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     d="m 173.9434,127.41803 -15.61998,-15.63713 2.26367,-4.49215 c 7.23977,-14.366911 7.37027,-32.634356 0.33716,-47.197498 -3.91328,-8.10306 -12.83484,-16.946955 -21.01434,-20.831378 -14.97638,-7.112253 -30.84218,-7.223153 -45.818187,-0.320263 L 88.19066,41.659586 72.358042,25.789913 C 54.083052,7.4721517 54.455166,9.1504958 67.726303,4.8993715 88.969838,-1.9055389 112.23709,-1.8761097 132.70587,4.98156 c 35.51377,11.898205 61.17034,42.848309 66.66376,80.417991 1.5556,10.638864 0.61895,29.010549 -1.99001,39.032129 -2.40337,9.2319 -5.70793,17.93979 -6.96233,18.34657 -0.46965,0.15229 -7.8829,-6.75981 -16.47389,-15.36022 z"
+     id="path3303"
+     inkscape:connector-curvature="0" />
+</svg>

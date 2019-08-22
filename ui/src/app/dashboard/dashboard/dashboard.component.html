@@ -1,0 +1,55 @@
+<div class="dashboard">
+    <mat-toolbar color='primary'>
+        <button *showItDevice="['mobile','tablet']" mat-icon-button (click)="linkList.toggle()"><mat-icon>menu</mat-icon></button>
+        <span *isDesktop>{{(status$ | async)?.network}}</span>        
+        <mat-form-field class="search-input" hideRequiredMarker="true" floatLabel="never">
+            <input matInput [(ngModel)]="filterArgs.data" placeholder="Filter" />
+        </mat-form-field>
+        <button mat-icon-button (click)="clearSearch()" *ngIf="filterArgs.data"><mat-icon>clear</mat-icon></button>
+        <div class=spacer></div>
+        <button mat-icon-button (click)="changeTheme()"><mat-icon>invert_colors</mat-icon></button>
+        <a mat-icon-button routerLink="/config"><mat-icon>settings</mat-icon></a>
+    </mat-toolbar>
+    
+    <mat-sidenav-container>
+
+        <mat-progress-bar mode="indeterminate" *ngIf="(isLoading$ | async)"></mat-progress-bar>
+
+        <mat-sidenav #linkList [mode]="sideNavMode" [opened]="sideNavOpened">
+            <mat-nav-list>
+                <a mat-list-item *ngFor="let link of (status$ | async)?.links" href="{{link.uri}}" target="_blank">
+                    <span>{{link.name || '(empty)'}}</span>
+                </a>
+                <a mat-list-item (click)="filterToDown()" *ngIf="(counts$ | async)?.down > 0">
+                    <span class="down-count">{{(counts$ | async)?.down}} sites down</span>
+                </a>
+            </mat-nav-list>
+            <div class="spacer"></div>
+            <app-footer></app-footer>
+        </mat-sidenav>
+
+        <div *isDesktop class="desktop-container">
+            <app-site-card *ngFor="let site of (status$ | async)?.sites | siteFilter:filterArgs" [site]="site"></app-site-card>
+        </div>
+
+        <div *showItDevice="['mobile','tablet']" class="mobile-container">
+            <mat-nav-list>
+                <div class="header">
+                    
+                    <h3 mat-subheader>{{(status$ | async).network}}</h3>
+                    <div class="spacer"></div>
+                    <h3 mat-subheader class="down-count-header">
+                        <a (click)="filterToDown()" *ngIf="(counts$ | async)?.down > 0">
+                            <span class="down-count">{{(counts$ | async)?.down}} sites down</span>
+                        </a>
+                    </h3>
+        
+                </div>
+                <div *ngFor="let site of (status$ | async)?.sites | siteFilter:filterArgs; let last = last">
+                    <mat-divider> </mat-divider>
+                    <app-site-card-xs [site]="site"></app-site-card-xs>
+                </div>
+            </mat-nav-list>
+        </div>
+    </mat-sidenav-container>
+</div>

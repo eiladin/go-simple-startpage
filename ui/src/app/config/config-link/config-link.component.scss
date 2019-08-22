@@ -1,0 +1,8 @@
+.card-input {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-input > * {
+    width: 100%;
+}
