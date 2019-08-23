@@ -124,4 +124,4 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/go,linux,macos,windows,angular
 .vscode/chrome
-homelab.db
+simple-startpage.db

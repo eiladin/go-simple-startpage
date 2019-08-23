@@ -1,6 +1,15 @@
 package status
 
-import "github.com/eiladin/go-simple-startpage/config"
+import (
+	"context"
+	"crypto/tls"
+	"net"
+	"net/http"
+	"net/url"
+	"time"
+
+	"github.com/eiladin/go-simple-startpage/config"
+)
 
 type Status struct {
 	Network string `json:"network"`
@@ -34,9 +43,59 @@ func Get() Status {
 	return convertConfigToStatus(config)
 }
 
-func UpdateStatus(site Site) Site {
+func UpdateStatus(site Site) *Site {
+	url, err := url.Parse(site.Uri)
+	if err != nil {
+		site.IsUp = false
+		site.Ip = ""
+		return &site
+	}
+	port := url.Port()
+	if port == "22" {
+		return testSSH(&site, url)
+	} else {
+		return testHTTP(&site, url)
+	}
+}
+
+func testSSH(site *Site, url *url.URL) *Site {
+	address := url.Hostname() + ":" + "22"
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		site.IsUp = false
+		site.Ip = ""
+		return site
+	}
+	defer conn.Close()
 	site.IsUp = true
-	site.Ip = "0.0.0.0"
+	site.Ip = conn.RemoteAddr().Network()
+	return site
+}
+
+func testHTTP(site *Site, url *url.URL) *Site {
+	dialer := &net.Dialer{
+		Timeout: 2 * time.Second,
+	}
+	http.DefaultTransport.(*http.Transport).DialContext =
+		func(ctx context.Context, network, addr string) (net.Conn, error) {
+			return dialer.DialContext(ctx, network, addr)
+		}
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	resp, err := http.Get(site.Uri)
+	if err != nil || resp.StatusCode < 200 || (resp.StatusCode >= 300 && resp.StatusCode != 401) {
+		site.IsUp = false
+		site.Ip = ""
+		return site
+	}
+	defer resp.Body.Close()
+	site.IsUp = true
+	ips, err := net.LookupIP(url.Host)
+	if err != nil {
+		site.Ip = ""
+	} else {
+		site.Ip = ips[0].String()
+	}
 	return site
 }
 

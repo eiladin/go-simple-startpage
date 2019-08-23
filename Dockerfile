@@ -21,11 +21,9 @@ RUN npm run build -- --prod --aot --no-progress
 # build final image
 FROM scratch
 EXPOSE 3000
-USER appuser
 WORKDIR /app
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /go/bin/go-simple-startpage .
 COPY --from=frontend /app/dist ./ui/dist
-RUN chown -R appuser /app
 ENV GIN_MODE=release
-ENTRYPOINT ["/app/g0-simple-startpage"]
+ENTRYPOINT ["/app/go-simple-startpage"]

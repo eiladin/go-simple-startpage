@@ -12,7 +12,7 @@ var (
 	database *gorm.DB
 )
 
-const dbpath = "homelab.db"
+const dbpath = "simple-startpage.db"
 
 func init() {
 	once.Do(initialize)
