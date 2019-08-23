@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/config"
@@ -58,6 +59,23 @@ func UpdateStatus(site Site) *Site {
 	}
 }
 
+func getIP(host string) string {
+	if strings.Contains(host, ":") {
+		host = strings.Split(host, ":")[0]
+	}
+
+	if !strings.Contains(host, ".") {
+		return host
+	} else {
+		ips, err := net.LookupIP(host)
+		if err != nil {
+			return ""
+		} else {
+			return ips[0].String()
+		}
+	}
+}
+
 func testSSH(site *Site, url *url.URL) *Site {
 	address := url.Hostname() + ":" + "22"
 	conn, err := net.Dial("tcp", address)
@@ -68,7 +86,7 @@ func testSSH(site *Site, url *url.URL) *Site {
 	}
 	defer conn.Close()
 	site.IsUp = true
-	site.Ip = conn.RemoteAddr().Network()
+	site.Ip = getIP(address)
 	return site
 }
 
@@ -90,12 +108,8 @@ func testHTTP(site *Site, url *url.URL) *Site {
 	}
 	defer resp.Body.Close()
 	site.IsUp = true
-	ips, err := net.LookupIP(url.Host)
-	if err != nil {
-		site.Ip = ""
-	} else {
-		site.Ip = ips[0].String()
-	}
+	site.Ip = getIP(url.Host)
+
 	return site
 }
 
