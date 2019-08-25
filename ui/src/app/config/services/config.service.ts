@@ -7,38 +7,19 @@ import { Config } from '../../shared/models/config.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 
-
-/**
- * Service used to load, save, import and export service and link configuration data.
- */
 @Injectable()
 export class ConfigService {
-    /**
-     * Config API url fragment
-     */
-    private configApi = environment.gateway + '/api/config';
+    private configApi = environment.gateway + '/api/network';
 
-    /**
-     * Create an instance of {@link ConfigService}
-     * @param {HttpClient} httpClient
-     * @param {MatSnackBar} snackBar
-     */
     constructor(
         private http: HttpClient,
         private snackBar: MatSnackBar) {
     }
 
-    /**
-     * Get the configuration object that describes what will be monitored
-     */
     public get() {
         return this.http.get<Config>(this.configApi);
     }
 
-    /**
-     * Save the configuration to the server
-     * @param {Config} config
-     */
     public save(config: Config): Observable<Config> {
         const alphaSort = config.sites.sort((a, b) => {
             if (a.friendlyName > b.friendlyName) { return 1; }
@@ -61,10 +42,6 @@ export class ConfigService {
             );
     }
 
-    /**
-     * Export configuration to Json file
-     * @param {Config} config
-     */
     public exportJson(config: Config) {
         const filename = 'config.json';
         const data = JSON.stringify(config);
@@ -82,9 +59,6 @@ export class ConfigService {
         this.snackBar.open('Configuration Exported', undefined, { duration: 2000 });
     }
 
-    /**
-     * Import configuration from Json file
-     */
     public importJson(): Promise<Config> {
         return new Promise<Config>((resolve, reject) => {
             const fileInput = document.createElement('input');

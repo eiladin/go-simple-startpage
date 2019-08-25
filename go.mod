@@ -9,4 +9,5 @@ require (
 	github.com/jinzhu/gorm v1.9.10
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/rs/xid v1.2.1
+	github.com/spf13/viper v1.4.0
 )

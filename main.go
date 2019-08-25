@@ -1,12 +1,20 @@
 package main
 
 import (
+	"github.com/eiladin/go-simple-startpage/config"
+	"github.com/eiladin/go-simple-startpage/db"
 	"github.com/eiladin/go-simple-startpage/handlers"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	config := config.InitConfig()
+
+	db.InitDB()
+	database := db.GetDB()
+	db.MigrateDB(database)
+
 	r := gin.Default()
 	r.Use(CORSMiddleware())
 	r.Use(static.Serve("/", static.LocalFile("./ui/dist/ui", true)))
@@ -14,12 +22,12 @@ func main() {
 		c.File("./ui/dist/ui/index.html")
 	})
 
-	r.GET("/api/config", handlers.GetConfigHandler)
-	r.POST("/api/config", handlers.AddConfigHandler)
+	r.GET("/api/network", handlers.GetNetworkHandler)
+	r.POST("/api/network", handlers.AddNetworkHandler)
 	r.GET("/api/status", handlers.GetStatusHandler)
 	r.POST("/api/status", handlers.UpdateStatusHandler)
 
-	err := r.Run(":3000")
+	err := r.Run(":" + config.Server.Port)
 	if err != nil {
 		panic(err)
 	}

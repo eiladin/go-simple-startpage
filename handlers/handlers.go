@@ -6,26 +6,25 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/eiladin/go-simple-startpage/config"
-	"github.com/eiladin/go-simple-startpage/status"
+	"github.com/eiladin/go-simple-startpage/model"
 	"github.com/gin-gonic/gin"
 )
 
-func GetConfigHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, config.Get())
+func GetNetworkHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, model.LoadNetwork())
 }
 
-func AddConfigHandler(c *gin.Context) {
-	configItem, statusCode, err := convertHTTPBodyToConfig(c.Request.Body)
+func AddNetworkHandler(c *gin.Context) {
+	networkItem, statusCode, err := convertHTTPBodyToNetwork(c.Request.Body)
 	if err != nil {
 		c.JSON(statusCode, err)
 		return
 	}
-	c.JSON(statusCode, gin.H{"id": config.Add(configItem)})
+	c.JSON(statusCode, gin.H{"id": model.SaveNetwork(networkItem)})
 }
 
 func GetStatusHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, status.Get())
+	c.JSON(http.StatusOK, model.GetStatus())
 }
 
 func UpdateStatusHandler(c *gin.Context) {
@@ -34,41 +33,41 @@ func UpdateStatusHandler(c *gin.Context) {
 		c.JSON(statusCode, err)
 		return
 	}
-	c.JSON(http.StatusOK, status.UpdateStatus(siteItem))
+	c.JSON(http.StatusOK, model.UpdateStatus(siteItem))
 }
 
-func convertHTTPBodyToStatusSite(httpBody io.ReadCloser) (status.Site, int, error) {
+func convertHTTPBodyToStatusSite(httpBody io.ReadCloser) (model.StatusSite, int, error) {
 	body, err := ioutil.ReadAll(httpBody)
 	if err != nil {
-		return status.Site{}, http.StatusInternalServerError, err
+		return model.StatusSite{}, http.StatusInternalServerError, err
 	}
 	defer httpBody.Close()
 	return convertJSONBodyToStatusSite(body)
 }
 
-func convertJSONBodyToStatusSite(jsonBody []byte) (status.Site, int, error) {
-	var statusItem status.Site
+func convertJSONBodyToStatusSite(jsonBody []byte) (model.StatusSite, int, error) {
+	var statusItem model.StatusSite
 	err := json.Unmarshal(jsonBody, &statusItem)
 	if err != nil {
-		return status.Site{}, http.StatusBadRequest, err
+		return model.StatusSite{}, http.StatusBadRequest, err
 	}
 	return statusItem, http.StatusOK, nil
 }
 
-func convertHTTPBodyToConfig(httpBody io.ReadCloser) (config.Config, int, error) {
+func convertHTTPBodyToNetwork(httpBody io.ReadCloser) (model.Network, int, error) {
 	body, err := ioutil.ReadAll(httpBody)
 	if err != nil {
-		return config.Config{}, http.StatusInternalServerError, err
+		return model.Network{}, http.StatusInternalServerError, err
 	}
 	defer httpBody.Close()
-	return convertJSONBodyToConfig(body)
+	return convertJSONBodyToNetwork(body)
 }
 
-func convertJSONBodyToConfig(jsonBody []byte) (config.Config, int, error) {
-	var configItem config.Config
-	err := json.Unmarshal(jsonBody, &configItem)
+func convertJSONBodyToNetwork(jsonBody []byte) (model.Network, int, error) {
+	var networkItem model.Network
+	err := json.Unmarshal(jsonBody, &networkItem)
 	if err != nil {
-		return config.Config{}, http.StatusBadRequest, err
+		return model.Network{}, http.StatusBadRequest, err
 	}
-	return configItem, http.StatusOK, nil
+	return networkItem, http.StatusOK, nil
 }

@@ -1,4 +1,4 @@
-package status
+package model
 
 import (
 	"context"
@@ -8,43 +8,41 @@ import (
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/eiladin/go-simple-startpage/config"
 )
 
 type Status struct {
-	Network string `json:"network"`
-	Links   []Link `json:"links"`
-	Sites   []Site `json:"sites"`
+	Network string       `json:"network"`
+	Links   []StatusLink `json:"links"`
+	Sites   []StatusSite `json:"sites"`
 }
 
-type Link struct {
+type StatusLink struct {
 	Name      string `json:"name"`
 	Uri       string `json:"uri"`
 	SortOrder int    `json:"sortOrder"`
 }
 
-type Site struct {
-	FriendlyName   string `json:"friendlyName"`
-	Uri            string `json:"uri"`
-	Icon           string `json:"icon"`
-	IsSupportedApp bool   `json:"isSupportedApp"`
-	SortOrder      int    `json:"sortOrder"`
-	Tags           []Tag  `json:"tags"`
-	Ip             string `json:"ip"`
-	IsUp           bool   `json:"isUp"`
+type StatusSite struct {
+	FriendlyName   string      `json:"friendlyName"`
+	Uri            string      `json:"uri"`
+	Icon           string      `json:"icon"`
+	IsSupportedApp bool        `json:"isSupportedApp"`
+	SortOrder      int         `json:"sortOrder"`
+	Tags           []StatusTag `json:"tags"`
+	Ip             string      `json:"ip"`
+	IsUp           bool        `json:"isUp"`
 }
 
-type Tag struct {
+type StatusTag struct {
 	Value string `json:"value"`
 }
 
-func Get() Status {
-	config := config.Get()
+func GetStatus() Status {
+	config := LoadNetwork()
 	return convertConfigToStatus(config)
 }
 
-func UpdateStatus(site Site) *Site {
+func UpdateStatus(site StatusSite) *StatusSite {
 	url, err := url.Parse(site.Uri)
 	if err != nil {
 		site.IsUp = false
@@ -76,7 +74,7 @@ func getIP(host string) string {
 	}
 }
 
-func testSSH(site *Site, url *url.URL) *Site {
+func testSSH(site *StatusSite, url *url.URL) *StatusSite {
 	address := url.Hostname() + ":" + "22"
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -90,7 +88,7 @@ func testSSH(site *Site, url *url.URL) *Site {
 	return site
 }
 
-func testHTTP(site *Site, url *url.URL) *Site {
+func testHTTP(site *StatusSite, url *url.URL) *StatusSite {
 	dialer := &net.Dialer{
 		Timeout: 2 * time.Second,
 	}
@@ -113,18 +111,18 @@ func testHTTP(site *Site, url *url.URL) *Site {
 	return site
 }
 
-func convertConfigToStatus(config config.Config) Status {
+func convertConfigToStatus(network Network) Status {
 	status := Status{}
-	status.Network = config.Network
-	for _, link := range config.Links {
-		statusLink := Link{}
+	status.Network = network.Network
+	for _, link := range network.Links {
+		statusLink := StatusLink{}
 		statusLink.Name = link.Name
 		statusLink.Uri = link.Uri
 		statusLink.SortOrder = link.SortOrder
 		status.Links = append(status.Links, statusLink)
 	}
-	for _, site := range config.Sites {
-		statusSite := Site{}
+	for _, site := range network.Sites {
+		statusSite := StatusSite{}
 		statusSite.FriendlyName = site.FriendlyName
 		statusSite.Uri = site.Uri
 		statusSite.Icon = site.Icon
@@ -133,7 +131,7 @@ func convertConfigToStatus(config config.Config) Status {
 		statusSite.IsUp = false
 		statusSite.Ip = ""
 		for _, tag := range site.Tags {
-			statusTag := Tag{}
+			statusTag := StatusTag{}
 			statusTag.Value = tag.Value
 			statusSite.Tags = append(statusSite.Tags, statusTag)
 		}

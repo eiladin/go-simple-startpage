@@ -1,0 +1,10 @@
+database:
+  driver: "sqlite"
+  dbname: "simple-startpage.db"
+  username: "user"
+  password: "pass"
+  host: "localhost"
+  port: "7890"
+
+server:
+  port: "3000"
