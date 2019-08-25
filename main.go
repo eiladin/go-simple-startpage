@@ -12,8 +12,7 @@ func main() {
 	config := config.InitConfig()
 
 	db.InitDB()
-	database := db.GetDB()
-	db.MigrateDB(database)
+	db.MigrateDB()
 
 	r := gin.Default()
 	r.Use(CORSMiddleware())
@@ -22,6 +21,7 @@ func main() {
 		c.File("./ui/dist/ui/index.html")
 	})
 
+	r.GET("/api/appconfig", handlers.GetConfigHandler)
 	r.GET("/api/network", handlers.GetNetworkHandler)
 	r.POST("/api/network", handlers.AddNetworkHandler)
 	r.GET("/api/status", handlers.GetStatusHandler)

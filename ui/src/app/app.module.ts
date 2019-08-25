@@ -11,6 +11,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from './shared/shared.module';
 import { StatusState } from './status.state';
+import { CoreModule } from './core/core.module';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { StatusState } from './status.state';
     HttpClientModule,
     BrowserAnimationsModule,
     NgxsModule.forRoot([StatusState]),
+    CoreModule.forRoot(),
     SharedModule.forRoot(),
     DashboardModule,
     ConfigModule

@@ -10,38 +10,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-type Network struct {
-	gorm.Model
-	Network string
-	Links   []Link `gorm:"foreignkey:NetworkID"`
-	Sites   []Site `gorm:"foreignkey:NetworkID"`
-}
-
-type Link struct {
-	gorm.Model
-	NetworkID uint
-	Name      string
-	Uri       string
-	SortOrder int
-}
-
-type Site struct {
-	gorm.Model
-	NetworkID      uint
-	FriendlyName   string
-	Uri            string
-	Icon           string
-	IsSupportedApp bool
-	SortOrder      int
-	Tags           []Tag `gorm:"foreignkey:SiteID"`
-}
-
-type Tag struct {
-	gorm.Model
-	SiteID uint
-	Value  string
-}
-
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
@@ -72,7 +40,10 @@ func InitDB() *gorm.DB {
 			fmt.Println("db err: ", err)
 		}
 	} else {
-		panic("database driver is undefined")
+		db, err = gorm.Open("sqlite3", "simple-startpage.db")
+		if err != nil {
+			fmt.Println("db err: ", err)
+		}
 	}
 
 	db.LogMode(true)
@@ -82,29 +53,4 @@ func InitDB() *gorm.DB {
 
 func GetDB() *gorm.DB {
 	return DB
-}
-
-func MigrateDB(db *gorm.DB) {
-	db.AutoMigrate(&Network{})
-	db.AutoMigrate(&Site{})
-	db.AutoMigrate(&Tag{})
-	db.AutoMigrate(&Link{})
-}
-
-func SaveNetwork(db *gorm.DB, network *Network) {
-	db.Unscoped().Delete(Network{})
-	db.Unscoped().Delete(Site{})
-	db.Unscoped().Delete(Tag{})
-	db.Unscoped().Delete(Link{})
-	db.Create(&network)
-}
-
-func ReadNetwork(db *gorm.DB) Network {
-	var result Network
-	db.Set("gorm:auto_preload", true).Find(&result)
-	return result
-}
-
-func DeleteNetwork(db *gorm.DB, ID uint) {
-	db.Delete(Network{}, "ID = ?", ID)
 }

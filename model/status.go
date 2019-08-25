@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/eiladin/go-simple-startpage/config"
 )
 
 type Status struct {
@@ -89,8 +91,11 @@ func testSSH(site *StatusSite, url *url.URL) *StatusSite {
 }
 
 func testHTTP(site *StatusSite, url *url.URL) *StatusSite {
+	config := config.GetConfig()
+	timeout := config.HealthCheck.Timeout
+	sec := timeout / 1000
 	dialer := &net.Dialer{
-		Timeout: 2 * time.Second,
+		Timeout: time.Duration(sec) * time.Second,
 	}
 	http.DefaultTransport.(*http.Transport).DialContext =
 		func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -112,27 +117,31 @@ func testHTTP(site *StatusSite, url *url.URL) *StatusSite {
 }
 
 func convertConfigToStatus(network Network) Status {
-	status := Status{}
-	status.Network = network.Network
+	status := Status{
+		Network: network.Network,
+	}
 	for _, link := range network.Links {
-		statusLink := StatusLink{}
-		statusLink.Name = link.Name
-		statusLink.Uri = link.Uri
-		statusLink.SortOrder = link.SortOrder
+		statusLink := StatusLink{
+			Name:      link.Name,
+			Uri:       link.Uri,
+			SortOrder: link.SortOrder,
+		}
 		status.Links = append(status.Links, statusLink)
 	}
 	for _, site := range network.Sites {
-		statusSite := StatusSite{}
-		statusSite.FriendlyName = site.FriendlyName
-		statusSite.Uri = site.Uri
-		statusSite.Icon = site.Icon
-		statusSite.IsSupportedApp = site.IsSupportedApp
-		statusSite.SortOrder = site.SortOrder
-		statusSite.IsUp = false
-		statusSite.Ip = ""
+		statusSite := StatusSite{
+			FriendlyName:   site.FriendlyName,
+			Uri:            site.Uri,
+			Icon:           site.Icon,
+			IsSupportedApp: site.IsSupportedApp,
+			SortOrder:      site.SortOrder,
+			IsUp:           false,
+			Ip:             "",
+		}
 		for _, tag := range site.Tags {
-			statusTag := StatusTag{}
-			statusTag.Value = tag.Value
+			statusTag := StatusTag{
+				Value: tag.Value,
+			}
 			statusSite.Tags = append(statusSite.Tags, statusTag)
 		}
 		status.Sites = append(status.Sites, statusSite)

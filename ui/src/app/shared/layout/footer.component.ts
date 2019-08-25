@@ -1,20 +1,11 @@
 import { Component } from '@angular/core';
+import { AppConfigService } from 'src/app/core/app-config.service';
 
-/**
- * Footer component
- */
 @Component({
     selector: 'app-footer',
     styleUrls: ['./footer.component.scss'],
     templateUrl: './footer.component.html'
 })
 export class FooterComponent {
-    /**
-     * Create an instance of {@link FooterComponent}
-     * @param {AppConfigService} appConfig Application configuration service
-     */
-    version: number
-    public constructor() { 
-        this.version = 1.0
-    }
+    public constructor(public appConfig: AppConfigService) { }
 }
