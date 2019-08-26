@@ -23,6 +23,7 @@ func InitDB() *gorm.DB {
 	password := config.Database.Password
 	host := config.Database.Host
 	port := config.Database.Port
+	log := config.Database.Log
 
 	if driver == "sqlite" {
 		db, err = gorm.Open("sqlite3", database)
@@ -46,7 +47,7 @@ func InitDB() *gorm.DB {
 		}
 	}
 
-	db.LogMode(true)
+	db.LogMode(log)
 	DB = db
 	return DB
 }

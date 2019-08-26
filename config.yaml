@@ -5,6 +5,7 @@ database:
   password: "pass"
   host: "localhost"
   port: "7890"
+  log: "false"
 
 server:
   port: "3000"
@@ -12,4 +13,4 @@ server:
 healthCheck:
   timeout: "2000"
 
-version: "1.0.2"
+version: "1.0.3"

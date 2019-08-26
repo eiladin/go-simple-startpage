@@ -14,9 +14,7 @@
             "port": 2345,
             "host": "127.0.0.1",
             "program": "${workspaceRoot}",
-            "env": {
-                "DATABASE__PORT": "7890"
-            },
+            "env": {},
             "args": [],
             "showLog": true
         }

@@ -1,7 +1,7 @@
 # build go
 FROM golang:alpine as builder
 RUN apk update && apk add --no-cache git gcc g++ libc-dev musl-dev
-RUN adduser -D -g '' appuser
+RUN addgroup -S appgroup && adduser -S -D -H -h /app -G appgroup appuser
 COPY . $GOPATH/src/github.com/go-simple-startpage
 WORKDIR $GOPATH/src/github.com/go-simple-startpage
 
@@ -21,9 +21,12 @@ RUN npm run build -- --prod --aot --no-progress
 # build final image
 FROM scratch
 EXPOSE 3000
-WORKDIR /app
 COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /go/bin/go-simple-startpage .
+COPY --from=builder /etc/group /etc/group
+COPY --chown=appuser:appgroup --from=builder /go/bin/go-simple-startpage /app/
+USER appuser
+WORKDIR /app
+COPY ./config.yaml .
 COPY --from=frontend /app/dist ./ui/dist
 ENV GIN_MODE=release
 ENTRYPOINT ["/app/go-simple-startpage"]

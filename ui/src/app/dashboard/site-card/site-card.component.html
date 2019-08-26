@@ -4,7 +4,7 @@
       <!-- <div class="status" [class.status-up]="site.isUp" [class.status-down]="!site.isUp && site.isStatusLoaded"></div> -->
       <div class="icon-bg" >
         <mat-icon *ngIf="!site.isSupportedApp" class="site-icon">{{site.icon}}</mat-icon>
-        <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/{{site.imageName}}" />
+        <img *ngIf="site.isSupportedApp" class="site-image" src="/assets{{site.imageName}}" />
       </div>
       <button *ngIf="site.isStatusLoaded"
               mat-mini-fab class="status mat-elevation-z2"
