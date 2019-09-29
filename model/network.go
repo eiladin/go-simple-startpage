@@ -5,9 +5,9 @@ import (
 )
 
 type Network struct {
-	Network string `json:"n"`
-	Links   []Link `json:"ls"`
-	Sites   []Site `json:"ss"`
+	Network string `json:"network"`
+	Links   []Link `json:"links"`
+	Sites   []Site `json:"sites"`
 }
 
 type Link struct {
@@ -22,7 +22,7 @@ type Site struct {
 	Icon           string `json:"icon"`
 	IsSupportedApp bool   `json:"isSupportedApp"`
 	SortOrder      int    `json:"sortOrder"`
-	Tags           []Tag  `json:"ts"`
+	Tags           []Tag  `json:"tags"`
 }
 
 type Tag struct {
