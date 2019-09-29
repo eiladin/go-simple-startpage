@@ -15,12 +15,12 @@ func GetStatusHandler(c *gin.Context) {
 }
 
 func UpdateStatusHandler(c *gin.Context) {
-	siteItem, statusCode, err := convertHTTPBodyToStatusSite(c.Request.Body)
+	s, status, err := convertHTTPBodyToStatusSite(c.Request.Body)
 	if err != nil {
-		c.JSON(statusCode, err)
+		c.JSON(status, err)
 		return
 	}
-	c.JSON(http.StatusOK, model.UpdateStatus(siteItem))
+	c.JSON(http.StatusOK, model.UpdateStatus(s))
 }
 
 func convertHTTPBodyToStatusSite(httpBody io.ReadCloser) (model.StatusSite, int, error) {
@@ -33,10 +33,10 @@ func convertHTTPBodyToStatusSite(httpBody io.ReadCloser) (model.StatusSite, int,
 }
 
 func convertJSONBodyToStatusSite(jsonBody []byte) (model.StatusSite, int, error) {
-	var statusItem model.StatusSite
-	err := json.Unmarshal(jsonBody, &statusItem)
+	var s model.StatusSite
+	err := json.Unmarshal(jsonBody, &s)
 	if err != nil {
 		return model.StatusSite{}, http.StatusBadRequest, err
 	}
-	return statusItem, http.StatusOK, nil
+	return s, http.StatusOK, nil
 }

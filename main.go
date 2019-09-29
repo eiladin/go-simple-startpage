@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	config := config.InitConfig()
+	c := config.InitConfig()
 
 	db.InitDB()
 	db.MigrateDB()
@@ -27,7 +27,7 @@ func main() {
 	r.GET("/api/status", handlers.GetStatusHandler)
 	r.POST("/api/status", handlers.UpdateStatusHandler)
 
-	err := r.Run(":" + config.Server.Port)
+	err := r.Run(":" + c.Server.Port)
 	if err != nil {
 		panic(err)
 	}

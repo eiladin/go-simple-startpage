@@ -40,22 +40,22 @@ type StatusTag struct {
 }
 
 func GetStatus() Status {
-	config := LoadNetwork()
-	return convertConfigToStatus(config)
+	n := LoadNetwork()
+	return convertNetworkToStatus(n)
 }
 
-func UpdateStatus(site StatusSite) *StatusSite {
-	url, err := url.Parse(site.Uri)
+func UpdateStatus(s StatusSite) *StatusSite {
+	url, err := url.Parse(s.Uri)
 	if err != nil {
-		site.IsUp = false
-		site.Ip = ""
-		return &site
+		s.IsUp = false
+		s.Ip = ""
+		return &s
 	}
 	port := url.Port()
 	if port == "22" {
-		return testSSH(&site, url)
+		return testSSH(&s, url)
 	} else {
-		return testHTTP(&site, url)
+		return testHTTP(&s, url)
 	}
 }
 
@@ -76,23 +76,23 @@ func getIP(host string) string {
 	}
 }
 
-func testSSH(site *StatusSite, url *url.URL) *StatusSite {
-	address := url.Hostname() + ":" + "22"
+func testSSH(s *StatusSite, u *url.URL) *StatusSite {
+	address := u.Hostname() + ":" + "22"
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
-		site.IsUp = false
-		site.Ip = ""
-		return site
+		s.IsUp = false
+		s.Ip = ""
+		return s
 	}
 	defer conn.Close()
-	site.IsUp = true
-	site.Ip = getIP(address)
-	return site
+	s.IsUp = true
+	s.Ip = getIP(address)
+	return s
 }
 
-func testHTTP(site *StatusSite, url *url.URL) *StatusSite {
-	config := config.GetConfig()
-	timeout := config.HealthCheck.Timeout
+func testHTTP(s *StatusSite, u *url.URL) *StatusSite {
+	c := config.GetConfig()
+	timeout := c.HealthCheck.Timeout
 	sec := timeout / 1000
 	dialer := &net.Dialer{
 		Timeout: time.Duration(sec) * time.Second,
@@ -103,48 +103,48 @@ func testHTTP(site *StatusSite, url *url.URL) *StatusSite {
 		}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
-	resp, err := http.Get(site.Uri)
-	if err != nil || resp.StatusCode < 200 || (resp.StatusCode >= 300 && resp.StatusCode != 401) {
-		site.IsUp = false
-		site.Ip = ""
-		return site
+	r, err := http.Get(s.Uri)
+	if err != nil || r.StatusCode < 200 || (r.StatusCode >= 300 && r.StatusCode != 401) {
+		s.IsUp = false
+		s.Ip = ""
+		return s
 	}
-	defer resp.Body.Close()
-	site.IsUp = true
-	site.Ip = getIP(url.Host)
+	defer r.Body.Close()
+	s.IsUp = true
+	s.Ip = getIP(u.Host)
 
-	return site
+	return s
 }
 
-func convertConfigToStatus(network Network) Status {
-	status := Status{
-		Network: network.Network,
+func convertNetworkToStatus(n Network) Status {
+	s := Status{
+		Network: n.Network,
 	}
-	for _, link := range network.Links {
-		statusLink := StatusLink{
-			Name:      link.Name,
-			Uri:       link.Uri,
-			SortOrder: link.SortOrder,
+	for _, l := range n.Links {
+		sl := StatusLink{
+			Name:      l.Name,
+			Uri:       l.Uri,
+			SortOrder: l.SortOrder,
 		}
-		status.Links = append(status.Links, statusLink)
+		s.Links = append(s.Links, sl)
 	}
-	for _, site := range network.Sites {
-		statusSite := StatusSite{
-			FriendlyName:   site.FriendlyName,
-			Uri:            site.Uri,
-			Icon:           site.Icon,
-			IsSupportedApp: site.IsSupportedApp,
-			SortOrder:      site.SortOrder,
+	for _, st := range n.Sites {
+		ss := StatusSite{
+			FriendlyName:   st.FriendlyName,
+			Uri:            st.Uri,
+			Icon:           st.Icon,
+			IsSupportedApp: st.IsSupportedApp,
+			SortOrder:      st.SortOrder,
 			IsUp:           false,
 			Ip:             "",
 		}
-		for _, tag := range site.Tags {
-			statusTag := StatusTag{
+		for _, tag := range st.Tags {
+			st := StatusTag{
 				Value: tag.Value,
 			}
-			statusSite.Tags = append(statusSite.Tags, statusTag)
+			ss.Tags = append(ss.Tags, st)
 		}
-		status.Sites = append(status.Sites, statusSite)
+		s.Sites = append(s.Sites, ss)
 	}
-	return status
+	return s
 }

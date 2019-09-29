@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/eiladin/go-simple-startpage/config"
 	"github.com/jinzhu/gorm"
@@ -15,15 +16,15 @@ var DB *gorm.DB
 func InitDB() *gorm.DB {
 	var db *gorm.DB
 	var err error
-	config := config.InitConfig()
+	c := config.GetConfig()
 
-	driver := config.Database.Driver
-	database := config.Database.Dbname
-	username := config.Database.Username
-	password := config.Database.Password
-	host := config.Database.Host
-	port := config.Database.Port
-	log := config.Database.Log
+	driver := strings.ToLower(c.Database.Driver)
+	database := c.Database.Dbname
+	username := c.Database.Username
+	password := c.Database.Password
+	host := c.Database.Host
+	port := c.Database.Port
+	log := c.Database.Log
 
 	if driver == "sqlite" {
 		db, err = gorm.Open("sqlite3", database)

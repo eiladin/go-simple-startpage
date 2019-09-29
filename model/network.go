@@ -5,9 +5,9 @@ import (
 )
 
 type Network struct {
-	Network string `json:"network"`
-	Links   []Link `json:"links"`
-	Sites   []Site `json:"sites"`
+	Network string `json:"n"`
+	Links   []Link `json:"ls"`
+	Sites   []Site `json:"ss"`
 }
 
 type Link struct {
@@ -22,7 +22,7 @@ type Site struct {
 	Icon           string `json:"icon"`
 	IsSupportedApp bool   `json:"isSupportedApp"`
 	SortOrder      int    `json:"sortOrder"`
-	Tags           []Tag  `json:"tags"`
+	Tags           []Tag  `json:"ts"`
 }
 
 type Tag struct {
@@ -30,74 +30,74 @@ type Tag struct {
 }
 
 func LoadNetwork() Network {
-	dbNetwork := db.ReadNetwork()
-	return convertNetworkFromDbModel(dbNetwork)
+	n := db.ReadNetwork()
+	return convertNetworkFromDbModel(n)
 }
 
-func SaveNetwork(network Network) uint {
-	dbNetwork := convertNetworkToDbModel(network)
-	db.SaveNetwork(&dbNetwork)
-	return dbNetwork.ID
+func SaveNetwork(n Network) uint {
+	d := convertNetworkToDbModel(n)
+	db.SaveNetwork(&d)
+	return d.ID
 }
 
-func convertNetworkToDbModel(network Network) db.Network {
-	dbNetwork := db.Network{
-		Network: network.Network,
+func convertNetworkToDbModel(n Network) db.Network {
+	d := db.Network{
+		Network: n.Network,
 	}
-	for _, link := range network.Links {
-		dbLink := db.Link{
-			Name:      link.Name,
-			Uri:       link.Uri,
-			SortOrder: link.SortOrder,
+	for _, l := range n.Links {
+		dl := db.Link{
+			Name:      l.Name,
+			Uri:       l.Uri,
+			SortOrder: l.SortOrder,
 		}
-		dbNetwork.Links = append(dbNetwork.Links, dbLink)
+		d.Links = append(d.Links, dl)
 	}
-	for _, site := range network.Sites {
-		dbSite := db.Site{
-			FriendlyName:   site.FriendlyName,
-			Uri:            site.Uri,
-			Icon:           site.Icon,
-			IsSupportedApp: site.IsSupportedApp,
-			SortOrder:      site.SortOrder,
+	for _, s := range n.Sites {
+		ds := db.Site{
+			FriendlyName:   s.FriendlyName,
+			Uri:            s.Uri,
+			Icon:           s.Icon,
+			IsSupportedApp: s.IsSupportedApp,
+			SortOrder:      s.SortOrder,
 		}
-		for _, tag := range site.Tags {
-			dbTag := db.Tag{
-				Value: tag.Value,
+		for _, t := range s.Tags {
+			dt := db.Tag{
+				Value: t.Value,
 			}
-			dbSite.Tags = append(dbSite.Tags, dbTag)
+			ds.Tags = append(ds.Tags, dt)
 		}
-		dbNetwork.Sites = append(dbNetwork.Sites, dbSite)
+		d.Sites = append(d.Sites, ds)
 	}
-	return dbNetwork
+	return d
 }
 
-func convertNetworkFromDbModel(dbNetwork db.Network) Network {
-	network := Network{
-		Network: dbNetwork.Network,
+func convertNetworkFromDbModel(d db.Network) Network {
+	n := Network{
+		Network: d.Network,
 	}
-	for _, dbLink := range dbNetwork.Links {
-		link := Link{
-			Name:      dbLink.Name,
-			Uri:       dbLink.Uri,
-			SortOrder: dbLink.SortOrder,
+	for _, dl := range d.Links {
+		l := Link{
+			Name:      dl.Name,
+			Uri:       dl.Uri,
+			SortOrder: dl.SortOrder,
 		}
-		network.Links = append(network.Links, link)
+		n.Links = append(n.Links, l)
 	}
-	for _, dbSite := range dbNetwork.Sites {
-		site := Site{
-			FriendlyName:   dbSite.FriendlyName,
-			Uri:            dbSite.Uri,
-			Icon:           dbSite.Icon,
-			IsSupportedApp: dbSite.IsSupportedApp,
-			SortOrder:      dbSite.SortOrder,
+	for _, ds := range d.Sites {
+		s := Site{
+			FriendlyName:   ds.FriendlyName,
+			Uri:            ds.Uri,
+			Icon:           ds.Icon,
+			IsSupportedApp: ds.IsSupportedApp,
+			SortOrder:      ds.SortOrder,
 		}
-		for _, dbTag := range dbSite.Tags {
-			tag := Tag{
-				Value: dbTag.Value,
+		for _, dt := range ds.Tags {
+			t := Tag{
+				Value: dt.Value,
 			}
-			site.Tags = append(site.Tags, tag)
+			s.Tags = append(s.Tags, t)
 		}
-		network.Sites = append(network.Sites, site)
+		n.Sites = append(n.Sites, s)
 	}
-	return network
+	return n
 }
