@@ -9,7 +9,7 @@ export function init(appConfigService: AppConfigService) {
 }
 @NgModule({ })
 export class CoreModule { 
-  public static forRoot(): ModuleWithProviders {
+  public static forRoot(): ModuleWithProviders<CoreModule> {
     return {
         ngModule: CoreModule,
         providers: [
