@@ -17,7 +17,7 @@ WORKDIR /app
 COPY ui/package*.json ./
 RUN npm ci
 COPY ./ui .
-RUN npm run build -- --prod --aot --no-progress
+RUN npm run build-prod
 
 # build final image
 FROM scratch
