@@ -5,6 +5,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { StatusSite } from './shared/models/statusSite.model';
 import { environment } from '../environments/environment';
+import { Injectable } from '@angular/core';
 
 export class LoadData {
   static type = 'LoadData';
@@ -24,6 +25,7 @@ export interface ICounts {
   name: 'status',
   defaults: new Status()
 })
+@Injectable()
 export class StatusState {
 
   @Selector()

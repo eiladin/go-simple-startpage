@@ -28,7 +28,7 @@
             <app-footer></app-footer>
         </mat-sidenav>
 
-        <div *isDesktop class="desktop-container">
+        <div *hideItDevice="['mobile','tablet']" class="desktop-container">
             <app-site-card *ngFor="let site of (status$ | async)?.sites | siteFilter:filterArgs" [site]="site"></app-site-card>
         </div>
 
