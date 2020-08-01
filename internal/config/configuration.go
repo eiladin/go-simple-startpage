@@ -11,7 +11,7 @@ import (
 var configuration Configuration
 
 // InitConfig initializes application configuration
-func InitConfig() Configuration {
+func InitConfig(version string) Configuration {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -28,6 +28,7 @@ func InitConfig() Configuration {
 		log.Fatalf("Unable to decode into struct, %v", err)
 	}
 
+	configuration.Version = version
 	return configuration
 }
 

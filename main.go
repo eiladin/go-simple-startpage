@@ -38,8 +38,10 @@ func initDatabase() {
 	db.AutoMigrate(&network.Link{})
 }
 
+var version = " dev"
+
 func main() {
-	c := config.InitConfig()
+	c := config.InitConfig(version)
 	initDatabase()
 	defer database.DBConn.Close()
 
