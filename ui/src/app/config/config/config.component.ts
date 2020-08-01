@@ -82,6 +82,7 @@ export class ConfigComponent implements OnInit {
   public importConfig() {
     this.configService.importJson().then((conf) => {
       this.config = conf;
+      console.log(this.config)
       this.configService.save(this.config).subscribe();
     });
   }
