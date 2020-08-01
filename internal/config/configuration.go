@@ -4,18 +4,13 @@ import (
 	"log"
 	"strings"
 
+	"github.com/gofiber/fiber"
 	"github.com/spf13/viper"
 )
 
-type Configuration struct {
-	Server      ServerConfiguration   `json:"-"`
-	Database    DatabaseConfiguration `json:"-"`
-	Version     string                `json:"version"`
-	HealthCheck HealthCheck           `json:"-"`
-}
-
 var configuration Configuration
 
+// InitConfig initializes application configuration
 func InitConfig() Configuration {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -36,6 +31,12 @@ func InitConfig() Configuration {
 	return configuration
 }
 
+// GetConfig returns application configuration
 func GetConfig() Configuration {
 	return configuration
+}
+
+// GetAppConfig handles /api/appconfig
+func GetAppConfig(c *fiber.Ctx) {
+	c.JSON(configuration)
 }
