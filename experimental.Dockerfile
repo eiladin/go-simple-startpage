@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build go mod download
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=1 GOARCH=amd64 GOOS=linux go build -ldflags='-linkmode external -extldflags "-static" -s -w -X main.version='${version}'' -a -installsuffix cgo -o /go/bin/go-simple-startpage .
 
 # build angular
-FROM node:10-alpine as frontend
+FROM node:12-alpine as frontend
 WORKDIR /app
 COPY ui/package*.json ./
 RUN npm ci
