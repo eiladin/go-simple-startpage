@@ -7,34 +7,26 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
-	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/gofiber/fiber"
 )
 
-func updateStatus(s *Site) error {
+func (s *Site) updateStatus() error {
 	url, err := url.Parse(s.URI)
 	if err != nil {
 		return fmt.Errorf("Unable to parse URI: %s", s.URI)
 	}
-	port := url.Port()
-	if port == "22" {
-		return testSSH(s, url)
+	s.IP = getIP(url)
+	if url.Scheme == "ssh" {
+		return s.testSSH(url)
 	}
-	return testHTTP(s, url)
+	return s.testHTTP(url)
 }
 
-func getIP(host string) string {
-	if strings.Contains(host, ":") {
-		host = strings.Split(host, ":")[0]
-	}
-
-	if !strings.Contains(host, ".") {
-		return host
-	}
+func getIP(u *url.URL) string {
+	host := u.Hostname()
 	ips, err := net.LookupIP(host)
 	if err != nil {
 		return ""
@@ -42,19 +34,18 @@ func getIP(host string) string {
 	return ips[0].String()
 }
 
-func testSSH(s *Site, u *url.URL) error {
-	address := u.Hostname() + ":" + "22"
+func (s *Site) testSSH(u *url.URL) error {
+	address := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 	s.IsUp = true
-	s.IP = getIP(address)
 	return nil
 }
 
-func testHTTP(s *Site, u *url.URL) error {
+func (s *Site) testHTTP(u *url.URL) error {
 	c := config.GetConfig()
 	dialer := &net.Dialer{
 		Timeout: time.Duration(c.HealthCheck.Timeout) * time.Millisecond,
@@ -74,16 +65,7 @@ func testHTTP(s *Site, u *url.URL) error {
 		return fmt.Errorf("Invalid StatusCode: %d", r.StatusCode)
 	}
 	s.IsUp = true
-	s.IP = getIP(u.Host)
 	return nil
-}
-
-// GetStatus handles /api/status
-func GetStatus(c *fiber.Ctx) {
-	db := database.DBConn
-	var network Network
-	db.Set("gorm:auto_preload", true).Find(&network)
-	c.JSON(network)
 }
 
 // UpdateStatus handles /api/status
@@ -91,17 +73,14 @@ func UpdateStatus(c *fiber.Ctx) {
 	var s Site
 	err := c.BodyParser(&s)
 	if err != nil {
-		c.Status(fiber.StatusInternalServerError)
+		c.Status(fiber.StatusBadRequest)
 		return
 	}
-	err = updateStatus(&s)
+	err = s.updateStatus()
 	if err != nil {
-		e := struct {
-			Error string `json:"error"`
-		}{
-			Error: err.Error(),
-		}
-		c.Status(fiber.StatusInternalServerError).JSON(e)
+		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 	c.JSON(s)
 }

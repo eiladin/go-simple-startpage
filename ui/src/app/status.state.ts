@@ -45,7 +45,7 @@ export class StatusState {
 
   @Action(LoadData)
   loadData(ctx: StateContext<Status>, action: LoadData) {
-    return this.http.get<Status>(environment.gateway + '/api/status').pipe(
+    return this.http.get<Status>(environment.gateway + '/api/network').pipe(
       tap(newStatus => {
         const state = ctx.getState();
         ctx.setState(Object.assign(new Status(newStatus.network, newStatus.links, newStatus.sites)));

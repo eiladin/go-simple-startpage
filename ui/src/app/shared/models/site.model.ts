@@ -10,8 +10,4 @@ export class Site {
         public tags: Tag[] = [],
         public isSupportedApp: boolean = false
     ) { }
-
-    get imageName() {
-        return `/supportedapps/${this.icon}`;
-    }
 }

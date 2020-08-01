@@ -1,6 +1,6 @@
 package network
 
-import "github.com/jinzhu/gorm"
+import "gorm.io/gorm"
 
 // Network structure
 type Network struct {
