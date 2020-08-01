@@ -1,0 +1,24 @@
+name: build
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build
+        uses: docker/build-push-action@v1.1.0
+        with:
+          username: ${{ secrets.REPOSITORY_USERNAME }}
+          password: ${{ secrets.REPOSITORY_PASSWORD }}
+          repository: eiladin/go-simple-startpage
+          build_args: version=${{github.ref}}
+          tag_with_ref: true
+          tag_with_sha: false
+          add_git_labels: true
+          push: false
