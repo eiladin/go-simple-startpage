@@ -10,7 +10,7 @@ publish: build ## Push docker eiladin/go-simple-startpage:$(tag) to docker hub
 	docker push eiladin/go-simple-startpage:$(tag)
   
 classicBuild: ## Build docker eiladin/go-simple-startpage:$(tag)
-	docker build -f classic.Dockerfile  --build-arg version=$(tag) . -t eiladin/go-simple-startpage:$(tag)
+	docker build -f Dockerfile  --build-arg version=$(tag) . -t eiladin/go-simple-startpage:$(tag)
 
 classicPublish: classicBuild ## Push docker eiladin/go-simple-startpage:$(tag) to docker hub with a classic docker build
 	docker push eiladin/go-simple-startpage:$(tag)

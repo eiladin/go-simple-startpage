@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:experimental
 # build go
 FROM golang:alpine as builder
 ARG version=next
