@@ -1,4 +1,4 @@
-# # build go
+# build go
 FROM golang:alpine as builder
 ARG version=next
 RUN apk update && apk add --no-cache git gcc g++ libc-dev musl-dev
@@ -29,5 +29,4 @@ USER appuser
 WORKDIR /app
 COPY ./config.yaml .
 COPY --from=frontend /app/dist ./ui/dist
-ENV GIN_MODE=release
 ENTRYPOINT ["/app/go-simple-startpage"]
