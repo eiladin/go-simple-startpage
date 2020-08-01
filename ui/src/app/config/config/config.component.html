@@ -48,7 +48,7 @@
                 <mat-expansion-panel-header>
                     <mat-panel-title>
                         <mat-icon *ngIf="!site.isSupportedApp">{{site.icon}}</mat-icon>
-                        <img *ngIf="site.isSupportedApp" class="site-image" src="/assets{{site.imageName}}" />
+                        <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/supportedapps/{{site.icon}}" />
                         <span class="friendly-name">{{site.friendlyName || 'Unknown'}}</span>
                     </mat-panel-title>
                 </mat-expansion-panel-header>

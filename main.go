@@ -19,7 +19,6 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/api/appconfig", config.GetAppConfig)
 	app.Get("/api/network", network.GetNetwork)
 	app.Post("/api/network", network.NewNetwork)
-	app.Get("/api/status", network.GetStatus)
 	app.Post("/api/status", network.UpdateStatus)
 	app.Static("/", "./ui/dist/ui", fiber.Static{
 		Compress: true,
@@ -43,7 +42,7 @@ var version = " dev"
 func main() {
 	c := config.InitConfig(version)
 	initDatabase()
-	defer database.DBConn.Close()
+	// defer database.DBConn
 
 	app := fiber.New()
 	setupMiddleware(app)

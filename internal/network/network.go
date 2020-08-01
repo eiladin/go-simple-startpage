@@ -8,15 +8,15 @@ import (
 // GetNetwork handles /api/network
 func GetNetwork(c *fiber.Ctx) {
 	db := database.DBConn
-	var network Network
-	db.Set("gorm:auto_preload", true).Find(&network)
-	c.JSON(network)
+	var net Network
+	db.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(&net)
+	c.Status(fiber.StatusOK).JSON(net)
 }
 
 // NewNetwork handles /api/network
 func NewNetwork(c *fiber.Ctx) {
-	var network Network
-	err := c.BodyParser(&network)
+	var net Network
+	err := c.BodyParser(&net)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return
@@ -25,10 +25,13 @@ func NewNetwork(c *fiber.Ctx) {
 		id uint
 	}
 	db := database.DBConn
-	db.Unscoped().Delete(Network{})
-	db.Unscoped().Delete(Site{})
-	db.Unscoped().Delete(Tag{})
-	db.Unscoped().Delete(Link{})
-	db.Create(&network)
-	c.JSON(resp{id: network.ID})
+	db.Unscoped().Where("1 = 1").Delete(&Tag{})
+	db.Unscoped().Where("1 = 1").Delete(&Site{})
+	db.Unscoped().Where("1 = 1").Delete(&Link{})
+	db.Unscoped().Where("1 = 1").Delete(&Network{})
+
+	db.Create(&net)
+	c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"id": net.ID,
+	})
 }
