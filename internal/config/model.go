@@ -1,6 +1,6 @@
 package config
 
-// Configuration stores application configuration
+// Configuration structure
 type Configuration struct {
 	Server      ServerConfiguration   `json:"-"`
 	Database    DatabaseConfiguration `json:"-"`
@@ -22,4 +22,9 @@ type DatabaseConfiguration struct {
 // HealthCheck structure
 type HealthCheck struct {
 	Timeout int
+}
+
+// ServerConfiguration structure
+type ServerConfiguration struct {
+	Port string
 }

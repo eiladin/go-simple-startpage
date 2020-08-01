@@ -35,8 +35,7 @@ func getIP(u *url.URL) string {
 }
 
 func (s *Site) testSSH(u *url.URL) error {
-	address := fmt.Sprintf("%s:%s", u.Hostname(), u.Port())
-	conn, err := net.Dial("tcp", address)
+	conn, err := net.Dial("tcp", u.Host)
 	if err != nil {
 		return err
 	}
