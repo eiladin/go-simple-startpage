@@ -21,16 +21,14 @@ func NewNetwork(c *fiber.Ctx) {
 		c.Status(fiber.StatusBadRequest)
 		return
 	}
-	type resp struct {
-		id uint
-	}
+
 	db := database.DBConn
 	db.Unscoped().Where("1 = 1").Delete(&Tag{})
 	db.Unscoped().Where("1 = 1").Delete(&Site{})
 	db.Unscoped().Where("1 = 1").Delete(&Link{})
 	db.Unscoped().Where("1 = 1").Delete(&Network{})
-
 	db.Create(&net)
+
 	c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"id": net.ID,
 	})

@@ -65,7 +65,7 @@
         </div>
     </div>
 
-    <button *isDesktop id="config-scroll-to-top" mat-icon-button color="primary" pageScroll href="#top" [pageScrollDuration]="750" [pageScrollEasing]="myEasing">
+    <button *hideItDevice="['mobile','tablet']" id="config-scroll-to-top" mat-icon-button color="primary" pageScroll href="#top" [pageScrollDuration]="750" [pageScrollEasing]="myEasing">
         <mat-icon>
             arrow_upward
         </mat-icon>
