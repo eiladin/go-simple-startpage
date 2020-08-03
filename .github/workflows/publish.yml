@@ -19,7 +19,7 @@ jobs:
         username: ${{ secrets.REPOSITORY_USERNAME }}
         password: ${{ secrets.REPOSITORY_PASSWORD }}
         repository: eiladin/go-simple-startpage
-        build_args: version=${GITHUB_REF#refs/*/}
+        build_args: version=${{github.ref#refs/*/}}
         tag_with_ref: true
         tag_with_sha: false
         add_git_labels: true
