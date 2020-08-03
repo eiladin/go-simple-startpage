@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2    
+      uses: actions/checkout@v2
+    - name: Inject slug/short variables
+      uses: rlespinasse/github-slug-action@v2.x      
     - name: publish
       uses: docker/build-push-action@v1.1.0
       env:
@@ -19,7 +21,7 @@ jobs:
         username: ${{ secrets.REPOSITORY_USERNAME }}
         password: ${{ secrets.REPOSITORY_PASSWORD }}
         repository: eiladin/go-simple-startpage
-        build_args: version=${{github.ref#refs/*/}}
+        build_args: version=${{ env.GITHUB_REF_SLUG }}
         tag_with_ref: true
         tag_with_sha: false
         add_git_labels: true
