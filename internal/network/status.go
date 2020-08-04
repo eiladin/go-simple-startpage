@@ -1,7 +1,6 @@
 package network
 
 import (
-	"context"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -10,19 +9,20 @@ import (
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
 	"github.com/gofiber/fiber"
 )
 
-func (s *Site) updateStatus() error {
+func updateStatus(s *interfaces.Site) error {
 	url, err := url.Parse(s.URI)
 	if err != nil {
 		return fmt.Errorf("Unable to parse URI: %s", s.URI)
 	}
 	s.IP = getIP(url)
 	if url.Scheme == "ssh" {
-		return s.testSSH(url)
+		return testSSH(s, url)
 	}
-	return s.testHTTP(url)
+	return testHTTP(s, url)
 }
 
 func getIP(u *url.URL) string {
@@ -34,7 +34,7 @@ func getIP(u *url.URL) string {
 	return ips[0].String()
 }
 
-func (s *Site) testSSH(u *url.URL) error {
+func testSSH(s *interfaces.Site, u *url.URL) error {
 	conn, err := net.Dial("tcp", u.Host)
 	if err != nil {
 		return err
@@ -44,18 +44,17 @@ func (s *Site) testSSH(u *url.URL) error {
 	return nil
 }
 
-func (s *Site) testHTTP(u *url.URL) error {
-	c := config.GetConfig()
-	dialer := &net.Dialer{
-		Timeout: time.Duration(c.HealthCheck.Timeout) * time.Millisecond,
-	}
-	http.DefaultTransport.(*http.Transport).DialContext =
-		func(ctx context.Context, network, addr string) (net.Conn, error) {
-			return dialer.DialContext(ctx, network, addr)
-		}
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+var httpClient = http.Client{
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
+}
 
-	r, err := http.Get(s.URI)
+func testHTTP(s *interfaces.Site, u *url.URL) error {
+	c := config.GetConfig()
+	httpClient.Timeout = time.Millisecond * time.Duration(c.HealthCheck.Timeout)
+
+	r, err := httpClient.Get(u.String())
 	if err != nil {
 		return err
 	}
@@ -68,14 +67,14 @@ func (s *Site) testHTTP(u *url.URL) error {
 }
 
 // UpdateStatus handles /api/status
-func UpdateStatus(c *fiber.Ctx) {
-	var s Site
+func (h Handler) UpdateStatus(c *fiber.Ctx) {
+	var s interfaces.Site
 	err := c.BodyParser(&s)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return
 	}
-	err = s.updateStatus()
+	err = updateStatus(&s)
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

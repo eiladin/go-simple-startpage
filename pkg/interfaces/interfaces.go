@@ -1,10 +1,16 @@
-package network
+package interfaces
 
 import (
 	"time"
 
 	"gorm.io/gorm"
 )
+
+// NetworkService interface
+type NetworkService interface {
+	CreateNetwork(net *Network)
+	FindNetwork(net *Network)
+}
 
 // Network structure
 type Network struct {

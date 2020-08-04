@@ -1,33 +1,32 @@
 package network
 
 import (
-	"github.com/eiladin/go-simple-startpage/internal/database"
+	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
 	"github.com/gofiber/fiber"
 )
 
+// Handler handles Network commands
+type Handler struct {
+	NetworkService interfaces.NetworkService
+}
+
 // GetNetwork handles /api/network
-func GetNetwork(c *fiber.Ctx) {
-	db := database.DBConn
-	var net Network
-	db.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(&net)
+func (h Handler) GetNetwork(c *fiber.Ctx) {
+	var net interfaces.Network
+	h.NetworkService.FindNetwork(&net)
 	c.Status(fiber.StatusOK).JSON(net)
 }
 
 // NewNetwork handles /api/network
-func NewNetwork(c *fiber.Ctx) {
-	var net Network
+func (h Handler) NewNetwork(c *fiber.Ctx) {
+	var net interfaces.Network
 	err := c.BodyParser(&net)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return
 	}
 
-	db := database.DBConn
-	db.Unscoped().Where("1 = 1").Delete(&Tag{})
-	db.Unscoped().Where("1 = 1").Delete(&Site{})
-	db.Unscoped().Where("1 = 1").Delete(&Link{})
-	db.Unscoped().Where("1 = 1").Delete(&Network{})
-	db.Create(&net)
+	h.NetworkService.CreateNetwork(&net)
 
 	c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"id": net.ID,
