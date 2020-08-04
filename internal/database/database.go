@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -14,11 +15,13 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-// DBConn holds the database connection
-var DBConn *gorm.DB
+// DB structure
+type DB struct {
+	DB *gorm.DB
+}
 
 // InitDB initialized the selected database
-func InitDB() {
+func InitDB() *gorm.DB {
 	var err error
 	c := config.GetConfig()
 
@@ -42,26 +45,43 @@ func InitDB() {
 	}
 
 	if driver == "sqlite" {
-		DBConn, err = gorm.Open(sqlite.Open(database), cfg)
+		conn, err := gorm.Open(sqlite.Open(database), cfg)
 		if err != nil {
 			fmt.Println("db err: ", err)
 		}
+		return conn
 	} else if driver == "postgres" {
 		dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", host, port, username, database, password)
-		DBConn, err = gorm.Open(postgres.Open(dsn), cfg)
+		conn, err := gorm.Open(postgres.Open(dsn), cfg)
 		if err != nil {
 			fmt.Println("db err: ", err)
 		}
+		return conn
 	} else if driver == "mysql" {
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", username, password, host, port, database)
-		DBConn, err = gorm.Open(mysql.Open(dsn), cfg)
+		conn, err := gorm.Open(mysql.Open(dsn), cfg)
 		if err != nil {
 			fmt.Println("db err: ", err)
 		}
-	} else {
-		DBConn, err = gorm.Open(sqlite.Open("simple-startpage.db"), &gorm.Config{})
-		if err != nil {
-			fmt.Println("db err: ", err)
-		}
+		return conn
 	}
+	conn, err := gorm.Open(sqlite.Open("simple-startpage.db"), &gorm.Config{})
+	if err != nil {
+		fmt.Println("db err: ", err)
+	}
+	return conn
+}
+
+// CreateNetwork creates a network in the database
+func (d *DB) CreateNetwork(net *interfaces.Network) {
+	d.DB.Unscoped().Where("1 = 1").Delete(&interfaces.Tag{})
+	d.DB.Unscoped().Where("1 = 1").Delete(&interfaces.Site{})
+	d.DB.Unscoped().Where("1 = 1").Delete(&interfaces.Link{})
+	d.DB.Unscoped().Where("1 = 1").Delete(&interfaces.Network{})
+	d.DB.Create(&net)
+}
+
+// FindNetwork reads a network from the database
+func (d *DB) FindNetwork(net *interfaces.Network) {
+	d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(&net)
 }
