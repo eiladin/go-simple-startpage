@@ -1,6 +1,7 @@
 package network
 
 import (
+	"fmt"
 	"net"
 	"net/url"
 	"testing"
@@ -73,11 +74,11 @@ func TestUpdateStatus(t *testing.T) {
 	for _, c := range cases {
 		err := updateStatus(&c.Site)
 		if c.HasError {
-			assert.Error(t, err)
-			assert.False(t, c.IsUp)
+			assert.Error(t, err, fmt.Sprintf("site: %s should error", c.Site.URI))
+			assert.False(t, c.IsUp, fmt.Sprintf("site: %s should not be up", c.Site.URI))
 		} else {
-			assert.NoError(t, err)
-			assert.Equal(t, c.IsUp, c.Site.IsUp)
+			assert.NoError(t, err, fmt.Sprintf("site: %s should not error", c.Site.URI))
+			assert.Equal(t, c.IsUp, c.Site.IsUp, fmt.Sprintf("site: %s should be up", c.Site.URI))
 		}
 	}
 }
@@ -98,17 +99,18 @@ func TestUpdateStatusHandler(t *testing.T) {
 	defer ln.Close()
 
 	cases := []struct {
+		Desc       string
 		Body       string
 		IsUp       bool
 		StatusCode int
 	}{
-		{Body: `{"uri":"https://my.test.site"}`, IsUp: true, StatusCode: 200},
-		{Body: `{"uri":"https://my.fail.site"}`, IsUp: false, StatusCode: 500},
-		{Body: `{"uri":"https://^^invalidurl^^"}`, IsUp: false, StatusCode: 500},
-		{Body: `{"uri":"ssh://localhost:12345"}`, IsUp: true, StatusCode: 200},
-		{Body: `{"uri":"ssh://localhost:1234"}`, IsUp: false, StatusCode: 500},
-		{Body: `{"uri":"https://err.test.site"}`, IsUp: false, StatusCode: 500},
-		{Body: `{invalid json}`, IsUp: false, StatusCode: 400},
+		{Desc: "https://my.test.site should be up", Body: `{"uri":"https://my.test.site"}`, IsUp: true, StatusCode: 200},
+		{Desc: "https://my.fail.site should not be up", Body: `{"uri":"https://my.fail.site"}`, IsUp: false, StatusCode: 500},
+		{Desc: "https://^^invalidurl^^ should not be up", Body: `{"uri":"https://^^invalidurl^^"}`, IsUp: false, StatusCode: 500},
+		{Desc: "ssh://localhost:12345 should be up", Body: `{"uri":"ssh://localhost:12345"}`, IsUp: true, StatusCode: 200},
+		{Desc: "ssh://localhost:1234 should not be up", Body: `{"uri":"ssh://localhost:1234"}`, IsUp: false, StatusCode: 500},
+		{Desc: "https://err.test.site should not be up", Body: `{"uri":"https://err.test.site"}`, IsUp: false, StatusCode: 500},
+		{Desc: "invalid json should return a 400", Body: `{invalid json}`, IsUp: false, StatusCode: 400},
 	}
 
 	for _, c := range cases {
@@ -119,12 +121,12 @@ func TestUpdateStatusHandler(t *testing.T) {
 		handler.UpdateStatus(ctx)
 
 		assert.Equal(t, c.StatusCode, ctx.Fasthttp.Response.StatusCode())
-		if c.StatusCode == 500 {
-			assert.Contains(t, string(ctx.Fasthttp.Response.Body()), `"isUp":false`)
-		} else {
-			assert.Contains(t, string(ctx.Fasthttp.Response.Body()), `"isUp":true`)
+		switch c.StatusCode {
+		case 500:
+			assert.Contains(t, string(ctx.Fasthttp.Response.Body()), `"isUp":false`, c.Desc)
+		case 200:
+			assert.Contains(t, string(ctx.Fasthttp.Response.Body()), `"isUp":true`, c.Desc)
 		}
-
 		app.ReleaseCtx(ctx)
 	}
 }

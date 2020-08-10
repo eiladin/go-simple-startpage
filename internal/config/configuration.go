@@ -11,10 +11,14 @@ import (
 var configuration Configuration
 
 // InitConfig initializes application configuration
-func InitConfig(version string) Configuration {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
+func InitConfig(version string, cfgFile string) Configuration {
+	if cfgFile != "" {
+		viper.SetConfigFile(cfgFile)
+	} else {
+		viper.SetConfigName("config")
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(".")
+	}
 	viper.AutomaticEnv()
 	replacer := strings.NewReplacer(".", "__")
 	viper.SetEnvKeyReplacer(replacer)
