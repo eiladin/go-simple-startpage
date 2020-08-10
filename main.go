@@ -41,7 +41,7 @@ func initDatabase() database.DB {
 var version = " dev"
 
 func main() {
-	c := config.InitConfig(version)
+	c := config.InitConfig(version, "")
 	store := initDatabase()
 	// defer database.DBConn
 
