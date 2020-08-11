@@ -12,6 +12,7 @@ import (
 type mockNetworkService struct {
 	CreateNetworkFunc func(*interfaces.Network)
 	FindNetworkFunc   func(*interfaces.Network)
+	FindSiteFunc      func(*interfaces.Site)
 }
 
 func (m *mockNetworkService) CreateNetwork(net *interfaces.Network) {
@@ -20,6 +21,10 @@ func (m *mockNetworkService) CreateNetwork(net *interfaces.Network) {
 
 func (m *mockNetworkService) FindNetwork(net *interfaces.Network) {
 	m.FindNetworkFunc(net)
+}
+
+func (m *mockNetworkService) FindSite(site *interfaces.Site) {
+	m.FindSiteFunc(site)
 }
 
 func TestNewNetwork(t *testing.T) {

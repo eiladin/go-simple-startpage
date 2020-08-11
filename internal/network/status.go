@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
@@ -66,19 +67,35 @@ func testHTTP(s *interfaces.Site, u *url.URL) error {
 	return nil
 }
 
-// UpdateStatus handles /api/status
-func (h Handler) UpdateStatus(c *fiber.Ctx) {
-	var s interfaces.Site
-	err := c.BodyParser(&s)
+func getStatus(h Handler, id uint) (*interfaces.Site, error) {
+	site := interfaces.Site{ID: id}
+	h.NetworkService.FindSite(&site)
+	err := updateStatus(&site)
+	if err != nil {
+		return &site, err
+	}
+	return &site, nil
+}
+
+// GetStatus handles /api/status/:id
+func (h Handler) GetStatus(c *fiber.Ctx) {
+	val := c.Params("id", "")
+	if val == "" {
+		c.Status(fiber.StatusBadRequest)
+	}
+	id, err := strconv.Atoi(val)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
-		return
 	}
-	err = updateStatus(&s)
+	site, err := getStatus(h, uint(id))
 	if err != nil {
 		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-	c.JSON(s)
+	c.JSON(fiber.Map{
+		"id":   site.ID,
+		"isUp": site.IsUp,
+		"ip":   site.IP,
+	})
 }
