@@ -11,7 +11,8 @@ import (
 )
 
 func createConfigFile(cfgFile string) {
-	content := `database:
+	content := []byte(`
+database:
   driver: "sqlite"
   dbname: "dbname.db"
   username: "user"
@@ -25,10 +26,9 @@ server:
 
 healthCheck:
   timeout: "2000"
-`
+`)
 
-	cfg := []byte(content)
-	ioutil.WriteFile(cfgFile, cfg, 0644)
+	ioutil.WriteFile(cfgFile, content, 0644)
 }
 
 func TestDefaultConfig(t *testing.T) {

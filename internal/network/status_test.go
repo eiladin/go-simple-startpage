@@ -3,6 +3,7 @@ package network
 import (
 	"fmt"
 	"net"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/gofiber/fiber"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
-	"github.com/valyala/fasthttp"
 )
 
 func TestHttp(t *testing.T) {
@@ -83,16 +83,18 @@ func TestUpdateStatus(t *testing.T) {
 	}
 }
 
-func TestUpdateStatusHandler(t *testing.T) {
-	app := fiber.New()
+func TestGetStatusHandler(t *testing.T) {
 	var store mockNetworkService
 	handler := Handler{NetworkService: &store}
+
+	app := fiber.New()
+	app.Get("/:id", handler.GetStatus)
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
 
 	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
-	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "redirect"))
+	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "fail"))
 
 	ln, err := net.Listen("tcp", "[::]:12345")
 	assert.NoError(t, err)
@@ -100,33 +102,74 @@ func TestUpdateStatusHandler(t *testing.T) {
 
 	cases := []struct {
 		Desc       string
-		Body       string
+		ID         string
+		URI        string
 		IsUp       bool
 		StatusCode int
 	}{
-		{Desc: "https://my.test.site should be up", Body: `{"uri":"https://my.test.site"}`, IsUp: true, StatusCode: 200},
-		{Desc: "https://my.fail.site should not be up", Body: `{"uri":"https://my.fail.site"}`, IsUp: false, StatusCode: 500},
-		{Desc: "https://^^invalidurl^^ should not be up", Body: `{"uri":"https://^^invalidurl^^"}`, IsUp: false, StatusCode: 500},
-		{Desc: "ssh://localhost:12345 should be up", Body: `{"uri":"ssh://localhost:12345"}`, IsUp: true, StatusCode: 200},
-		{Desc: "ssh://localhost:1234 should not be up", Body: `{"uri":"ssh://localhost:1234"}`, IsUp: false, StatusCode: 500},
-		{Desc: "https://err.test.site should not be up", Body: `{"uri":"https://err.test.site"}`, IsUp: false, StatusCode: 500},
-		{Desc: "invalid json should return a 400", Body: `{invalid json}`, IsUp: false, StatusCode: 400},
+		{Desc: "should be up", ID: "1", URI: "https://my.test.site", IsUp: true, StatusCode: 200},
+		{Desc: "should not be up", ID: "1", URI: "https://my.fail.site", IsUp: false, StatusCode: 500},
+		{Desc: "should not be up", ID: "1", URI: "https://^^invalidurl^^", IsUp: false, StatusCode: 500},
+		{Desc: "should be up", ID: "1", URI: "ssh://localhost:12345", IsUp: true, StatusCode: 200},
+		{Desc: "should not be up", ID: "1", URI: "ssh://localhost:1234", IsUp: false, StatusCode: 500},
+		{Desc: "should not be up", ID: "1", URI: "https://err.test.site", IsUp: false, StatusCode: 500},
+		{Desc: "should not be up", ID: "abc", URI: "https://err.test.site", IsUp: false, StatusCode: 500},
+		{Desc: "should not be up", ID: "", URI: "https://err.test.site", IsUp: false, StatusCode: 404},
 	}
 
 	for _, c := range cases {
-		ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
-		ctx.Fasthttp.Request.Header.SetContentType(fiber.MIMEApplicationJSON)
-		ctx.Fasthttp.Request.SetBody([]byte(c.Body))
-		ctx.Fasthttp.Request.Header.SetContentLength(len(c.Body))
-		handler.UpdateStatus(ctx)
 
-		assert.Equal(t, c.StatusCode, ctx.Fasthttp.Response.StatusCode())
-		switch c.StatusCode {
-		case 500:
-			assert.Contains(t, string(ctx.Fasthttp.Response.Body()), `"isUp":false`, c.Desc)
-		case 200:
-			assert.Contains(t, string(ctx.Fasthttp.Response.Body()), `"isUp":true`, c.Desc)
+		store.FindSiteFunc = func(site *interfaces.Site) {
+			site.ID = 1
+			site.URI = c.URI
 		}
-		app.ReleaseCtx(ctx)
+
+		req := httptest.NewRequest("GET", fmt.Sprintf("/%s", c.ID), nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err, fmt.Sprintf("%s %s", c.URI, c.Desc))
+		assert.Equal(t, c.StatusCode, resp.StatusCode, fmt.Sprintf("%s %s", c.URI, c.Desc))
+	}
+}
+
+func TestGetStatus(t *testing.T) {
+	var store mockNetworkService
+	handler := Handler{NetworkService: &store}
+
+	httpmock.ActivateNonDefault(&httpClient)
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
+	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "fail"))
+
+	ln, err := net.Listen("tcp", "[::]:12345")
+	assert.NoError(t, err)
+	defer ln.Close()
+
+	cases := []struct {
+		Desc  string
+		URI   string
+		IsUp  bool
+		Error bool
+	}{
+		{Desc: "should be up", URI: "https://my.test.site", IsUp: true, Error: false},
+		{Desc: "should not be up", URI: "https://my.fail.site", IsUp: false, Error: true},
+		{Desc: "should not be up", URI: "https://^^invalidurl^^", IsUp: false, Error: true},
+		{Desc: "should be up", URI: "ssh://localhost:12345", IsUp: true, Error: false},
+		{Desc: "should not be up", URI: "ssh://localhost:1234", IsUp: false, Error: true},
+		{Desc: "should not be up", URI: "https://err.test.site", IsUp: false, Error: true},
+	}
+
+	for _, c := range cases {
+		store.FindSiteFunc = func(site *interfaces.Site) {
+			site.ID = 1
+			site.URI = c.URI
+		}
+		res, err := getStatus(handler, 1)
+		if c.Error {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
+		assert.Equal(t, c.IsUp, res.IsUp, fmt.Sprintf("%s %s", c.URI, c.Desc))
 	}
 }

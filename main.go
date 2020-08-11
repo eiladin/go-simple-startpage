@@ -17,10 +17,11 @@ func setupMiddleware(app *fiber.App) {
 }
 
 func setupRoutes(app *fiber.App, store *database.DB) {
+	handler := network.Handler{NetworkService: store}
 	app.Get("/api/appconfig", config.GetAppConfig)
-	app.Get("/api/network", network.Handler{NetworkService: store}.GetNetwork)
-	app.Post("/api/network", network.Handler{NetworkService: store}.NewNetwork)
-	app.Post("/api/status", network.Handler{NetworkService: store}.UpdateStatus)
+	app.Get("/api/network", handler.GetNetwork)
+	app.Post("/api/network", handler.NewNetwork)
+	app.Get("/api/status/:id", handler.GetStatus)
 	app.Static("/", "./ui/dist/ui", fiber.Static{
 		Compress: true,
 		Browse:   true,
@@ -43,7 +44,6 @@ var version = " dev"
 func main() {
 	c := config.InitConfig(version, "")
 	store := initDatabase()
-	// defer database.DBConn
 
 	app := fiber.New()
 	setupMiddleware(app)

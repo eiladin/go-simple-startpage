@@ -83,5 +83,10 @@ func (d *DB) CreateNetwork(net *interfaces.Network) {
 
 // FindNetwork reads a network from the database
 func (d *DB) FindNetwork(net *interfaces.Network) {
-	d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(&net)
+	d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(net)
+}
+
+// FindSite reads a site from the database
+func (d *DB) FindSite(site *interfaces.Site) {
+	d.DB.Find(site)
 }

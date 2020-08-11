@@ -10,6 +10,7 @@ import (
 type NetworkService interface {
 	CreateNetwork(net *Network)
 	FindNetwork(net *Network)
+	FindSite(site *Site)
 }
 
 // Network structure
@@ -37,7 +38,7 @@ type Link struct {
 
 // Site structure
 type Site struct {
-	ID             uint           `json:"-" gorm:"primaryKey"`
+	ID             uint           `json:"id" gorm:"primaryKey"`
 	CreatedAt      time.Time      `json:"-"`
 	UpdatedAt      time.Time      `json:"-"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
