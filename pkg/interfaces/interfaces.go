@@ -62,3 +62,10 @@ type Tag struct {
 	SiteID    uint           `json:"-"`
 	Value     string         `json:"value"`
 }
+
+// SiteStatus structure
+type SiteStatus struct {
+	ID   uint   `json:"id"`
+	IsUp bool   `json:"isUp"`
+	IP   string `json:"ip"`
+}

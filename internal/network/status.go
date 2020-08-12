@@ -11,7 +11,7 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 func updateStatus(s *interfaces.Site) error {
@@ -88,11 +88,7 @@ func (h Handler) GetStatus(c echo.Context) error {
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
-	res := struct {
-		ID   uint   `json:"id"`
-		IsUp bool   `json:"isUp"`
-		IP   string `json:"ip"`
-	}{
+	res := interfaces.SiteStatus{
 		ID:   site.ID,
 		IsUp: site.IsUp,
 		IP:   site.IP,

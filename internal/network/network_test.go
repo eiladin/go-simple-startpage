@@ -1,14 +1,13 @@
 package network
 
 import (
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,7 +67,7 @@ func TestNewNetworkError(t *testing.T) {
 	h := getMockHandler()
 	err := h.NewNetwork(ctx)
 	assert.Error(t, err)
-	assert.True(t, errors.Is(err, echo.ErrBadRequest))
+	assert.EqualError(t, err, echo.ErrBadRequest.Error())
 }
 
 func TestGetNetwork(t *testing.T) {
