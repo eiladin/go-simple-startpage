@@ -11,7 +11,7 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
-	"github.com/gofiber/fiber"
+	"github.com/labstack/echo"
 )
 
 func updateStatus(s *interfaces.Site) error {
@@ -78,24 +78,24 @@ func getStatus(h Handler, id uint) (*interfaces.Site, error) {
 }
 
 // GetStatus handles /api/status/:id
-func (h Handler) GetStatus(c *fiber.Ctx) {
-	val := c.Params("id", "")
-	if val == "" {
-		c.Status(fiber.StatusBadRequest)
-	}
+func (h Handler) GetStatus(c echo.Context) error {
+	val := c.Param("id")
 	id, err := strconv.Atoi(val)
 	if err != nil {
-		c.Status(fiber.StatusBadRequest)
+		return echo.ErrBadRequest
 	}
 	site, err := getStatus(h, uint(id))
 	if err != nil {
-		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return echo.ErrInternalServerError
 	}
-	c.JSON(fiber.Map{
-		"id":   site.ID,
-		"isUp": site.IsUp,
-		"ip":   site.IP,
-	})
+	res := struct {
+		ID   uint   `json:"id"`
+		IsUp bool   `json:"isUp"`
+		IP   string `json:"ip"`
+	}{
+		ID:   site.ID,
+		IsUp: site.IsUp,
+		IP:   site.IP,
+	}
+	return c.JSON(http.StatusOK, res)
 }

@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
-	"github.com/gofiber/fiber"
 	"github.com/jarcoal/httpmock"
+	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,50 +84,53 @@ func TestUpdateStatus(t *testing.T) {
 }
 
 func TestGetStatusHandler(t *testing.T) {
+	app := echo.New()
 	var store mockNetworkService
-	handler := Handler{NetworkService: &store}
-
-	app := fiber.New()
-	app.Get("/:id", handler.GetStatus)
+	h := Handler{NetworkService: &store}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
-
 	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
 	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "fail"))
-
 	ln, err := net.Listen("tcp", "[::]:12345")
 	assert.NoError(t, err)
 	defer ln.Close()
 
 	cases := []struct {
-		Desc       string
-		ID         string
-		URI        string
-		IsUp       bool
-		StatusCode int
+		ID    string
+		URI   string
+		IsUp  bool
+		Error error
 	}{
-		{Desc: "should be up", ID: "1", URI: "https://my.test.site", IsUp: true, StatusCode: 200},
-		{Desc: "should not be up", ID: "1", URI: "https://my.fail.site", IsUp: false, StatusCode: 500},
-		{Desc: "should not be up", ID: "1", URI: "https://^^invalidurl^^", IsUp: false, StatusCode: 500},
-		{Desc: "should be up", ID: "1", URI: "ssh://localhost:12345", IsUp: true, StatusCode: 200},
-		{Desc: "should not be up", ID: "1", URI: "ssh://localhost:1234", IsUp: false, StatusCode: 500},
-		{Desc: "should not be up", ID: "1", URI: "https://err.test.site", IsUp: false, StatusCode: 500},
-		{Desc: "should not be up", ID: "abc", URI: "https://err.test.site", IsUp: false, StatusCode: 500},
-		{Desc: "should not be up", ID: "", URI: "https://err.test.site", IsUp: false, StatusCode: 404},
+		{ID: "1", URI: "https://my.test.site", IsUp: true, Error: nil},
+		{ID: "1", URI: "https://my.fail.site", IsUp: false, Error: echo.ErrInternalServerError},
+		{ID: "1", URI: "https://^^invalidurl^^", IsUp: false, Error: echo.ErrInternalServerError},
+		{ID: "1", URI: "ssh://localhost:12345", IsUp: true, Error: nil},
+		{ID: "1", URI: "ssh://localhost:1234", IsUp: false, Error: echo.ErrInternalServerError},
+		{ID: "1", URI: "https://500.test.site", IsUp: false, Error: echo.ErrInternalServerError},
+		{ID: "abc", URI: "https://400.test.site", IsUp: false, Error: echo.ErrBadRequest},
+		{ID: "", URI: "https://no-id.test.site", IsUp: false, Error: echo.ErrBadRequest},
 	}
 
 	for _, c := range cases {
-
 		store.FindSiteFunc = func(site *interfaces.Site) {
 			site.ID = 1
 			site.URI = c.URI
 		}
 
-		req := httptest.NewRequest("GET", fmt.Sprintf("/%s", c.ID), nil)
-		resp, err := app.Test(req)
-		assert.NoError(t, err, fmt.Sprintf("%s %s", c.URI, c.Desc))
-		assert.Equal(t, c.StatusCode, resp.StatusCode, fmt.Sprintf("%s %s", c.URI, c.Desc))
+		req := httptest.NewRequest("GET", "/", nil)
+		rec := httptest.NewRecorder()
+		ctx := app.NewContext(req, rec)
+		ctx.SetPath("/:id")
+		ctx.SetParamNames("id")
+		ctx.SetParamValues(c.ID)
+		err := h.GetStatus(ctx)
+		if c.Error != nil {
+			assert.EqualError(t, err, c.Error.Error(), fmt.Sprintf("%s should return %s", c.URI, c.Error.Error()))
+		}
+		if c.IsUp {
+			assert.Contains(t, rec.Body.String(), `"isUp":true`, fmt.Sprintf("%s should be up", c.URI))
+		}
 	}
 }
 
@@ -146,17 +149,16 @@ func TestGetStatus(t *testing.T) {
 	defer ln.Close()
 
 	cases := []struct {
-		Desc  string
 		URI   string
 		IsUp  bool
 		Error bool
 	}{
-		{Desc: "should be up", URI: "https://my.test.site", IsUp: true, Error: false},
-		{Desc: "should not be up", URI: "https://my.fail.site", IsUp: false, Error: true},
-		{Desc: "should not be up", URI: "https://^^invalidurl^^", IsUp: false, Error: true},
-		{Desc: "should be up", URI: "ssh://localhost:12345", IsUp: true, Error: false},
-		{Desc: "should not be up", URI: "ssh://localhost:1234", IsUp: false, Error: true},
-		{Desc: "should not be up", URI: "https://err.test.site", IsUp: false, Error: true},
+		{URI: "https://my.test.site", IsUp: true, Error: false},
+		{URI: "https://my.fail.site", IsUp: false, Error: true},
+		{URI: "https://^^invalidurl^^", IsUp: false, Error: true},
+		{URI: "ssh://localhost:12345", IsUp: true, Error: false},
+		{URI: "ssh://localhost:1234", IsUp: false, Error: true},
+		{URI: "https://err.test.site", IsUp: false, Error: true},
 	}
 
 	for _, c := range cases {
@@ -170,6 +172,6 @@ func TestGetStatus(t *testing.T) {
 		} else {
 			assert.NoError(t, err)
 		}
-		assert.Equal(t, c.IsUp, res.IsUp, fmt.Sprintf("%s %s", c.URI, c.Desc))
+		assert.Equal(t, c.IsUp, res.IsUp, fmt.Sprintf("%s should have isUp=%t", c.URI, c.IsUp))
 	}
 }

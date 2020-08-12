@@ -2,12 +2,13 @@ package config
 
 import (
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
-	"github.com/gofiber/fiber"
+	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
-	"github.com/valyala/fasthttp"
 )
 
 func createConfigFile(cfgFile string) {
@@ -68,15 +69,19 @@ func TestConfigFile(t *testing.T) {
 }
 
 func TestGetAppConfig(t *testing.T) {
-	cfgFile := "./test-get-app-config.yml"
-	createConfigFile(cfgFile)
-	defer os.RemoveAll(cfgFile)
-	InitConfig("1.2.3", cfgFile)
-	app := fiber.New()
-	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
-	defer app.ReleaseCtx(ctx)
-	GetAppConfig(ctx)
-	assert.Equal(t, `{"version":"1.2.3"}`, string(ctx.Fasthttp.Response.Body()))
+	configuration = Configuration{
+		Version: "1.2.3",
+	}
+	app := echo.New()
+	app.GET("/", GetAppConfig)
+	req := httptest.NewRequest("GET", "/", nil)
+	rec := httptest.NewRecorder()
+	c := app.NewContext(req, rec)
+
+	if assert.NoError(t, GetAppConfig(c)) {
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, "{\"version\":\"1.2.3\"}\n", rec.Body.String())
+	}
 }
 
 func TestGetConfig(t *testing.T) {

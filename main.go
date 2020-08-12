@@ -5,29 +5,26 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/network"
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
-	"github.com/gofiber/cors"
-	"github.com/gofiber/fiber"
-	"github.com/gofiber/fiber/middleware"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
-func setupMiddleware(app *fiber.App) {
-	app.Use(cors.New())
-	app.Use(middleware.Compress())
-	app.Use(middleware.Logger())
+func setupMiddleware(app *echo.Echo) {
+	app.Use(middleware.CORS())
+	app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}\n",
+	}))
+	app.Use(middleware.Recover())
+	app.Use(middleware.Gzip())
 }
 
-func setupRoutes(app *fiber.App, store *database.DB) {
+func setupRoutes(app *echo.Echo, store *database.DB) {
 	handler := network.Handler{NetworkService: store}
-	app.Get("/api/appconfig", config.GetAppConfig)
-	app.Get("/api/network", handler.GetNetwork)
-	app.Post("/api/network", handler.NewNetwork)
-	app.Get("/api/status/:id", handler.GetStatus)
-	app.Static("/", "./ui/dist/ui", fiber.Static{
-		Compress: true,
-		Browse:   true,
-		Index:    "index.html",
-	})
-	app.Static("*", "./ui/dist/ui/index.html")
+	app.GET("/api/appconfig", config.GetAppConfig)
+	app.GET("/api/network", handler.GetNetwork)
+	app.POST("/api/network", handler.NewNetwork)
+	app.GET("/api/status/:id", handler.GetStatus)
+	app.Static("/", "./ui/dist/ui")
 }
 
 func initDatabase() database.DB {
@@ -45,12 +42,9 @@ func main() {
 	c := config.InitConfig(version, "")
 	store := initDatabase()
 
-	app := fiber.New()
+	app := echo.New()
 	setupMiddleware(app)
 	setupRoutes(app, &store)
 
-	err := app.Listen(c.Server.Port)
-	if err != nil {
-		panic(err)
-	}
+	app.Logger.Fatal(app.Start(":" + c.Server.Port))
 }
