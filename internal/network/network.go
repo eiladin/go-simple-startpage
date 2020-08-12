@@ -1,7 +1,6 @@
 package network
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
@@ -30,5 +29,5 @@ func (h Handler) NewNetwork(c echo.Context) error {
 
 	h.NetworkService.CreateNetwork(net)
 
-	return c.String(http.StatusCreated, fmt.Sprintf(`{"id":"%d"}`, net.ID))
+	return c.JSON(http.StatusCreated, interfaces.NetworkID{ID: net.ID})
 }

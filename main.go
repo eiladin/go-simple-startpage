@@ -23,19 +23,24 @@ func setupMiddleware(app *echo.Echo) {
 
 func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
 	handler := network.Handler{NetworkService: store}
+
 	app.GET("/api/appconfig", config.GetAppConfig).
 		AddResponse(http.StatusOK, "success", config.Configuration{}, nil)
+
 	app.GET("/api/network", handler.GetNetwork).
 		AddResponse(http.StatusOK, "success", interfaces.Network{}, nil).
 		AddResponse(http.StatusInternalServerError, "error", nil, nil)
+
 	app.POST("/api/network", handler.NewNetwork).
 		AddParamBody(interfaces.Network{}, "body", "Network to add to the store", true).
-		AddResponse(http.StatusOK, "success", struct{ id string }{}, nil)
+		AddResponse(http.StatusOK, "success", interfaces.NetworkID{}, nil)
+
 	app.GET("/api/status/:id", handler.GetStatus).
 		AddParamPath(0, "id", "ID of site to get status for").
 		AddResponse(http.StatusOK, "success", interfaces.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
+
 	app.Echo().Static("/", "./ui/dist/ui")
 }
 

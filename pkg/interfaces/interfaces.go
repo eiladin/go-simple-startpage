@@ -69,3 +69,8 @@ type SiteStatus struct {
 	IsUp bool   `json:"isUp"`
 	IP   string `json:"ip"`
 }
+
+// NetworkID struct
+type NetworkID struct {
+	ID uint `json:"id"`
+}
