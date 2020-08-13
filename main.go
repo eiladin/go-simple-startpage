@@ -19,6 +19,12 @@ func setupMiddleware(app *echo.Echo) {
 	}))
 	app.Use(middleware.Recover())
 	app.Use(middleware.Gzip())
+	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Index:  "index.html",
+		Root:   "ui/dist/ui",
+		Browse: false,
+		HTML5:  true,
+	}))
 }
 
 func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
@@ -40,8 +46,6 @@ func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
 		AddResponse(http.StatusOK, "success", interfaces.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
-
-	app.Echo().Static("/", "./ui/dist/ui")
 }
 
 func initDatabase() database.DB {
