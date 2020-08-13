@@ -1,8 +1,10 @@
 package network
 
 import (
+	"net/http"
+
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
-	"github.com/gofiber/fiber"
+	"github.com/labstack/echo/v4"
 )
 
 // Handler handles Network commands
@@ -11,24 +13,21 @@ type Handler struct {
 }
 
 // GetNetwork handles /api/network
-func (h Handler) GetNetwork(c *fiber.Ctx) {
+func (h Handler) GetNetwork(c echo.Context) error {
 	var net interfaces.Network
 	h.NetworkService.FindNetwork(&net)
-	c.Status(fiber.StatusOK).JSON(net)
+	return c.JSON(http.StatusOK, net)
 }
 
 // NewNetwork handles /api/network
-func (h Handler) NewNetwork(c *fiber.Ctx) {
-	var net interfaces.Network
-	err := c.BodyParser(&net)
-	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return
+func (h Handler) NewNetwork(c echo.Context) error {
+	net := new(interfaces.Network)
+	err := c.Bind(net)
+	if err != nil || (net.Network == "" && net.ID == 0 && net.Links == nil && net.Sites == nil) {
+		return echo.ErrBadRequest
 	}
 
-	h.NetworkService.CreateNetwork(&net)
+	h.NetworkService.CreateNetwork(net)
 
-	c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"id": net.ID,
-	})
+	return c.JSON(http.StatusCreated, interfaces.NetworkID{ID: net.ID})
 }

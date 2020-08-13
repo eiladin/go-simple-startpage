@@ -2,9 +2,10 @@ package config
 
 import (
 	"log"
+	"net/http"
 	"strings"
 
-	"github.com/gofiber/fiber"
+	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 )
 
@@ -42,6 +43,6 @@ func GetConfig() Configuration {
 }
 
 // GetAppConfig handles /api/appconfig
-func GetAppConfig(c *fiber.Ctx) {
-	c.JSON(configuration)
+func GetAppConfig(c echo.Context) error {
+	return c.JSON(http.StatusOK, configuration)
 }

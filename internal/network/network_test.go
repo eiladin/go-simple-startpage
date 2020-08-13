@@ -1,12 +1,14 @@
 package network
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
-	"github.com/gofiber/fiber"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
-	"github.com/valyala/fasthttp"
 )
 
 type mockNetworkService struct {
@@ -27,58 +29,54 @@ func (m *mockNetworkService) FindSite(site *interfaces.Site) {
 	m.FindSiteFunc(site)
 }
 
-func TestNewNetwork(t *testing.T) {
-	app := fiber.New()
-	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
+func getMockHandler() Handler {
+	store := mockNetworkService{
+		CreateNetworkFunc: func(net *interfaces.Network) {
+			net.ID = 12345
+		},
+		FindNetworkFunc: func(net *interfaces.Network) {
+			net.ID = 12345
+			net.Network = "test-network"
+		},
+	}
+	return Handler{NetworkService: &store}
+}
 
+func TestNewNetworkHandler(t *testing.T) {
+	app := echo.New()
 	body := `{ "network": "test-network" }`
 
-	ctx.Fasthttp.Request.Header.SetContentType(fiber.MIMEApplicationJSON)
-	ctx.Fasthttp.Request.SetBody([]byte(body))
-	ctx.Fasthttp.Request.Header.SetContentLength(len(body))
+	req := httptest.NewRequest("POST", "/", strings.NewReader(body))
+	req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := app.NewContext(req, rec)
 
-	defer app.ReleaseCtx(ctx)
-	var store mockNetworkService
-	store.CreateNetworkFunc = func(net *interfaces.Network) {
-		net.ID = 12345
+	h := getMockHandler()
+	if assert.NoError(t, h.NewNetwork(ctx)) {
+		assert.Equal(t, http.StatusCreated, rec.Code)
+		assert.Equal(t, "{\"id\":\"12345\"}", rec.Body.String())
 	}
-	handler := Handler{NetworkService: &store}
-	handler.NewNetwork(ctx)
-
-	assert.Equal(t, `{"id":12345}`, string(ctx.Fasthttp.Response.Body()))
 }
 
 func TestNewNetworkError(t *testing.T) {
-	app := fiber.New()
-	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
-
-	body := `{ "network": "test-network" }`
-
-	ctx.Fasthttp.Request.SetBody([]byte(body))
-	ctx.Fasthttp.Request.Header.SetContentLength(len(body))
-
-	defer app.ReleaseCtx(ctx)
-	var store mockNetworkService
-	store.CreateNetworkFunc = func(net *interfaces.Network) {
-		net.ID = 12345
-	}
-	handler := Handler{NetworkService: &store}
-	handler.NewNetwork(ctx)
-
-	assert.Equal(t, fasthttp.StatusBadRequest, ctx.Fasthttp.Response.StatusCode())
+	app := echo.New()
+	req := httptest.NewRequest("POST", "/", strings.NewReader(``))
+	req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	ctx := app.NewContext(req, rec)
+	h := getMockHandler()
+	err := h.NewNetwork(ctx)
+	assert.Error(t, err)
+	assert.EqualError(t, err, echo.ErrBadRequest.Error())
 }
 
-func TestFindNetwork(t *testing.T) {
-	app := fiber.New()
-	ctx := app.AcquireCtx(&fasthttp.RequestCtx{})
-	defer app.ReleaseCtx(ctx)
-	var store mockNetworkService
-	store.FindNetworkFunc = func(net *interfaces.Network) {
-		net.ID = 12345
-		net.Network = "test-network"
+func TestGetNetwork(t *testing.T) {
+	app := echo.New()
+	req := httptest.NewRequest("GET", "/", nil)
+	rec := httptest.NewRecorder()
+	ctx := app.NewContext(req, rec)
+	h := getMockHandler()
+	if assert.NoError(t, h.GetNetwork(ctx)) {
+		assert.Equal(t, "{\"network\":\"test-network\",\"links\":null,\"sites\":null}\n", rec.Body.String())
 	}
-	handler := Handler{NetworkService: &store}
-	handler.GetNetwork(ctx)
-
-	assert.Equal(t, `{"network":"test-network","links":null,"sites":null}`, string(ctx.Fasthttp.Response.Body()))
 }
