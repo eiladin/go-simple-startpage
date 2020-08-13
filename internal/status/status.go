@@ -1,4 +1,4 @@
-package network
+package status
 
 import (
 	"crypto/tls"
@@ -13,6 +13,11 @@ import (
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
 	"github.com/labstack/echo/v4"
 )
+
+// Handler handles Status commands
+type Handler struct {
+	SiteService interfaces.SiteService
+}
 
 func updateStatus(s *interfaces.Site) error {
 	url, err := url.Parse(s.URI)
@@ -69,7 +74,7 @@ func testHTTP(s *interfaces.Site, u *url.URL) error {
 
 func getStatus(h Handler, id uint) (*interfaces.Site, error) {
 	site := interfaces.Site{ID: id}
-	h.NetworkService.FindSite(&site)
+	h.SiteService.FindSite(&site)
 	err := updateStatus(&site)
 	if err != nil {
 		return &site, err
@@ -77,8 +82,8 @@ func getStatus(h Handler, id uint) (*interfaces.Site, error) {
 	return &site, nil
 }
 
-// GetStatus handles /api/status/:id
-func (h Handler) GetStatus(c echo.Context) error {
+// Get handles /api/status/:id
+func (h Handler) Get(c echo.Context) error {
 	val := c.Param("id")
 	id, err := strconv.Atoi(val)
 	if err != nil {

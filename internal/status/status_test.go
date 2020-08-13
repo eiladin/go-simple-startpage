@@ -1,4 +1,4 @@
-package network
+package status
 
 import (
 	"fmt"
@@ -12,6 +12,14 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
+
+type mockSiteService struct {
+	FindSiteFunc func(*interfaces.Site)
+}
+
+func (m *mockSiteService) FindSite(site *interfaces.Site) {
+	m.FindSiteFunc(site)
+}
 
 func TestHttp(t *testing.T) {
 	httpmock.ActivateNonDefault(&httpClient)
@@ -85,8 +93,8 @@ func TestUpdateStatus(t *testing.T) {
 
 func TestGetStatusHandler(t *testing.T) {
 	app := echo.New()
-	var store mockNetworkService
-	h := Handler{NetworkService: &store}
+	var store mockSiteService
+	h := Handler{SiteService: &store}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
@@ -124,7 +132,7 @@ func TestGetStatusHandler(t *testing.T) {
 		ctx.SetPath("/:id")
 		ctx.SetParamNames("id")
 		ctx.SetParamValues(c.ID)
-		err := h.GetStatus(ctx)
+		err := h.Get(ctx)
 		if c.Error != nil {
 			assert.EqualError(t, err, c.Error.Error(), fmt.Sprintf("%s should return %s", c.URI, c.Error.Error()))
 		}
@@ -135,8 +143,8 @@ func TestGetStatusHandler(t *testing.T) {
 }
 
 func TestGetStatus(t *testing.T) {
-	var store mockNetworkService
-	handler := Handler{NetworkService: &store}
+	var store mockSiteService
+	handler := Handler{SiteService: &store}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()

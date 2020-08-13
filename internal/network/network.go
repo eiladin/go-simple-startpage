@@ -12,15 +12,15 @@ type Handler struct {
 	NetworkService interfaces.NetworkService
 }
 
-// GetNetwork handles /api/network
-func (h Handler) GetNetwork(c echo.Context) error {
+// Get handles /api/network
+func (h Handler) Get(c echo.Context) error {
 	var net interfaces.Network
 	h.NetworkService.FindNetwork(&net)
 	return c.JSON(http.StatusOK, net)
 }
 
-// NewNetwork handles /api/network
-func (h Handler) NewNetwork(c echo.Context) error {
+// Create handles /api/network
+func (h Handler) Create(c echo.Context) error {
 	net := new(interfaces.Network)
 	err := c.Bind(net)
 	if err != nil || (net.Network == "" && net.ID == 0 && net.Links == nil && net.Sites == nil) {
