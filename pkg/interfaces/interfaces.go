@@ -10,6 +10,9 @@ import (
 type NetworkService interface {
 	CreateNetwork(net *Network)
 	FindNetwork(net *Network)
+}
+
+type SiteService interface {
 	FindSite(site *Site)
 }
 

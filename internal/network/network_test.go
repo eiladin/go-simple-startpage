@@ -14,7 +14,6 @@ import (
 type mockNetworkService struct {
 	CreateNetworkFunc func(*interfaces.Network)
 	FindNetworkFunc   func(*interfaces.Network)
-	FindSiteFunc      func(*interfaces.Site)
 }
 
 func (m *mockNetworkService) CreateNetwork(net *interfaces.Network) {
@@ -23,10 +22,6 @@ func (m *mockNetworkService) CreateNetwork(net *interfaces.Network) {
 
 func (m *mockNetworkService) FindNetwork(net *interfaces.Network) {
 	m.FindNetworkFunc(net)
-}
-
-func (m *mockNetworkService) FindSite(site *interfaces.Site) {
-	m.FindSiteFunc(site)
 }
 
 func getMockHandler() Handler {
@@ -42,7 +37,7 @@ func getMockHandler() Handler {
 	return Handler{NetworkService: &store}
 }
 
-func TestNewNetworkHandler(t *testing.T) {
+func TestCreateHandler(t *testing.T) {
 	app := echo.New()
 	body := `{ "network": "test-network" }`
 
@@ -52,31 +47,31 @@ func TestNewNetworkHandler(t *testing.T) {
 	ctx := app.NewContext(req, rec)
 
 	h := getMockHandler()
-	if assert.NoError(t, h.NewNetwork(ctx)) {
+	if assert.NoError(t, h.Create(ctx)) {
 		assert.Equal(t, http.StatusCreated, rec.Code)
-		assert.Equal(t, "{\"id\":\"12345\"}", rec.Body.String())
+		assert.Equal(t, "{\"id\":12345}\n", rec.Body.String())
 	}
 }
 
-func TestNewNetworkError(t *testing.T) {
+func TestCreateError(t *testing.T) {
 	app := echo.New()
 	req := httptest.NewRequest("POST", "/", strings.NewReader(``))
 	req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
 	h := getMockHandler()
-	err := h.NewNetwork(ctx)
+	err := h.Create(ctx)
 	assert.Error(t, err)
 	assert.EqualError(t, err, echo.ErrBadRequest.Error())
 }
 
-func TestGetNetwork(t *testing.T) {
+func TestGet(t *testing.T) {
 	app := echo.New()
 	req := httptest.NewRequest("GET", "/", nil)
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
 	h := getMockHandler()
-	if assert.NoError(t, h.GetNetwork(ctx)) {
+	if assert.NoError(t, h.Get(ctx)) {
 		assert.Equal(t, "{\"network\":\"test-network\",\"links\":null,\"sites\":null}\n", rec.Body.String())
 	}
 }
