@@ -11,6 +11,7 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,7 +20,7 @@ type Handler struct {
 	SiteService interfaces.SiteService
 }
 
-func updateStatus(s *interfaces.Site) error {
+func updateStatus(s *model.Site) error {
 	url, err := url.Parse(s.URI)
 	if err != nil {
 		return fmt.Errorf("Unable to parse URI: %s", s.URI)
@@ -40,7 +41,7 @@ func getIP(u *url.URL) string {
 	return ips[0].String()
 }
 
-func testSSH(s *interfaces.Site, u *url.URL) error {
+func testSSH(s *model.Site, u *url.URL) error {
 	conn, err := net.Dial("tcp", u.Host)
 	if err != nil {
 		return err
@@ -56,9 +57,9 @@ var httpClient = http.Client{
 	},
 }
 
-func testHTTP(s *interfaces.Site, u *url.URL) error {
+func testHTTP(s *model.Site, u *url.URL) error {
 	c := config.GetConfig()
-	httpClient.Timeout = time.Millisecond * time.Duration(c.HealthCheck.Timeout)
+	httpClient.Timeout = time.Millisecond * time.Duration(c.Timeout)
 
 	r, err := httpClient.Get(u.String())
 	if err != nil {
@@ -72,8 +73,8 @@ func testHTTP(s *interfaces.Site, u *url.URL) error {
 	return nil
 }
 
-func getStatus(h Handler, id uint) (*interfaces.Site, error) {
-	site := interfaces.Site{ID: id}
+func getStatus(h Handler, id uint) (*model.Site, error) {
+	site := model.Site{ID: id}
 	h.SiteService.FindSite(&site)
 	err := updateStatus(&site)
 	if err != nil {
@@ -93,7 +94,7 @@ func (h Handler) Get(c echo.Context) error {
 	if err != nil {
 		return echo.ErrInternalServerError
 	}
-	res := interfaces.SiteStatus{
+	res := model.SiteStatus{
 		ID:   site.ID,
 		IsUp: site.IsUp,
 		IP:   site.IP,

@@ -6,30 +6,30 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockNetworkService struct {
-	CreateNetworkFunc func(*interfaces.Network)
-	FindNetworkFunc   func(*interfaces.Network)
+	CreateNetworkFunc func(*model.Network)
+	FindNetworkFunc   func(*model.Network)
 }
 
-func (m *mockNetworkService) CreateNetwork(net *interfaces.Network) {
+func (m *mockNetworkService) CreateNetwork(net *model.Network) {
 	m.CreateNetworkFunc(net)
 }
 
-func (m *mockNetworkService) FindNetwork(net *interfaces.Network) {
+func (m *mockNetworkService) FindNetwork(net *model.Network) {
 	m.FindNetworkFunc(net)
 }
 
 func getMockHandler() Handler {
 	store := mockNetworkService{
-		CreateNetworkFunc: func(net *interfaces.Network) {
+		CreateNetworkFunc: func(net *model.Network) {
 			net.ID = 12345
 		},
-		FindNetworkFunc: func(net *interfaces.Network) {
+		FindNetworkFunc: func(net *model.Network) {
 			net.ID = 12345
 			net.Network = "test-network"
 		},

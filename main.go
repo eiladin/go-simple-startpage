@@ -1,13 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/network"
 	"github.com/eiladin/go-simple-startpage/internal/status"
-	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -36,26 +37,23 @@ func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
 		AddResponse(http.StatusOK, "success", config.Configuration{}, nil)
 
 	app.GET("/api/network", netHandler.Get).
-		AddResponse(http.StatusOK, "success", interfaces.Network{}, nil).
+		AddResponse(http.StatusOK, "success", model.Network{}, nil).
 		AddResponse(http.StatusInternalServerError, "error", nil, nil)
 
 	app.POST("/api/network", netHandler.Create).
-		AddParamBody(interfaces.Network{}, "body", "Network to add to the store", true).
-		AddResponse(http.StatusOK, "success", interfaces.NetworkID{}, nil)
+		AddParamBody(model.Network{}, "body", "Network to add to the store", true).
+		AddResponse(http.StatusOK, "success", model.NetworkID{}, nil)
 
 	app.GET("/api/status/:id", statusHandler.Get).
 		AddParamPath(0, "id", "ID of site to get status for").
-		AddResponse(http.StatusOK, "success", interfaces.SiteStatus{}, nil).
+		AddResponse(http.StatusOK, "success", model.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
 }
 
 func initDatabase() database.DB {
 	conn := database.InitDB()
-	conn.AutoMigrate(&interfaces.Network{})
-	conn.AutoMigrate(&interfaces.Site{})
-	conn.AutoMigrate(&interfaces.Tag{})
-	conn.AutoMigrate(&interfaces.Link{})
+	database.MigrateDB(conn)
 	return database.DB{DB: conn}
 }
 
@@ -81,5 +79,5 @@ func main() {
 	setupMiddleware(app.Echo())
 	setupRoutes(app, &store)
 
-	app.Echo().Logger.Fatal(app.Echo().Start(":" + c.Server.Port))
+	app.Echo().Logger.Fatal(app.Echo().Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

@@ -7,17 +7,17 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockSiteService struct {
-	FindSiteFunc func(*interfaces.Site)
+	FindSiteFunc func(*model.Site)
 }
 
-func (m *mockSiteService) FindSite(site *interfaces.Site) {
+func (m *mockSiteService) FindSite(site *model.Site) {
 	m.FindSiteFunc(site)
 }
 
@@ -27,7 +27,7 @@ func TestHttp(t *testing.T) {
 
 	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
 
-	site := interfaces.Site{}
+	site := model.Site{}
 	url, err := url.Parse("https://my.test.site")
 	assert.NoError(t, err)
 	err = testHTTP(&site, url)
@@ -40,7 +40,7 @@ func TestTCP(t *testing.T) {
 	assert.NoError(t, err)
 	defer ln.Close()
 
-	site := interfaces.Site{}
+	site := model.Site{}
 	url, err := url.Parse("ssh://localhost:1234")
 	assert.NoError(t, err)
 	err = testSSH(&site, url)
@@ -57,16 +57,16 @@ func TestGetIP(t *testing.T) {
 
 func TestUpdateStatus(t *testing.T) {
 	cases := []struct {
-		Site     interfaces.Site
+		Site     model.Site
 		IsUp     bool
 		HasError bool
 	}{
-		{Site: interfaces.Site{URI: "https://my.test.site"}, IsUp: true, HasError: false},
-		{Site: interfaces.Site{URI: "https://my.fail.site"}, IsUp: false, HasError: true},
-		{Site: interfaces.Site{URI: "https://^^invalidurl^^"}, IsUp: false, HasError: true},
-		{Site: interfaces.Site{URI: "ssh://localhost:12345"}, IsUp: true, HasError: false},
-		{Site: interfaces.Site{URI: "ssh://localhost:1234"}, IsUp: false, HasError: true},
-		{Site: interfaces.Site{URI: "https://err.test.site"}, IsUp: false, HasError: true},
+		{Site: model.Site{URI: "https://my.test.site"}, IsUp: true, HasError: false},
+		{Site: model.Site{URI: "https://my.fail.site"}, IsUp: false, HasError: true},
+		{Site: model.Site{URI: "https://^^invalidurl^^"}, IsUp: false, HasError: true},
+		{Site: model.Site{URI: "ssh://localhost:12345"}, IsUp: true, HasError: false},
+		{Site: model.Site{URI: "ssh://localhost:1234"}, IsUp: false, HasError: true},
+		{Site: model.Site{URI: "https://err.test.site"}, IsUp: false, HasError: true},
 	}
 
 	httpmock.ActivateNonDefault(&httpClient)
@@ -121,7 +121,7 @@ func TestGetStatusHandler(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		store.FindSiteFunc = func(site *interfaces.Site) {
+		store.FindSiteFunc = func(site *model.Site) {
 			site.ID = 1
 			site.URI = c.URI
 		}
@@ -170,7 +170,7 @@ func TestGetStatus(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		store.FindSiteFunc = func(site *interfaces.Site) {
+		store.FindSiteFunc = func(site *model.Site) {
 			site.ID = 1
 			site.URI = c.URI
 		}

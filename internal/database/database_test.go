@@ -1,9 +1,11 @@
 package database
 
 import (
+	"os"
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,17 +27,61 @@ func TestGetDSN(t *testing.T) {
 
 	for _, c := range cases {
 		cfg := &config.Configuration{
-			Database: config.DatabaseConfiguration{
-				Driver:   c.Driver,
-				Dbname:   c.Dbname,
-				Username: c.Username,
-				Password: c.Password,
-				Host:     c.Host,
-				Port:     c.Port,
-			},
+			DBDriver:   c.Driver,
+			DBName:     c.Dbname,
+			DBUsername: c.Username,
+			DBPassword: c.Password,
+			DBHost:     c.Host,
+			DBPort:     c.Port,
 		}
 
 		dsn := getDSN(cfg)
 		assert.Equal(t, c.Expected, dsn.Name())
 	}
+}
+
+func TestDBFunctions(t *testing.T) {
+	os.Setenv("GSS_DB_DRIVER", "sqlite")
+	os.Setenv("GSS_DB_NAME", ":memory:")
+	config.InitConfig("1.2.3", "./not-found.yaml")
+	conn := InitDB()
+	MigrateDB(conn)
+	db := DB{DB: conn}
+
+	net := model.Network{
+		Network: "test",
+		Links: []model.Link{
+			{Name: "test-link-1"},
+			{Name: "test-link-2"},
+		},
+		Sites: []model.Site{
+			{FriendlyName: "test-site-1"},
+			{FriendlyName: "test-site-2"},
+		},
+	}
+	db.CreateNetwork(&net)
+	// CreateNetwork assertions
+	assert.Equal(t, uint(1), net.ID)
+	assert.Equal(t, uint(1), net.Sites[0].ID)
+	assert.Equal(t, uint(2), net.Sites[1].ID)
+	assert.Equal(t, uint(1), net.Links[0].ID)
+	assert.Equal(t, uint(2), net.Links[1].ID)
+
+	findNet := model.Network{
+		ID: 1,
+	}
+	db.FindNetwork(&findNet)
+	// FindNetwork assertions
+	assert.Equal(t, "test", findNet.Network)
+	assert.Equal(t, "test-site-1", findNet.Sites[0].FriendlyName)
+
+	findSite := model.Site{
+		ID: 1,
+	}
+	db.FindSite(&findSite)
+	// FindSite assertions
+	assert.Equal(t, "test-site-1", findSite.FriendlyName)
+
+	os.Unsetenv("GSS_DB_DRIVER")
+	os.Unsetenv("GSS_DB_NAME")
 }
