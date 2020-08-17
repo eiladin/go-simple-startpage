@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -10,16 +11,21 @@ import (
 
 // Configuration structure
 type Configuration struct {
-	DBDriver   string `mapstructure:"db_driver" yaml:"db_driver" json:"-"`
-	DBName     string `mapstructure:"db_name" yaml:"db_name" json:"-"`
-	DBUsername string `mapstructure:"db_username" yaml:"db_username" json:"-"`
-	DBPassword string `mapstructure:"db_password" yaml:"db_password" json:"-"`
-	DBHost     string `mapstructure:"db_host" yaml:"dh_host" json:"-"`
-	DBPort     string `mapstructure:"db_port" yaml:"dh_port" json:"-"`
-	DBLog      bool   `mapstructure:"db_log" yaml:"dh_log" json:"-"`
-	ListenPort int    `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
-	Timeout    int    `mapstructure:"timeout" yaml:"timeout" json:"-"`
-	Version    string `json:"version"`
+	Database   Database `json:"-"`
+	ListenPort int      `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
+	Timeout    int      `yaml:"timeout" json:"-"`
+	Version    string   `json:"version"`
+}
+
+// Database structure
+type Database struct {
+	Driver   string
+	Name     string
+	Username string
+	Password string
+	Host     string
+	Port     string
+	Log      bool
 }
 
 var configuration Configuration
@@ -34,15 +40,17 @@ func InitConfig(version string, cfgFile string) Configuration {
 		viper.AddConfigPath(".")
 	}
 	viper.SetEnvPrefix("GSS")
-	_ = viper.BindEnv("DB_DRIVER")
-	_ = viper.BindEnv("DB_NAME")
-	_ = viper.BindEnv("DB_USERNAME")
-	_ = viper.BindEnv("DB_PASSWORD")
-	_ = viper.BindEnv("DB_HOST")
-	_ = viper.BindEnv("DB_PORT")
-	_ = viper.BindEnv("DB_LOG")
-	_ = viper.BindEnv("LISTEN_PORT")
-	_ = viper.BindEnv("TIMEOUT")
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
+	viper.BindEnv("DATABASE.DRIVER")
+	viper.BindEnv("DATABASE.NAME")
+	viper.BindEnv("DATABASE.USERNAME")
+	viper.BindEnv("DATABASE.PASSWORD")
+	viper.BindEnv("DATABASE.HOST")
+	viper.BindEnv("DATABASE.PORT")
+	viper.BindEnv("DATABASE.LOG")
+	viper.BindEnv("LISTEN_PORT")
+	viper.BindEnv("TIMEOUT")
 
 	viper.ReadInConfig()
 	viper.AutomaticEnv()

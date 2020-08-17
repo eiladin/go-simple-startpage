@@ -30,7 +30,7 @@ func InitDB() *gorm.DB {
 
 func getConfig(c *config.Configuration) *gorm.Config {
 	llevel := logger.Silent
-	if c.DBLog {
+	if c.Database.Log {
 		llevel = logger.Info
 	}
 	return &gorm.Config{
@@ -44,12 +44,12 @@ func getConfig(c *config.Configuration) *gorm.Config {
 }
 
 func getDSN(c *config.Configuration) gorm.Dialector {
-	driver := strings.ToLower(c.DBDriver)
-	database := c.DBName
-	username := c.DBUsername
-	password := c.DBPassword
-	host := c.DBHost
-	port := c.DBPort
+	driver := strings.ToLower(c.Database.Driver)
+	database := c.Database.Name
+	username := c.Database.Username
+	password := c.Database.Password
+	host := c.Database.Host
+	port := c.Database.Port
 	if driver == "sqlite" {
 		return sqlite.Open(database)
 	} else if driver == "postgres" {

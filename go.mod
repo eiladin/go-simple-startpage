@@ -7,8 +7,10 @@ require (
 	github.com/jackc/pgproto3/v2 v2.0.4 // indirect
 	github.com/jackc/pgx/v4 v4.8.1 // indirect
 	github.com/jarcoal/httpmock v1.0.5
+	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/mattn/go-colorable v0.1.7 // indirect
+	github.com/ory/viper v1.7.5
 	github.com/pangpanglabs/echoswagger/v2 v2.1.0
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
