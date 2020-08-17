@@ -8,18 +8,19 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func createConfigFile(cfgFile string) {
-	content := []byte(`
-db_driver: "sqlite"
-db_name: "dbname.db"
-db_username: "user"
-db_password: "pass"
-db_host: "host"
-db_port: "1234"
-db_log: "false"
+	content := []byte(`database:
+  driver: "sqlite"
+  name: "dbname.db"
+  username: "user"
+  password: "pass"
+  host: "host"
+  port: "1234"
+  log: "false"
 listen_port: "3000"
 timeout: "2000"
 `)
@@ -28,74 +29,78 @@ timeout: "2000"
 }
 
 func TestEnvConfig(t *testing.T) {
+	viper.Reset()
 	cfgFile := "./not-found.yaml"
-	os.Setenv("GSS_DB_DRIVER", "driver")
-	os.Setenv("GSS_DB_NAME", "name")
-	os.Setenv("GSS_DB_USERNAME", "username")
-	os.Setenv("GSS_DB_PASSWORD", "password")
-	os.Setenv("GSS_DB_HOST", "host")
-	os.Setenv("GSS_DB_PORT", "1")
-	os.Setenv("GSS_DB_LOG", "false")
+	os.Setenv("GSS_DATABASE_DRIVER", "driver")
+	os.Setenv("GSS_DATABASE_NAME", "name")
+	os.Setenv("GSS_DATABASE_USERNAME", "username")
+	os.Setenv("GSS_DATABASE_PASSWORD", "password")
+	os.Setenv("GSS_DATABASE_HOST", "host")
+	os.Setenv("GSS_DATABASE_PORT", "1")
+	os.Setenv("GSS_DATABASE_LOG", "false")
 	os.Setenv("GSS_LISTEN_PORT", "2")
 	os.Setenv("GSS_TIMEOUT", "3")
 	c := InitConfig("1.2.3", cfgFile)
-	assert.Equal(t, "driver", c.DBDriver)
-	assert.Equal(t, "name", c.DBName)
-	assert.Equal(t, "username", c.DBUsername)
-	assert.Equal(t, "password", c.DBPassword)
-	assert.Equal(t, "host", c.DBHost)
-	assert.Equal(t, "1", c.DBPort)
-	assert.Equal(t, false, c.DBLog)
+	assert.Equal(t, "driver", c.Database.Driver)
+	assert.Equal(t, "name", c.Database.Name)
+	assert.Equal(t, "username", c.Database.Username)
+	assert.Equal(t, "password", c.Database.Password)
+	assert.Equal(t, "host", c.Database.Host)
+	assert.Equal(t, "1", c.Database.Port)
+	assert.Equal(t, false, c.Database.Log)
 	assert.Equal(t, 2, c.ListenPort)
 	assert.Equal(t, 3, c.Timeout)
-	os.Unsetenv("GSS_DB_DRIVER")
-	os.Unsetenv("GSS_DB_NAME")
-	os.Unsetenv("GSS_DB_USERNAME")
-	os.Unsetenv("GSS_DB_PASSWORD")
-	os.Unsetenv("GSS_DB_HOST")
-	os.Unsetenv("GSS_DB_PORT")
-	os.Unsetenv("GSS_DB_LOG")
+	os.Unsetenv("GSS_DATABASE_DRIVER")
+	os.Unsetenv("GSS_DATABASE_NAME")
+	os.Unsetenv("GSS_DATABASE_USERNAME")
+	os.Unsetenv("GSS_DATABASE_PASSWORD")
+	os.Unsetenv("GSS_DATABASE_HOST")
+	os.Unsetenv("GSS_DATABASE_PORT")
+	os.Unsetenv("GSS_DATABASE_LOG")
 	os.Unsetenv("GSS_LISTEN_PORT")
 	os.Unsetenv("GSS_TIMEOUT")
 }
 
 func TestDefaultConfig(t *testing.T) {
+	viper.Reset()
 	cfgFile := "./config.yaml"
 	createConfigFile(cfgFile)
 	defer os.RemoveAll(cfgFile)
 
 	c := InitConfig("1.2.3", "")
-	assert.Equal(t, "sqlite", c.DBDriver)
-	assert.Equal(t, "dbname.db", c.DBName)
-	assert.Equal(t, "user", c.DBUsername)
-	assert.Equal(t, "pass", c.DBPassword)
-	assert.Equal(t, "host", c.DBHost)
-	assert.Equal(t, "1234", c.DBPort)
-	assert.Equal(t, false, c.DBLog)
+	assert.Equal(t, "sqlite", c.Database.Driver)
+	assert.Equal(t, "dbname.db", c.Database.Name)
+	assert.Equal(t, "user", c.Database.Username)
+	assert.Equal(t, "pass", c.Database.Password)
+	assert.Equal(t, "host", c.Database.Host)
+	assert.Equal(t, "1234", c.Database.Port)
+	assert.Equal(t, false, c.Database.Log)
 	assert.Equal(t, 3000, c.ListenPort)
 	assert.Equal(t, 2000, c.Timeout)
 	assert.Equal(t, "1.2.3", c.Version)
 }
 
 func TestConfigFile(t *testing.T) {
+	viper.Reset()
 	cfgFile := "./test-config-file.yml"
 	createConfigFile(cfgFile)
 	defer os.RemoveAll(cfgFile)
 
 	c := InitConfig("1.2.3", cfgFile)
-	assert.Equal(t, "sqlite", c.DBDriver)
-	assert.Equal(t, "dbname.db", c.DBName)
-	assert.Equal(t, "user", c.DBUsername)
-	assert.Equal(t, "pass", c.DBPassword)
-	assert.Equal(t, "host", c.DBHost)
-	assert.Equal(t, "1234", c.DBPort)
-	assert.Equal(t, false, c.DBLog)
+	assert.Equal(t, "sqlite", c.Database.Driver)
+	assert.Equal(t, "dbname.db", c.Database.Name)
+	assert.Equal(t, "user", c.Database.Username)
+	assert.Equal(t, "pass", c.Database.Password)
+	assert.Equal(t, "host", c.Database.Host)
+	assert.Equal(t, "1234", c.Database.Port)
+	assert.Equal(t, false, c.Database.Log)
 	assert.Equal(t, 3000, c.ListenPort)
 	assert.Equal(t, 2000, c.Timeout)
 	assert.Equal(t, "1.2.3", c.Version)
 }
 
 func TestGetAppConfig(t *testing.T) {
+	viper.Reset()
 	configuration = Configuration{
 		Version: "1.2.3",
 	}
@@ -112,18 +117,19 @@ func TestGetAppConfig(t *testing.T) {
 }
 
 func TestGetConfig(t *testing.T) {
+	viper.Reset()
 	cfgFile := "./test-get-config.yml"
 	createConfigFile(cfgFile)
 	defer os.RemoveAll(cfgFile)
 	InitConfig("1.2.3", cfgFile)
 	c := GetConfig()
-	assert.Equal(t, "sqlite", c.DBDriver)
-	assert.Equal(t, "dbname.db", c.DBName)
-	assert.Equal(t, "user", c.DBUsername)
-	assert.Equal(t, "pass", c.DBPassword)
-	assert.Equal(t, "host", c.DBHost)
-	assert.Equal(t, "1234", c.DBPort)
-	assert.Equal(t, false, c.DBLog)
+	assert.Equal(t, "sqlite", c.Database.Driver)
+	assert.Equal(t, "dbname.db", c.Database.Name)
+	assert.Equal(t, "user", c.Database.Username)
+	assert.Equal(t, "pass", c.Database.Password)
+	assert.Equal(t, "host", c.Database.Host)
+	assert.Equal(t, "1234", c.Database.Port)
+	assert.Equal(t, false, c.Database.Log)
 	assert.Equal(t, 3000, c.ListenPort)
 	assert.Equal(t, 2000, c.Timeout)
 	assert.Equal(t, "1.2.3", c.Version)

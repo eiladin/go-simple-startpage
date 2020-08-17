@@ -27,12 +27,14 @@ func TestGetDSN(t *testing.T) {
 
 	for _, c := range cases {
 		cfg := &config.Configuration{
-			DBDriver:   c.Driver,
-			DBName:     c.Dbname,
-			DBUsername: c.Username,
-			DBPassword: c.Password,
-			DBHost:     c.Host,
-			DBPort:     c.Port,
+			Database: config.Database{
+				Driver:   c.Driver,
+				Name:     c.Dbname,
+				Username: c.Username,
+				Password: c.Password,
+				Host:     c.Host,
+				Port:     c.Port,
+			},
 		}
 
 		dsn := getDSN(cfg)
@@ -41,8 +43,8 @@ func TestGetDSN(t *testing.T) {
 }
 
 func TestDBFunctions(t *testing.T) {
-	os.Setenv("GSS_DB_DRIVER", "sqlite")
-	os.Setenv("GSS_DB_NAME", ":memory:")
+	os.Setenv("GSS_DATABASE_DRIVER", "sqlite")
+	os.Setenv("GSS_DATABASE_NAME", ":memory:")
 	config.InitConfig("1.2.3", "./not-found.yaml")
 	conn := InitDB()
 	MigrateDB(conn)
@@ -82,6 +84,6 @@ func TestDBFunctions(t *testing.T) {
 	// FindSite assertions
 	assert.Equal(t, "test-site-1", findSite.FriendlyName)
 
-	os.Unsetenv("GSS_DB_DRIVER")
-	os.Unsetenv("GSS_DB_NAME")
+	os.Unsetenv("GSS_DATABASE_DRIVER")
+	os.Unsetenv("GSS_DATABASE_NAME")
 }
