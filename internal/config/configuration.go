@@ -13,7 +13,7 @@ import (
 type Configuration struct {
 	Database   Database `json:"-"`
 	ListenPort int      `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
-	Timeout    int      `yaml:"timeout" json:"-"`
+	Timeout    int      `json:"-"`
 	Version    string   `json:"version"`
 }
 

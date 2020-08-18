@@ -17,7 +17,6 @@ type Site struct {
 	URI            string         `json:"uri"`
 	Icon           string         `json:"icon"`
 	IsSupportedApp bool           `json:"isSupportedApp"`
-	SortOrder      int            `json:"sortOrder"`
 	Tags           []Tag          `json:"tags" gorm:"foreignkey:SiteID"`
 	IP             string         `json:"ip" gorm:"-"`
 	IsUp           bool           `json:"isUp" gorm:"-"`

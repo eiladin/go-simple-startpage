@@ -15,5 +15,4 @@ type Link struct {
 	NetworkID uint           `json:"-"`
 	Name      string         `json:"name"`
 	URI       string         `json:"uri"`
-	SortOrder int            `json:"sortOrder"`
 }

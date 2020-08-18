@@ -27,29 +27,4 @@ export class Config {
   public network = '';
   public sites: Site[] = [];
   public links: Link[] = [];
-
-  /**
-   * Internal method to sort Links by sortOrder
-   */
-  private sortLinks() {
-    this.links.sort((a, b) => {
-      if (a.sortOrder < b.sortOrder) { return -1; }
-      if (a.sortOrder > b.sortOrder) { return 1; }
-      return 0;
-    });
-  }
-
-  private sortSites() {
-    this.sites.sort((a, b) => {
-      if (a.sortOrder < b.sortOrder) { return -1; }
-      if (a.sortOrder > b.sortOrder) { return 1; }
-      return 0;
-    });
-  }
-
-  public sortChildren() {
-    this.sortLinks();
-    this.sortSites();
-  }
-
 }

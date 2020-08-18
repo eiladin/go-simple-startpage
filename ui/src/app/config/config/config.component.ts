@@ -63,7 +63,6 @@ export class ConfigComponent implements OnInit {
   private getConfig() {
     this.configService.get().subscribe((res: any) => {
       this.config = new Config(res.network, res.links, res.sites);
-      this.config.sortChildren();
       this.panelOpenState = [];
       for (let site of this.config.sites) {
         this.panelOpenState.push(false);

@@ -27,12 +27,6 @@ export class ConfigService {
             return 0;
         });
 
-        config.sites.forEach((curr, idx, arr) => {
-            curr.sortOrder = idx;
-        });
-        config.links.forEach((curr, idx, arr) => {
-            curr.sortOrder = idx;
-        });
         return this.http.post<Config>(this.configApi, config)
             .pipe(
                 mergeMap((val, idx) => {
