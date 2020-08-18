@@ -2,6 +2,7 @@ package network
 
 import (
 	"net/http"
+	"sort"
 
 	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
@@ -17,6 +18,9 @@ type Handler struct {
 func (h Handler) Get(c echo.Context) error {
 	var net model.Network
 	h.NetworkService.FindNetwork(&net)
+	sort.Slice(net.Sites, func(p, q int) bool {
+		return net.Sites[p].FriendlyName < net.Sites[q].FriendlyName
+	})
 	return c.JSON(http.StatusOK, net)
 }
 

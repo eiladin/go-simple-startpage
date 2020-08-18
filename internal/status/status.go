@@ -90,10 +90,7 @@ func (h Handler) Get(c echo.Context) error {
 	if err != nil {
 		return echo.ErrBadRequest
 	}
-	site, err := getStatus(h, uint(id))
-	if err != nil {
-		return echo.ErrInternalServerError
-	}
+	site, _ := getStatus(h, uint(id))
 	res := model.SiteStatus{
 		ID:   site.ID,
 		IsUp: site.IsUp,
