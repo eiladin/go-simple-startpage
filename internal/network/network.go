@@ -4,20 +4,25 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 )
 
+// Store interface
+type Store interface {
+	CreateNetwork(net *model.Network)
+	GetNetwork(net *model.Network)
+}
+
 // Handler handles Network commands
 type Handler struct {
-	NetworkService interfaces.NetworkService
+	Store Store
 }
 
 // Get handles /api/network
 func (h Handler) Get(c echo.Context) error {
 	var net model.Network
-	h.NetworkService.FindNetwork(&net)
+	h.Store.GetNetwork(&net)
 	sort.Slice(net.Sites, func(p, q int) bool {
 		return net.Sites[p].FriendlyName < net.Sites[q].FriendlyName
 	})
@@ -32,7 +37,7 @@ func (h Handler) Create(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	h.NetworkService.CreateNetwork(net)
+	h.Store.CreateNetwork(net)
 
 	return c.JSON(http.StatusCreated, model.NetworkID{ID: net.ID})
 }

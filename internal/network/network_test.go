@@ -11,30 +11,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type mockNetworkService struct {
-	CreateNetworkFunc func(*model.Network)
-	FindNetworkFunc   func(*model.Network)
+type mockNetworkStore struct {
+	CreateFunc func(*model.Network)
+	GetFunc    func(*model.Network)
 }
 
-func (m *mockNetworkService) CreateNetwork(net *model.Network) {
-	m.CreateNetworkFunc(net)
+func (m *mockNetworkStore) CreateNetwork(net *model.Network) {
+	m.CreateFunc(net)
 }
 
-func (m *mockNetworkService) FindNetwork(net *model.Network) {
-	m.FindNetworkFunc(net)
+func (m *mockNetworkStore) GetNetwork(net *model.Network) {
+	m.GetFunc(net)
 }
 
 func getMockHandler() Handler {
-	store := mockNetworkService{
-		CreateNetworkFunc: func(net *model.Network) {
+	store := mockNetworkStore{
+		CreateFunc: func(net *model.Network) {
 			net.ID = 12345
 		},
-		FindNetworkFunc: func(net *model.Network) {
+		GetFunc: func(net *model.Network) {
 			net.ID = 12345
 			net.Network = "test-network"
 		},
 	}
-	return Handler{NetworkService: &store}
+	return Handler{Store: &store}
 }
 
 func TestCreateHandler(t *testing.T) {
@@ -48,8 +48,8 @@ func TestCreateHandler(t *testing.T) {
 
 	h := getMockHandler()
 	if assert.NoError(t, h.Create(ctx)) {
-		assert.Equal(t, http.StatusCreated, rec.Code)
-		assert.Equal(t, "{\"id\":12345}\n", rec.Body.String())
+		assert.Equal(t, http.StatusCreated, rec.Code, "Create should return a 201")
+		assert.Equal(t, "{\"id\":12345}\n", rec.Body.String(), "Create should return an ID")
 	}
 }
 
@@ -61,8 +61,7 @@ func TestCreateError(t *testing.T) {
 	ctx := app.NewContext(req, rec)
 	h := getMockHandler()
 	err := h.Create(ctx)
-	assert.Error(t, err)
-	assert.EqualError(t, err, echo.ErrBadRequest.Error())
+	assert.EqualError(t, err, echo.ErrBadRequest.Error(), "Invalid Post should return a BadRequest (400)")
 }
 
 func TestGet(t *testing.T) {
@@ -72,6 +71,6 @@ func TestGet(t *testing.T) {
 	ctx := app.NewContext(req, rec)
 	h := getMockHandler()
 	if assert.NoError(t, h.Get(ctx)) {
-		assert.Equal(t, "{\"network\":\"test-network\",\"links\":null,\"sites\":null}\n", rec.Body.String())
+		assert.Equal(t, "{\"network\":\"test-network\",\"links\":null,\"sites\":null}\n", rec.Body.String(), "Get Network should return 'test-network'")
 	}
 }

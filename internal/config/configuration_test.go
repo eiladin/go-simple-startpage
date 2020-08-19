@@ -68,16 +68,16 @@ func TestDefaultConfig(t *testing.T) {
 	defer os.RemoveAll(cfgFile)
 
 	c := InitConfig("1.2.3", "")
-	assert.Equal(t, "sqlite", c.Database.Driver)
-	assert.Equal(t, "dbname.db", c.Database.Name)
-	assert.Equal(t, "user", c.Database.Username)
-	assert.Equal(t, "pass", c.Database.Password)
-	assert.Equal(t, "host", c.Database.Host)
-	assert.Equal(t, "1234", c.Database.Port)
-	assert.Equal(t, false, c.Database.Log)
-	assert.Equal(t, 3000, c.ListenPort)
-	assert.Equal(t, 2000, c.Timeout)
-	assert.Equal(t, "1.2.3", c.Version)
+	assert.Equal(t, "sqlite", c.Database.Driver, "Database Driver should be 'sqlite'")
+	assert.Equal(t, "dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
+	assert.Equal(t, "user", c.Database.Username, "Database Username should be 'user'")
+	assert.Equal(t, "pass", c.Database.Password, "Database Password should be 'pass'")
+	assert.Equal(t, "host", c.Database.Host, "Database Host should be 'host'")
+	assert.Equal(t, "1234", c.Database.Port, "Database Port should be '1234'")
+	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
+	assert.Equal(t, 3000, c.ListenPort, "Listen Port should be '3000'")
+	assert.Equal(t, 2000, c.Timeout, "Timeout should be '2000'")
+	assert.Equal(t, "1.2.3", c.Version, "Version should be '1.2.3'")
 }
 
 func TestConfigFile(t *testing.T) {
@@ -87,16 +87,16 @@ func TestConfigFile(t *testing.T) {
 	defer os.RemoveAll(cfgFile)
 
 	c := InitConfig("1.2.3", cfgFile)
-	assert.Equal(t, "sqlite", c.Database.Driver)
-	assert.Equal(t, "dbname.db", c.Database.Name)
-	assert.Equal(t, "user", c.Database.Username)
-	assert.Equal(t, "pass", c.Database.Password)
-	assert.Equal(t, "host", c.Database.Host)
-	assert.Equal(t, "1234", c.Database.Port)
-	assert.Equal(t, false, c.Database.Log)
-	assert.Equal(t, 3000, c.ListenPort)
-	assert.Equal(t, 2000, c.Timeout)
-	assert.Equal(t, "1.2.3", c.Version)
+	assert.Equal(t, "sqlite", c.Database.Driver, "Database Driver should be 'sqlite'")
+	assert.Equal(t, "dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
+	assert.Equal(t, "user", c.Database.Username, "Database Username should be 'user'")
+	assert.Equal(t, "pass", c.Database.Password, "Database Password should be 'pass'")
+	assert.Equal(t, "host", c.Database.Host, "Database Host should be 'host'")
+	assert.Equal(t, "1234", c.Database.Port, "Database Port should be '1234'")
+	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
+	assert.Equal(t, 3000, c.ListenPort, "Listen Port should be '3000'")
+	assert.Equal(t, 2000, c.Timeout, "Timeout should be '2000'")
+	assert.Equal(t, "1.2.3", c.Version, "Version should be '1.2.3'")
 }
 
 func TestGetAppConfig(t *testing.T) {
@@ -112,7 +112,7 @@ func TestGetAppConfig(t *testing.T) {
 
 	if assert.NoError(t, GetAppConfig(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "{\"version\":\"1.2.3\"}\n", rec.Body.String())
+		assert.Equal(t, "{\"version\":\"1.2.3\"}\n", rec.Body.String(), "Version should be 1.2.3")
 	}
 }
 
@@ -123,14 +123,14 @@ func TestGetConfig(t *testing.T) {
 	defer os.RemoveAll(cfgFile)
 	InitConfig("1.2.3", cfgFile)
 	c := GetConfig()
-	assert.Equal(t, "sqlite", c.Database.Driver)
-	assert.Equal(t, "dbname.db", c.Database.Name)
-	assert.Equal(t, "user", c.Database.Username)
-	assert.Equal(t, "pass", c.Database.Password)
-	assert.Equal(t, "host", c.Database.Host)
-	assert.Equal(t, "1234", c.Database.Port)
-	assert.Equal(t, false, c.Database.Log)
-	assert.Equal(t, 3000, c.ListenPort)
-	assert.Equal(t, 2000, c.Timeout)
-	assert.Equal(t, "1.2.3", c.Version)
+	assert.Equal(t, "sqlite", c.Database.Driver, "Database Driver should be 'sqlite'")
+	assert.Equal(t, "dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
+	assert.Equal(t, "user", c.Database.Username, "Database Username should be 'user'")
+	assert.Equal(t, "pass", c.Database.Password, "Database Password should be 'pass'")
+	assert.Equal(t, "host", c.Database.Host, "Database Host should be 'host'")
+	assert.Equal(t, "1234", c.Database.Port, "Database Port should be '1234'")
+	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
+	assert.Equal(t, 3000, c.ListenPort, "Listen Port should be '3000'")
+	assert.Equal(t, 2000, c.Timeout, "Timeout should be '2000'")
+	assert.Equal(t, "1.2.3", c.Version, "Version should be '1.2.3'")
 }

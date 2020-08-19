@@ -88,12 +88,12 @@ func (d *DB) CreateNetwork(net *model.Network) {
 	d.DB.Create(&net)
 }
 
-// FindNetwork reads a network from the database
-func (d *DB) FindNetwork(net *model.Network) {
+// GetNetwork reads a network from the database
+func (d *DB) GetNetwork(net *model.Network) {
 	d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(net)
 }
 
-// FindSite reads a site from the database
-func (d *DB) FindSite(site *model.Site) {
+// GetSite reads a site from the database
+func (d *DB) GetSite(site *model.Site) {
 	d.DB.Find(site)
 }

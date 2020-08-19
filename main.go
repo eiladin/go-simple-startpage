@@ -30,8 +30,8 @@ func setupMiddleware(app *echo.Echo) {
 }
 
 func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
-	netHandler := network.Handler{NetworkService: store}
-	statusHandler := status.Handler{SiteService: store}
+	netHandler := network.Handler{Store: store}
+	statusHandler := status.Handler{Store: store}
 
 	app.GET("/api/appconfig", config.GetAppConfig).
 		AddResponse(http.StatusOK, "success", config.Configuration{}, nil)
