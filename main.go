@@ -6,8 +6,7 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/database"
-	"github.com/eiladin/go-simple-startpage/internal/network"
-	"github.com/eiladin/go-simple-startpage/internal/status"
+	"github.com/eiladin/go-simple-startpage/internal/handler"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -30,21 +29,18 @@ func setupMiddleware(app *echo.Echo) {
 }
 
 func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
-	netHandler := network.Handler{NetworkService: store}
-	statusHandler := status.Handler{SiteService: store}
+	app.GET("/api/appconfig", handler.Config{Store: config.GetConfig()}.Get).
+		AddResponse(http.StatusOK, "success", config.Config{}, nil)
 
-	app.GET("/api/appconfig", config.GetAppConfig).
-		AddResponse(http.StatusOK, "success", config.Configuration{}, nil)
-
-	app.GET("/api/network", netHandler.Get).
+	app.GET("/api/network", handler.Network{Store: store}.Get).
 		AddResponse(http.StatusOK, "success", model.Network{}, nil).
 		AddResponse(http.StatusInternalServerError, "error", nil, nil)
 
-	app.POST("/api/network", netHandler.Create).
+	app.POST("/api/network", handler.Network{Store: store}.Create).
 		AddParamBody(model.Network{}, "body", "Network to add to the store", true).
 		AddResponse(http.StatusOK, "success", model.NetworkID{}, nil)
 
-	app.GET("/api/status/:id", statusHandler.Get).
+	app.GET("/api/status/:id", handler.Status{Store: store}.Get).
 		AddParamPath(0, "id", "ID of site to get status for").
 		AddResponse(http.StatusOK, "success", model.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).

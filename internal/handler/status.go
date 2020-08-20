@@ -1,4 +1,4 @@
-package status
+package handler
 
 import (
 	"crypto/tls"
@@ -10,14 +10,13 @@ import (
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
-	"github.com/eiladin/go-simple-startpage/pkg/interfaces"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 )
 
-// Handler handles Status commands
-type Handler struct {
-	SiteService interfaces.SiteService
+// Status struct
+type Status struct {
+	Store Store
 }
 
 func updateStatus(s *model.Site) error {
@@ -26,10 +25,14 @@ func updateStatus(s *model.Site) error {
 		return fmt.Errorf("Unable to parse URI: %s", s.URI)
 	}
 	s.IP = getIP(url)
-	if url.Scheme == "ssh" {
-		return testSSH(s, url)
+	switch url.Scheme {
+	case "ssh":
+		err = testSSH(url)
+	default:
+		err = testHTTP(url)
 	}
-	return testHTTP(s, url)
+	s.IsUp = err == nil
+	return err
 }
 
 func getIP(u *url.URL) string {
@@ -41,13 +44,12 @@ func getIP(u *url.URL) string {
 	return ips[0].String()
 }
 
-func testSSH(s *model.Site, u *url.URL) error {
+func testSSH(u *url.URL) error {
 	conn, err := net.Dial("tcp", u.Host)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
-	s.IsUp = true
 	return nil
 }
 
@@ -57,7 +59,7 @@ var httpClient = http.Client{
 	},
 }
 
-func testHTTP(s *model.Site, u *url.URL) error {
+func testHTTP(u *url.URL) error {
 	c := config.GetConfig()
 	httpClient.Timeout = time.Millisecond * time.Duration(c.Timeout)
 
@@ -69,22 +71,18 @@ func testHTTP(s *model.Site, u *url.URL) error {
 	if r.StatusCode < 200 || (r.StatusCode >= 300 && r.StatusCode != 401) {
 		return fmt.Errorf("Invalid StatusCode: %d", r.StatusCode)
 	}
-	s.IsUp = true
 	return nil
 }
 
-func getStatus(h Handler, id uint) (*model.Site, error) {
+func getStatus(h Status, id uint) (*model.Site, error) {
 	site := model.Site{ID: id}
-	h.SiteService.FindSite(&site)
+	h.Store.GetSite(&site)
 	err := updateStatus(&site)
-	if err != nil {
-		return &site, err
-	}
-	return &site, nil
+	return &site, err
 }
 
 // Get handles /api/status/:id
-func (h Handler) Get(c echo.Context) error {
+func (h Status) Get(c echo.Context) error {
 	val := c.Param("id")
 	id, err := strconv.Atoi(val)
 	if err != nil {

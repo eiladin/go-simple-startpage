@@ -1,10 +1,13 @@
 package database
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/internal/helpers"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +29,7 @@ func TestGetDSN(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		cfg := &config.Configuration{
+		cfg := &config.Config{
 			Database: config.Database{
 				Driver:   c.Driver,
 				Name:     c.Dbname,
@@ -40,6 +43,20 @@ func TestGetDSN(t *testing.T) {
 		dsn := getDSN(cfg)
 		assert.Equal(t, c.Expected, dsn.Name())
 	}
+}
+
+func TestOpenErr(t *testing.T) {
+	os.Setenv("GSS_DATABASE_DRIVER", "postgres")
+	config.InitConfig("1.2.3", "./not-found.yaml")
+	var b bytes.Buffer
+	origFatalf := helpers.Fatalf
+	helpers.Fatalf = func(format string, args ...interface{}) {
+		fmt.Fprintf(&b, format, args)
+	}
+	defer func() { helpers.Fatalf = origFatalf }()
+	InitDB()
+	assert.Contains(t, b.String(), "failed to connect to")
+	os.Unsetenv("GSS_DATABASE_DRIVER")
 }
 
 func TestDBFunctions(t *testing.T) {
@@ -72,16 +89,16 @@ func TestDBFunctions(t *testing.T) {
 	findNet := model.Network{
 		ID: 1,
 	}
-	db.FindNetwork(&findNet)
-	// FindNetwork assertions
+	db.GetNetwork(&findNet)
+	// GetNetwork assertions
 	assert.Equal(t, "test", findNet.Network)
 	assert.Equal(t, "test-site-1", findNet.Sites[0].FriendlyName)
 
 	findSite := model.Site{
 		ID: 1,
 	}
-	db.FindSite(&findSite)
-	// FindSite assertions
+	db.GetSite(&findSite)
+	// GetSite assertions
 	assert.Equal(t, "test-site-1", findSite.FriendlyName)
 
 	os.Unsetenv("GSS_DATABASE_DRIVER")
