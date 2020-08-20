@@ -41,7 +41,7 @@ func TestGetDSN(t *testing.T) {
 		}
 
 		dsn := getDSN(cfg)
-		assert.Equal(t, c.Expected, dsn.Name())
+		assert.Equal(t, c.Expected, dsn.Name(), "DSN Name should be %s", c.Expected)
 	}
 }
 
@@ -55,7 +55,7 @@ func TestOpenErr(t *testing.T) {
 	}
 	defer func() { helpers.Fatalf = origFatalf }()
 	InitDB()
-	assert.Contains(t, b.String(), "failed to connect to")
+	assert.Contains(t, b.String(), "failed to connect to", "A 'failed to connect' error should be raised")
 	os.Unsetenv("GSS_DATABASE_DRIVER")
 }
 
@@ -80,26 +80,26 @@ func TestDBFunctions(t *testing.T) {
 	}
 	db.CreateNetwork(&net)
 	// CreateNetwork assertions
-	assert.Equal(t, uint(1), net.ID)
-	assert.Equal(t, uint(1), net.Sites[0].ID)
-	assert.Equal(t, uint(2), net.Sites[1].ID)
-	assert.Equal(t, uint(1), net.Links[0].ID)
-	assert.Equal(t, uint(2), net.Links[1].ID)
+	assert.Equal(t, uint(1), net.ID, "Network ID should be '1'")
+	assert.Equal(t, uint(1), net.Sites[0].ID, "Site ID should be '1'")
+	assert.Equal(t, uint(2), net.Sites[1].ID, "Site ID should be '2'")
+	assert.Equal(t, uint(1), net.Links[0].ID, "Link ID should be '1'")
+	assert.Equal(t, uint(2), net.Links[1].ID, "Link ID should be '2'")
 
 	findNet := model.Network{
 		ID: 1,
 	}
 	db.GetNetwork(&findNet)
 	// GetNetwork assertions
-	assert.Equal(t, "test", findNet.Network)
-	assert.Equal(t, "test-site-1", findNet.Sites[0].FriendlyName)
+	assert.Equal(t, "test", findNet.Network, "Network should be 'test'")
+	assert.Equal(t, "test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
 
 	findSite := model.Site{
 		ID: 1,
 	}
 	db.GetSite(&findSite)
 	// GetSite assertions
-	assert.Equal(t, "test-site-1", findSite.FriendlyName)
+	assert.Equal(t, "test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
 
 	os.Unsetenv("GSS_DATABASE_DRIVER")
 	os.Unsetenv("GSS_DATABASE_NAME")
