@@ -23,11 +23,12 @@ RUN npm run build-prod
 # build final image
 FROM scratch
 EXPOSE 3000
-COPY --from=builder ["/etc/passwd", "/etc/group", "/etc/"]
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+COPY --chown=appuser:appgroup --from=builder /go/bin/go-simple-startpage /app/	
+COPY --chown=appuser:appgroup --from=builder /go/src/github.com/go-simple-startpage/example.db /app/simple-startpage.db
 USER appuser
 WORKDIR /app
 COPY ./config.yaml .
-COPY --from=builder /go/src/github.com/go-simple-startpage/example.db /app/simple-startpage.db
 COPY --from=frontend /app/dist ./ui/dist
-COPY --from=builder /go/bin/go-simple-startpage /app/
 ENTRYPOINT ["/app/go-simple-startpage"]
