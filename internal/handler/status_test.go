@@ -1,25 +1,21 @@
-package status
+package handler
 
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
+	"time"
 
+	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockSiteService struct {
-	FindSiteFunc func(*model.Site)
-}
-
-func (m *mockSiteService) FindSite(site *model.Site) {
-	m.FindSiteFunc(site)
-}
 
 func TestHttp(t *testing.T) {
 	httpmock.ActivateNonDefault(&httpClient)
@@ -27,12 +23,28 @@ func TestHttp(t *testing.T) {
 
 	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
 
-	site := model.Site{}
 	url, err := url.Parse("https://my.test.site")
 	assert.NoError(t, err)
-	err = testHTTP(&site, url)
+	err = testHTTP(url)
+	assert.NoError(t, err, "https://my.test.site should not error")
+}
+
+func TestHttpTimeout(t *testing.T) {
+	os.Setenv("GSS_TIMEOUT", "100")
+	config.InitConfig("", "no-file")
+	httpmock.ActivateNonDefault(&httpClient)
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("GET", "https://timeout.test.site", func(req *http.Request) (*http.Response, error) {
+		time.Sleep(2 * time.Second)
+		return httpmock.NewStringResponse(200, "success"), nil
+	})
+
+	url, err := url.Parse("https://timeout.test.site")
 	assert.NoError(t, err)
-	assert.Equal(t, true, site.IsUp)
+	err = testHTTP(url)
+	assert.Error(t, err, "https://timeout.test.site should timeout")
+	os.Unsetenv("GSS_TIMEOUT")
 }
 
 func TestTCP(t *testing.T) {
@@ -40,19 +52,17 @@ func TestTCP(t *testing.T) {
 	assert.NoError(t, err)
 	defer ln.Close()
 
-	site := model.Site{}
 	url, err := url.Parse("ssh://localhost:1234")
 	assert.NoError(t, err)
-	err = testSSH(&site, url)
-	assert.NoError(t, err)
-	assert.Equal(t, true, site.IsUp)
+	err = testSSH(url)
+	assert.NoError(t, err, "ssh://localhost:1234 should not error")
 }
 
 func TestGetIP(t *testing.T) {
 	url, err := url.Parse("http://localhost")
 	assert.NoError(t, err)
 	ip := getIP(url)
-	assert.Contains(t, []string{"127.0.0.1", "::1"}, ip)
+	assert.Contains(t, []string{"127.0.0.1", "::1"}, ip, "http://localhost should return the following ips: [127.0.0.1, ::1]")
 }
 
 func TestUpdateStatus(t *testing.T) {
@@ -93,8 +103,8 @@ func TestUpdateStatus(t *testing.T) {
 
 func TestGetStatusHandler(t *testing.T) {
 	app := echo.New()
-	var store mockSiteService
-	h := Handler{SiteService: &store}
+	var store mockStore
+	h := Status{Store: &store}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
@@ -111,17 +121,17 @@ func TestGetStatusHandler(t *testing.T) {
 		Error error
 	}{
 		{ID: "1", URI: "https://my.test.site", IsUp: true, Error: nil},
-		{ID: "1", URI: "https://my.fail.site", IsUp: false, Error: echo.ErrInternalServerError},
-		{ID: "1", URI: "https://^^invalidurl^^", IsUp: false, Error: echo.ErrInternalServerError},
+		{ID: "1", URI: "https://my.fail.site", IsUp: false, Error: nil},
+		{ID: "1", URI: "https://^^invalidurl^^", IsUp: false, Error: nil},
 		{ID: "1", URI: "ssh://localhost:12345", IsUp: true, Error: nil},
-		{ID: "1", URI: "ssh://localhost:1234", IsUp: false, Error: echo.ErrInternalServerError},
-		{ID: "1", URI: "https://500.test.site", IsUp: false, Error: echo.ErrInternalServerError},
+		{ID: "1", URI: "ssh://localhost:1234", IsUp: false, Error: nil},
+		{ID: "1", URI: "https://500.test.site", IsUp: false, Error: nil},
 		{ID: "abc", URI: "https://400.test.site", IsUp: false, Error: echo.ErrBadRequest},
 		{ID: "", URI: "https://no-id.test.site", IsUp: false, Error: echo.ErrBadRequest},
 	}
 
 	for _, c := range cases {
-		store.FindSiteFunc = func(site *model.Site) {
+		store.GetSiteFunc = func(site *model.Site) {
 			site.ID = 1
 			site.URI = c.URI
 		}
@@ -134,17 +144,17 @@ func TestGetStatusHandler(t *testing.T) {
 		ctx.SetParamValues(c.ID)
 		err := h.Get(ctx)
 		if c.Error != nil {
-			assert.EqualError(t, err, c.Error.Error(), fmt.Sprintf("%s should return %s", c.URI, c.Error.Error()))
+			assert.EqualError(t, err, c.Error.Error(), "%s should return %s", c.URI, c.Error.Error())
 		}
 		if c.IsUp {
-			assert.Contains(t, rec.Body.String(), `"isUp":true`, fmt.Sprintf("%s should be up", c.URI))
+			assert.Contains(t, rec.Body.String(), `"isUp":true`, "%s should be up", c.URI)
 		}
 	}
 }
 
 func TestGetStatus(t *testing.T) {
-	var store mockSiteService
-	handler := Handler{SiteService: &store}
+	var store mockStore
+	handler := Status{Store: &store}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
@@ -170,16 +180,16 @@ func TestGetStatus(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		store.FindSiteFunc = func(site *model.Site) {
+		store.GetSiteFunc = func(site *model.Site) {
 			site.ID = 1
 			site.URI = c.URI
 		}
 		res, err := getStatus(handler, 1)
 		if c.Error {
-			assert.Error(t, err)
+			assert.Error(t, err, "%s should error", c.URI)
 		} else {
-			assert.NoError(t, err)
+			assert.NoError(t, err, "%s should not error", c.URI)
 		}
-		assert.Equal(t, c.IsUp, res.IsUp, fmt.Sprintf("%s should have isUp=%t", c.URI, c.IsUp))
+		assert.Equal(t, c.IsUp, res.IsUp, "%s should have isUp=%t", c.URI, c.IsUp)
 	}
 }

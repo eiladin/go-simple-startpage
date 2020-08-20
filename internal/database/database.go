@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/internal/helpers"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -25,10 +26,14 @@ func InitDB() *gorm.DB {
 	c := config.GetConfig()
 	cfg := getConfig(&c)
 	dsn := getDSN(&c)
-	return open(dsn, cfg)
+	conn, err := gorm.Open(dsn, cfg)
+	if err != nil {
+		helpers.Fatalf("Unable to connect to database: %v", err)
+	}
+	return conn
 }
 
-func getConfig(c *config.Configuration) *gorm.Config {
+func getConfig(c *config.Config) *gorm.Config {
 	llevel := logger.Silent
 	if c.Database.Log {
 		llevel = logger.Info
@@ -43,7 +48,7 @@ func getConfig(c *config.Configuration) *gorm.Config {
 	}
 }
 
-func getDSN(c *config.Configuration) gorm.Dialector {
+func getDSN(c *config.Config) gorm.Dialector {
 	driver := strings.ToLower(c.Database.Driver)
 	database := c.Database.Name
 	username := c.Database.Username
@@ -63,14 +68,6 @@ func getDSN(c *config.Configuration) gorm.Dialector {
 
 }
 
-func open(dialector gorm.Dialector, config *gorm.Config) *gorm.DB {
-	conn, err := gorm.Open(dialector, config)
-	if err != nil {
-		fmt.Println("db err: ", err)
-	}
-	return conn
-}
-
 // MigrateDB runs database migrations
 func MigrateDB(conn *gorm.DB) {
 	conn.AutoMigrate(&model.Network{})
@@ -88,12 +85,12 @@ func (d *DB) CreateNetwork(net *model.Network) {
 	d.DB.Create(&net)
 }
 
-// FindNetwork reads a network from the database
-func (d *DB) FindNetwork(net *model.Network) {
+// GetNetwork reads a network from the database
+func (d *DB) GetNetwork(net *model.Network) {
 	d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(net)
 }
 
-// FindSite reads a site from the database
-func (d *DB) FindSite(site *model.Site) {
+// GetSite reads a site from the database
+func (d *DB) GetSite(site *model.Site) {
 	d.DB.Find(site)
 }

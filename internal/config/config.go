@@ -1,16 +1,13 @@
 package config
 
 import (
-	"log"
-	"net/http"
 	"strings"
 
-	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
 )
 
-// Configuration structure
-type Configuration struct {
+// Config structure
+type Config struct {
 	Database   Database `json:"-"`
 	ListenPort int      `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
 	Timeout    int      `json:"-"`
@@ -28,10 +25,11 @@ type Database struct {
 	Log      bool
 }
 
-var configuration Configuration
+var c Config
 
 // InitConfig initializes application configuration
-func InitConfig(version string, cfgFile string) Configuration {
+func InitConfig(version string, cfgFile string) Config {
+	c = Config{}
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -54,21 +52,12 @@ func InitConfig(version string, cfgFile string) Configuration {
 
 	viper.ReadInConfig()
 	viper.AutomaticEnv()
-	err := viper.Unmarshal(&configuration)
-	if err != nil {
-		log.Fatalf("Unable to decode into struct, %v", err)
-	}
-
-	configuration.Version = version
-	return configuration
+	viper.Unmarshal(&c)
+	c.Version = version
+	return c
 }
 
 // GetConfig returns application configuration
-func GetConfig() Configuration {
-	return configuration
-}
-
-// GetAppConfig handles /api/appconfig
-func GetAppConfig(c echo.Context) error {
-	return c.JSON(http.StatusOK, configuration)
+func GetConfig() Config {
+	return c
 }
