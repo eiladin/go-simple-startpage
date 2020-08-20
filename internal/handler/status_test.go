@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -92,11 +91,11 @@ func TestUpdateStatus(t *testing.T) {
 	for _, c := range cases {
 		err := updateStatus(&c.Site)
 		if c.HasError {
-			assert.Error(t, err, fmt.Sprintf("site: %s should error", c.Site.URI))
-			assert.False(t, c.IsUp, fmt.Sprintf("site: %s should not be up", c.Site.URI))
+			assert.Error(t, err, "site: %s should error", c.Site.URI)
+			assert.False(t, c.IsUp, "site: %s should not be up", c.Site.URI)
 		} else {
-			assert.NoError(t, err, fmt.Sprintf("site: %s should not error", c.Site.URI))
-			assert.Equal(t, c.IsUp, c.Site.IsUp, fmt.Sprintf("site: %s should be up", c.Site.URI))
+			assert.NoError(t, err, "site: %s should not error", c.Site.URI)
+			assert.Equal(t, c.IsUp, c.Site.IsUp, "site: %s should be up", c.Site.URI)
 		}
 	}
 }
