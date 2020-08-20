@@ -21,7 +21,7 @@ func TestGetAppConfig(t *testing.T) {
 	c := app.NewContext(req, rec)
 
 	if assert.NoError(t, h.Get(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, http.StatusOK, rec.Code, "Status code should be 200")
 		assert.Equal(t, "{\"version\":\"1.2.3\"}\n", rec.Body.String(), "Version should be 1.2.3")
 	}
 }
