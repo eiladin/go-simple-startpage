@@ -9,7 +9,7 @@ WORKDIR $GOPATH/src/github.com/go-simple-startpage
 
 ENV GO111MODULE=on
 RUN go mod download
-RUN CGO_ENABLED=1 GOARCH=amd64 GOOS=linux go build -ldflags='-linkmode external -extldflags "-static" -s -w -X main.version='${version}'' -a -installsuffix cgo -o /go/bin/go-simple-startpage .
+RUN CGO_ENABLED=1 GOARCH=amd64 GOOS=linux go build -ldflags='-extldflags "-static" -s -w -X main.version='${version}'' -o /go/bin/go-simple-startpage .
 
 # build angular
 FROM node:12-alpine as frontend

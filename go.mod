@@ -1,6 +1,6 @@
 module github.com/eiladin/go-simple-startpage
 
-go 1.14
+go 1.15
 
 require (
 	github.com/jarcoal/httpmock v1.0.6
@@ -13,7 +13,6 @@ require (
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
 	golang.org/x/sys v0.0.0-20200824131525-c12d262b63d8 // indirect
-	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gorm.io/driver/mysql v0.3.2
 	gorm.io/driver/postgres v0.2.9

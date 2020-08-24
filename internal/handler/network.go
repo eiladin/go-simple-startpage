@@ -37,7 +37,7 @@ func (h Network) Create(c echo.Context) error {
 	err := c.Bind(net)
 	if err != nil || (net.Network == "" && net.ID == 0 && net.Links == nil && net.Sites == nil) {
 		if err == nil {
-			err = errors.New("Empty request recieved")
+			err = errors.New("empty request recieved")
 		}
 		return echo.ErrBadRequest.SetInternal(err)
 	}

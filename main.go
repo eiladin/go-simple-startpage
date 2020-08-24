@@ -16,17 +16,11 @@ import (
 )
 
 func swaggerRefSkipper(ctx echo.Context) bool {
-	if strings.Contains(ctx.Request().Header.Get("Referer"), "swagger") {
-		return true
-	}
-	return false
+	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
 }
 
 func apiSkipper(ctx echo.Context) bool {
-	if strings.Contains(ctx.Request().URL.Path, "/api/") {
-		return true
-	}
-	return false
+	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
 }
 
 func setupMiddleware(app *echo.Echo, c config.Config) {

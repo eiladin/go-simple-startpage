@@ -24,7 +24,7 @@ type Status struct {
 func updateStatus(s *model.Site) error {
 	url, err := url.Parse(s.URI)
 	if err != nil {
-		return fmt.Errorf("Unable to parse URI: %s", s.URI)
+		return fmt.Errorf("unable to parse URI: %s", s.URI)
 	}
 	s.IP = getIP(url)
 	switch url.Scheme {
@@ -71,7 +71,7 @@ func testHTTP(u *url.URL) error {
 	}
 	defer r.Body.Close()
 	if r.StatusCode < 200 || (r.StatusCode >= 300 && r.StatusCode != 401) {
-		return fmt.Errorf("Invalid StatusCode: %d", r.StatusCode)
+		return fmt.Errorf("invalid StatusCode: %d", r.StatusCode)
 	}
 	return nil
 }
