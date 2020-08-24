@@ -12,7 +12,7 @@ type Config struct {
 	Store config.Config
 }
 
-// Get handles /api/appconfig
+// Get /api/appconfig
 func (h Config) Get(c echo.Context) error {
-	return c.JSON(http.StatusOK, config.GetConfig())
+	return c.JSON(http.StatusOK, h.Store)
 }

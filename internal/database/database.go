@@ -1,13 +1,14 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
-	"github.com/eiladin/go-simple-startpage/internal/helpers"
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -21,16 +22,20 @@ type DB struct {
 	DB *gorm.DB
 }
 
+type connectionRefusedErr string
+
+func (e connectionRefusedErr) Error() string { return "Unable to establish connection: " + string(e) }
+
 // InitDB initialized the selected database
-func InitDB() *gorm.DB {
+func InitDB() (*gorm.DB, error) {
 	c := config.GetConfig()
 	cfg := getConfig(&c)
 	dsn := getDSN(&c)
 	conn, err := gorm.Open(dsn, cfg)
 	if err != nil {
-		helpers.Fatalf("Unable to connect to database: %v", err)
+		return nil, connectionRefusedErr(err.Error())
 	}
-	return conn
+	return conn, nil
 }
 
 func getConfig(c *config.Config) *gorm.Config {
@@ -76,21 +81,31 @@ func MigrateDB(conn *gorm.DB) {
 	conn.AutoMigrate(&model.Link{})
 }
 
+func handleError(err error) error {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return store.ErrNotFound
+	}
+	return err
+}
+
 // CreateNetwork creates a network in the database
-func (d *DB) CreateNetwork(net *model.Network) {
+func (d *DB) CreateNetwork(net *model.Network) error {
 	d.DB.Unscoped().Where("1 = 1").Delete(&model.Tag{})
 	d.DB.Unscoped().Where("1 = 1").Delete(&model.Site{})
 	d.DB.Unscoped().Where("1 = 1").Delete(&model.Link{})
 	d.DB.Unscoped().Where("1 = 1").Delete(&model.Network{})
-	d.DB.Create(&net)
+	result := d.DB.Create(&net)
+	return handleError(result.Error)
 }
 
 // GetNetwork reads a network from the database
-func (d *DB) GetNetwork(net *model.Network) {
-	d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").Find(net)
+func (d *DB) GetNetwork(net *model.Network) error {
+	result := d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").First(net)
+	return handleError(result.Error)
 }
 
 // GetSite reads a site from the database
-func (d *DB) GetSite(site *model.Site) {
-	d.DB.Find(site)
+func (d *DB) GetSite(site *model.Site) error {
+	result := d.DB.First(site)
+	return handleError(result.Error)
 }

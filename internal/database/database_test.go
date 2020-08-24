@@ -1,15 +1,15 @@
 package database
 
 import (
-	"bytes"
-	"fmt"
+	"errors"
 	"os"
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
-	"github.com/eiladin/go-simple-startpage/internal/helpers"
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func TestGetDSN(t *testing.T) {
@@ -45,25 +45,36 @@ func TestGetDSN(t *testing.T) {
 	}
 }
 
-func TestOpenErr(t *testing.T) {
+func TestOpenError(t *testing.T) {
 	os.Setenv("GSS_DATABASE_DRIVER", "postgres")
 	config.InitConfig("1.2.3", "./not-found.yaml")
-	var b bytes.Buffer
-	origFatalf := helpers.Fatalf
-	helpers.Fatalf = func(format string, args ...interface{}) {
-		fmt.Fprintf(&b, format, args)
-	}
-	defer func() { helpers.Fatalf = origFatalf }()
-	InitDB()
-	assert.Contains(t, b.String(), "failed to connect to", "A 'failed to connect' error should be raised")
+	_, err := InitDB()
+	assert.Contains(t, err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
 	os.Unsetenv("GSS_DATABASE_DRIVER")
+}
+
+func TestHandleError(t *testing.T) {
+	cases := []struct {
+		Err      error
+		Expected error
+	}{
+		{Err: errors.New("unknown error"), Expected: errors.New("unknown error")},
+		{Err: gorm.ErrRecordNotFound, Expected: store.ErrNotFound},
+	}
+
+	for _, c := range cases {
+		err := handleError(c.Err)
+		assert.EqualError(t, err, c.Expected.Error())
+	}
 }
 
 func TestDBFunctions(t *testing.T) {
 	os.Setenv("GSS_DATABASE_DRIVER", "sqlite")
-	os.Setenv("GSS_DATABASE_NAME", ":memory:")
+	os.Setenv("GSS_DATABASE_NAME", "test.db")
+	defer os.RemoveAll("test.db")
 	config.InitConfig("1.2.3", "./not-found.yaml")
-	conn := InitDB()
+	conn, err := InitDB()
+	assert.NoError(t, err)
 	MigrateDB(conn)
 	db := DB{DB: conn}
 

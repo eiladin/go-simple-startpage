@@ -2,32 +2,55 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
 
+type mockNetworkStore struct {
+	CreateNetworkFunc func(*model.Network) error
+	GetNetworkFunc    func(*model.Network) error
+	GetSiteFunc       func(*model.Site) error
+}
+
+func (m *mockNetworkStore) CreateNetwork(net *model.Network) error {
+	return m.CreateNetworkFunc(net)
+}
+
+func (m *mockNetworkStore) GetNetwork(net *model.Network) error {
+	return m.GetNetworkFunc(net)
+}
+
+func (m *mockNetworkStore) GetSite(site *model.Site) error {
+	return m.GetSiteFunc(site)
+}
+
 func getMockNetwork() Network {
-	store := mockStore{
-		CreateNetworkFunc: func(net *model.Network) {
+	s := mockNetworkStore{
+		CreateNetworkFunc: func(net *model.Network) error {
 			net.ID = 12345
+			return nil
 		},
-		GetNetworkFunc: func(net *model.Network) {
+		GetNetworkFunc: func(net *model.Network) error {
 			net.ID = 12345
 			net.Network = "test-network"
 			net.Sites = []model.Site{
 				{ID: 1, FriendlyName: "z"},
 				{ID: 2, FriendlyName: "a"},
 			}
+			return nil
 		},
-		GetSiteFunc: func(site *model.Site) {},
+		GetSiteFunc: func(site *model.Site) error { return nil },
 	}
-	return Network{Store: &store}
+
+	return Network{Store: &s}
 }
 
 func TestCreateHandler(t *testing.T) {
@@ -46,17 +69,6 @@ func TestCreateHandler(t *testing.T) {
 	}
 }
 
-func TestCreateError(t *testing.T) {
-	app := echo.New()
-	req := httptest.NewRequest("POST", "/", strings.NewReader(``))
-	req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	ctx := app.NewContext(req, rec)
-	h := getMockNetwork()
-	err := h.Create(ctx)
-	assert.EqualError(t, err, echo.ErrBadRequest.Error(), "Invalid Post should return a BadRequest (400)")
-}
-
 func TestGet(t *testing.T) {
 	app := echo.New()
 	req := httptest.NewRequest("GET", "/", nil)
@@ -73,6 +85,61 @@ func TestGet(t *testing.T) {
 			assert.Equal(t, "z", net.Sites[1].FriendlyName, "The second site in the list should have FriendlyName 'z'")
 			assert.Equal(t, uint(1), net.Sites[1].ID, "The second site in the list should have ID '1'")
 		}
+
+	}
+}
+
+func TestGetError(t *testing.T) {
+	cases := []struct {
+		Err      error
+		Expected error
+	}{
+		{Err: errors.New("not implemented"), Expected: echo.ErrInternalServerError},
+		{Err: store.ErrNotFound, Expected: echo.ErrNotFound},
+	}
+	app := echo.New()
+	req := httptest.NewRequest("GET", "/", nil)
+	rec := httptest.NewRecorder()
+	ctx := app.NewContext(req, rec)
+
+	for _, c := range cases {
+		h := Network{
+			Store: &mockNetworkStore{
+				CreateNetworkFunc: func(net *model.Network) error { return errors.New("not implemented") },
+				GetNetworkFunc:    func(net *model.Network) error { return c.Err },
+				GetSiteFunc:       func(site *model.Site) error { return errors.New("not implemented") },
+			},
+		}
+		err := h.Get(ctx)
+		assert.EqualError(t, err, c.Expected.Error())
+	}
+}
+
+func TestCreateError(t *testing.T) {
+	cases := []struct {
+		Body string
+		Err  error
+	}{
+		{Body: `{"network":"test"}`, Err: echo.ErrInternalServerError},
+		{Body: "", Err: echo.ErrBadRequest},
+	}
+
+	app := echo.New()
+	rec := httptest.NewRecorder()
+
+	for _, c := range cases {
+		req := httptest.NewRequest("POST", "/", strings.NewReader(c.Body))
+		req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		ctx := app.NewContext(req, rec)
+		h := Network{
+			Store: &mockNetworkStore{
+				CreateNetworkFunc: func(net *model.Network) error { return errors.New("not implemented") },
+				GetNetworkFunc:    func(net *model.Network) error { return errors.New("not implemented") },
+				GetSiteFunc:       func(site *model.Site) error { return errors.New("not implemented") },
+			},
+		}
+		err := h.Create(ctx)
+		assert.EqualError(t, err, c.Err.Error())
 
 	}
 }
