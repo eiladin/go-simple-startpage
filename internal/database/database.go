@@ -19,15 +19,15 @@ import (
 
 // DB structure
 type DB struct {
-	DB *gorm.DB
+	conn *gorm.DB
 }
 
 type connectionRefusedErr string
 
 func (e connectionRefusedErr) Error() string { return "Unable to establish connection: " + string(e) }
 
-// InitDB initialized the selected database
-func InitDB() (*gorm.DB, error) {
+// New initialized the selected database
+func (d DB) New() (store.Store, error) {
 	c := config.GetConfig()
 	cfg := getConfig(&c)
 	dsn := getDSN(&c)
@@ -35,7 +35,9 @@ func InitDB() (*gorm.DB, error) {
 	if err != nil {
 		return nil, connectionRefusedErr(err.Error())
 	}
-	return conn, nil
+	d.conn = conn
+	migrateDB(conn)
+	return &d, nil
 }
 
 func getConfig(c *config.Config) *gorm.Config {
@@ -70,11 +72,9 @@ func getDSN(c *config.Config) gorm.Dialector {
 		return mysql.Open(dsn)
 	}
 	return sqlite.Open("simple-startpage.db")
-
 }
 
-// MigrateDB runs database migrations
-func MigrateDB(conn *gorm.DB) {
+func migrateDB(conn *gorm.DB) {
 	conn.AutoMigrate(&model.Network{})
 	conn.AutoMigrate(&model.Site{})
 	conn.AutoMigrate(&model.Tag{})
@@ -89,23 +89,23 @@ func handleError(err error) error {
 }
 
 // CreateNetwork creates a network in the database
-func (d *DB) CreateNetwork(net *model.Network) error {
-	d.DB.Unscoped().Where("1 = 1").Delete(&model.Tag{})
-	d.DB.Unscoped().Where("1 = 1").Delete(&model.Site{})
-	d.DB.Unscoped().Where("1 = 1").Delete(&model.Link{})
-	d.DB.Unscoped().Where("1 = 1").Delete(&model.Network{})
-	result := d.DB.Create(&net)
+func (d DB) CreateNetwork(net *model.Network) error {
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Tag{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Site{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Link{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Network{})
+	result := d.conn.Create(&net)
 	return handleError(result.Error)
 }
 
 // GetNetwork reads a network from the database
-func (d *DB) GetNetwork(net *model.Network) error {
-	result := d.DB.Preload("Sites.Tags").Preload("Sites").Preload("Links").First(net)
+func (d DB) GetNetwork(net *model.Network) error {
+	result := d.conn.Preload("Sites.Tags").Preload("Sites").Preload("Links").First(net)
 	return handleError(result.Error)
 }
 
 // GetSite reads a site from the database
-func (d *DB) GetSite(site *model.Site) error {
-	result := d.DB.First(site)
+func (d DB) GetSite(site *model.Site) error {
+	result := d.conn.First(site)
 	return handleError(result.Error)
 }

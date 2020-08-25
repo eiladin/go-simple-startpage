@@ -48,7 +48,7 @@ func TestGetDSN(t *testing.T) {
 func TestOpenError(t *testing.T) {
 	os.Setenv("GSS_DATABASE_DRIVER", "postgres")
 	config.InitConfig("1.2.3", "./not-found.yaml")
-	_, err := InitDB()
+	_, err := DB{}.New()
 	assert.Contains(t, err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
 	os.Unsetenv("GSS_DATABASE_DRIVER")
 }
@@ -73,10 +73,8 @@ func TestDBFunctions(t *testing.T) {
 	os.Setenv("GSS_DATABASE_NAME", "test.db")
 	defer os.RemoveAll("test.db")
 	config.InitConfig("1.2.3", "./not-found.yaml")
-	conn, err := InitDB()
+	db, err := DB{}.New()
 	assert.NoError(t, err)
-	MigrateDB(conn)
-	db := DB{DB: conn}
 
 	net := model.Network{
 		Network: "test",

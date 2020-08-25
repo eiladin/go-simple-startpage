@@ -9,6 +9,7 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/handler"
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -36,7 +37,6 @@ func setupMiddleware(app *echo.Echo, c config.Config) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Secure())
 	app.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{Skipper: swaggerRefSkipper}))
-
 	app.Use(middleware.Recover())
 	app.Use(middleware.Gzip())
 	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
@@ -48,7 +48,7 @@ func setupMiddleware(app *echo.Echo, c config.Config) {
 	}))
 }
 
-func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
+func setupRoutes(app echoswagger.ApiRoot, store store.Store) {
 	app.GET("/api/appconfig", handler.Config{Store: config.GetConfig()}.Get).
 		AddResponse(http.StatusOK, "success", config.Config{}, nil)
 
@@ -72,20 +72,14 @@ func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
 }
 
-func initDatabase() database.DB {
-	conn, err := database.InitDB()
-	if err != nil {
-		log.Fatal(err)
-	}
-	database.MigrateDB(conn)
-	return database.DB{DB: conn}
-}
-
 var version = "dev"
 
 func main() {
 	c := config.InitConfig(version, "")
-	store := initDatabase()
+	store, err := database.DB{}.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	app := echoswagger.New(echo.New(), "/swagger", &echoswagger.Info{
 		Title:       "Go Simple Startpage API",
@@ -104,7 +98,7 @@ func main() {
 	e := app.Echo()
 
 	setupMiddleware(e, c)
-	setupRoutes(app, &store)
+	setupRoutes(app, store)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

@@ -15,9 +15,14 @@ import (
 )
 
 type mockNetworkStore struct {
+	NewFunc           func() (store.Store, error)
 	CreateNetworkFunc func(*model.Network) error
 	GetNetworkFunc    func(*model.Network) error
 	GetSiteFunc       func(*model.Site) error
+}
+
+func (m *mockNetworkStore) New() (store.Store, error) {
+	return m.NewFunc()
 }
 
 func (m *mockNetworkStore) CreateNetwork(net *model.Network) error {
