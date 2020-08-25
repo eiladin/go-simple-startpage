@@ -10,11 +10,35 @@ import (
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
+
+type mockStatusStore struct {
+	NewFunc           func() (store.Store, error)
+	CreateNetworkFunc func(*model.Network) error
+	GetNetworkFunc    func(*model.Network) error
+	GetSiteFunc       func(*model.Site) error
+}
+
+func (m *mockStatusStore) New() (store.Store, error) {
+	return m.NewFunc()
+}
+
+func (m *mockStatusStore) CreateNetwork(net *model.Network) error {
+	return m.CreateNetworkFunc(net)
+}
+
+func (m *mockStatusStore) GetNetwork(net *model.Network) error {
+	return m.GetNetworkFunc(net)
+}
+
+func (m *mockStatusStore) GetSite(site *model.Site) error {
+	return m.GetSiteFunc(site)
+}
 
 func TestHttp(t *testing.T) {
 	httpmock.ActivateNonDefault(&httpClient)
@@ -102,13 +126,15 @@ func TestUpdateStatus(t *testing.T) {
 
 func TestGetStatusHandler(t *testing.T) {
 	app := echo.New()
-	var store mockStore
-	h := Status{Store: &store}
+	var s mockStatusStore
+	h := Status{Store: &s}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
 	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
 	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "fail"))
+	httpmock.RegisterResponder("GET", "https://bigid.test.site", httpmock.NewStringResponder(200, "success"))
+
 	ln, err := net.Listen("tcp", "[::]:12345")
 	assert.NoError(t, err)
 	defer ln.Close()
@@ -127,12 +153,18 @@ func TestGetStatusHandler(t *testing.T) {
 		{ID: "1", URI: "https://500.test.site", IsUp: false, Error: nil},
 		{ID: "abc", URI: "https://400.test.site", IsUp: false, Error: echo.ErrBadRequest},
 		{ID: "", URI: "https://no-id.test.site", IsUp: false, Error: echo.ErrBadRequest},
+		{ID: "12345", URI: "https://bigid.test.site", IsUp: false, Error: echo.ErrNotFound},
+		{ID: "0", URI: "https://my.test.site", IsUp: false, Error: echo.ErrBadRequest},
 	}
 
 	for _, c := range cases {
-		store.GetSiteFunc = func(site *model.Site) {
+		s.GetSiteFunc = func(site *model.Site) error {
+			if site.ID != 1 {
+				return store.ErrNotFound
+			}
 			site.ID = 1
 			site.URI = c.URI
+			return nil
 		}
 
 		req := httptest.NewRequest("GET", "/", nil)
@@ -152,8 +184,8 @@ func TestGetStatusHandler(t *testing.T) {
 }
 
 func TestGetStatus(t *testing.T) {
-	var store mockStore
-	handler := Status{Store: &store}
+	var s mockStatusStore
+	handler := Status{Store: &s}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
@@ -179,9 +211,10 @@ func TestGetStatus(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		store.GetSiteFunc = func(site *model.Site) {
+		s.GetSiteFunc = func(site *model.Site) error {
 			site.ID = 1
 			site.URI = c.URI
+			return nil
 		}
 		res, err := getStatus(handler, 1)
 		if c.Error {

@@ -8,10 +8,11 @@ import (
 
 // Config structure
 type Config struct {
-	Database   Database `json:"-"`
-	ListenPort int      `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
-	Timeout    int      `json:"-"`
-	Version    string   `json:"version"`
+	Database    Database `json:"-"`
+	ListenPort  int      `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
+	Timeout     int      `json:"-"`
+	Version     string   `json:"version"`
+	Environment string   `json:"-"`
 }
 
 // Database structure
@@ -27,9 +28,16 @@ type Database struct {
 
 var c Config
 
+// IsProduction returns true if running in production mode
+func (c Config) IsProduction() bool {
+	return strings.ToUpper(c.Environment) == "PRODUCTION"
+}
+
 // InitConfig initializes application configuration
 func InitConfig(version string, cfgFile string) Config {
-	c = Config{}
+	c = Config{
+		Environment: "Development",
+	}
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
@@ -49,6 +57,7 @@ func InitConfig(version string, cfgFile string) Config {
 	viper.BindEnv("DATABASE.LOG")
 	viper.BindEnv("LISTEN_PORT")
 	viper.BindEnv("TIMEOUT")
+	viper.BindEnv("ENVIRONMENT")
 
 	viper.ReadInConfig()
 	viper.AutomaticEnv()

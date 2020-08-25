@@ -2,62 +2,84 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/handler"
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 
-func setupMiddleware(app *echo.Echo) {
+func swaggerRefSkipper(ctx echo.Context) bool {
+	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
+}
+
+func apiSkipper(ctx echo.Context) bool {
+	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
+}
+
+func setupMiddleware(app *echo.Echo, c config.Config) {
+	if c.IsProduction() {
+		app.Use(middleware.Logger())
+	} else {
+		app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+			Format: "method=${method}, uri=${uri}, status=${status}, error=${error}\n",
+		}))
+	}
+
 	app.Use(middleware.CORS())
-	app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "method=${method}, uri=${uri}, status=${status}\n",
-	}))
+	app.Use(middleware.RequestID())
+	app.Use(middleware.Secure())
+	app.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{Skipper: swaggerRefSkipper}))
 	app.Use(middleware.Recover())
 	app.Use(middleware.Gzip())
 	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Index:  "index.html",
-		Root:   "ui/dist/ui",
-		Browse: false,
-		HTML5:  true,
+		Skipper: apiSkipper,
+		Index:   "index.html",
+		Root:    "ui/dist/ui",
+		Browse:  false,
+		HTML5:   true,
 	}))
 }
 
-func setupRoutes(app echoswagger.ApiRoot, store *database.DB) {
+func setupRoutes(app echoswagger.ApiRoot, store store.Store) {
 	app.GET("/api/appconfig", handler.Config{Store: config.GetConfig()}.Get).
 		AddResponse(http.StatusOK, "success", config.Config{}, nil)
 
 	app.GET("/api/network", handler.Network{Store: store}.Get).
 		AddResponse(http.StatusOK, "success", model.Network{}, nil).
-		AddResponse(http.StatusInternalServerError, "error", nil, nil)
+		AddResponse(http.StatusNotFound, "not found", nil, nil).
+		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
 
 	app.POST("/api/network", handler.Network{Store: store}.Create).
-		AddParamBody(model.Network{}, "body", "Network to add to the store", true).
-		AddResponse(http.StatusOK, "success", model.NetworkID{}, nil)
+		AddParamBody(model.Network{}, "body", "Network to add", true).
+		AddResponse(http.StatusCreated, "success", model.NetworkID{}, nil).
+		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
+		AddResponse(http.StatusNotFound, "not found", nil, nil).
+		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
 
 	app.GET("/api/status/:id", handler.Status{Store: store}.Get).
-		AddParamPath(0, "id", "ID of site to get status for").
+		AddParamPath(0, "id", "SiteID to get status for").
 		AddResponse(http.StatusOK, "success", model.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
+		AddResponse(http.StatusNotFound, "not found", nil, nil).
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
 }
 
-func initDatabase() database.DB {
-	conn := database.InitDB()
-	database.MigrateDB(conn)
-	return database.DB{DB: conn}
-}
-
-var version = " dev"
+var version = "dev"
 
 func main() {
 	c := config.InitConfig(version, "")
-	store := initDatabase()
+	store, err := database.DB{}.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	app := echoswagger.New(echo.New(), "/swagger", &echoswagger.Info{
 		Title:       "Go Simple Startpage API",
@@ -69,11 +91,14 @@ func main() {
 		},
 		License: &echoswagger.License{
 			Name: "MIT",
-			URL:  "http://github.com/eiladin/go-simple-startpage/LICENSE",
+			URL:  "https://github.com/eiladin/go-simple-startpage/blob/master/LICENSE",
 		},
 	})
-	setupMiddleware(app.Echo())
-	setupRoutes(app, &store)
 
-	app.Echo().Logger.Fatal(app.Echo().Start(fmt.Sprintf(":%d", c.ListenPort)))
+	e := app.Echo()
+
+	setupMiddleware(e, c)
+	setupRoutes(app, store)
+
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }
