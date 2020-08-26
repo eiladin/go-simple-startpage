@@ -14,6 +14,7 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
+	"github.com/pangpanglabs/echoswagger/v2"
 )
 
 // Status struct
@@ -109,4 +110,16 @@ func (h Status) Get(c echo.Context) error {
 		IP:   site.IP,
 	}
 	return c.JSON(http.StatusOK, res)
+}
+
+// Register handler
+func (h Status) Register(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+	app.GET("/api/status/:id", h.Get).
+		AddParamPath(0, "id", "SiteID to get status for").
+		AddResponse(http.StatusOK, "success", model.SiteStatus{}, nil).
+		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
+		AddResponse(http.StatusNotFound, "not found", nil, nil).
+		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
+
+	return app
 }

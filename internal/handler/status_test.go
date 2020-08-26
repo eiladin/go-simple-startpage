@@ -14,6 +14,7 @@ import (
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
+	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -224,4 +225,15 @@ func TestGetStatus(t *testing.T) {
 		}
 		assert.Equal(t, c.IsUp, res.IsUp, "%s should have isUp=%t", c.URI, c.IsUp)
 	}
+}
+
+func TestStatusHandler(t *testing.T) {
+	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
+	h := Status{Store: getMockNetwork().Store}
+	h.Register(app)
+	e := []string{}
+	for _, r := range app.Echo().Routes() {
+		e = append(e, r.Method+" "+r.Path)
+	}
+	assert.Contains(t, e, "GET /api/status/:id")
 }

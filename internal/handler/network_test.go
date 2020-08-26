@@ -11,6 +11,7 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
+	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -147,4 +148,16 @@ func TestCreateError(t *testing.T) {
 		assert.EqualError(t, err, c.Err.Error())
 
 	}
+}
+
+func TestNetworkHandler(t *testing.T) {
+	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
+	h := Network{Store: getMockNetwork().Store}
+	h.Register(app)
+	e := []string{}
+	for _, r := range app.Echo().Routes() {
+		e = append(e, r.Method+" "+r.Path)
+	}
+	assert.Contains(t, e, "GET /api/network")
+	assert.Contains(t, e, "POST /api/network")
 }
