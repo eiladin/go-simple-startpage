@@ -11,7 +11,7 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -20,24 +20,24 @@ import (
 
 type mockStatusStore struct {
 	NewFunc           func() (store.Store, error)
-	CreateNetworkFunc func(*model.Network) error
-	GetNetworkFunc    func(*model.Network) error
-	GetSiteFunc       func(*model.Site) error
+	CreateNetworkFunc func(*models.Network) error
+	GetNetworkFunc    func(*models.Network) error
+	GetSiteFunc       func(*models.Site) error
 }
 
 func (m *mockStatusStore) New() (store.Store, error) {
 	return m.NewFunc()
 }
 
-func (m *mockStatusStore) CreateNetwork(net *model.Network) error {
+func (m *mockStatusStore) CreateNetwork(net *models.Network) error {
 	return m.CreateNetworkFunc(net)
 }
 
-func (m *mockStatusStore) GetNetwork(net *model.Network) error {
+func (m *mockStatusStore) GetNetwork(net *models.Network) error {
 	return m.GetNetworkFunc(net)
 }
 
-func (m *mockStatusStore) GetSite(site *model.Site) error {
+func (m *mockStatusStore) GetSite(site *models.Site) error {
 	return m.GetSiteFunc(site)
 }
 
@@ -55,7 +55,7 @@ func TestHttp(t *testing.T) {
 
 func TestHttpTimeout(t *testing.T) {
 	os.Setenv("GSS_TIMEOUT", "100")
-	config.InitConfig("", "no-file")
+	config.New("", "no-file")
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
 
@@ -91,16 +91,16 @@ func TestGetIP(t *testing.T) {
 
 func TestUpdateStatus(t *testing.T) {
 	cases := []struct {
-		Site     model.Site
+		Site     models.Site
 		IsUp     bool
 		HasError bool
 	}{
-		{Site: model.Site{URI: "https://my.test.site"}, IsUp: true, HasError: false},
-		{Site: model.Site{URI: "https://my.fail.site"}, IsUp: false, HasError: true},
-		{Site: model.Site{URI: "https://^^invalidurl^^"}, IsUp: false, HasError: true},
-		{Site: model.Site{URI: "ssh://localhost:12345"}, IsUp: true, HasError: false},
-		{Site: model.Site{URI: "ssh://localhost:1234"}, IsUp: false, HasError: true},
-		{Site: model.Site{URI: "https://err.test.site"}, IsUp: false, HasError: true},
+		{Site: models.Site{URI: "https://my.test.site"}, IsUp: true, HasError: false},
+		{Site: models.Site{URI: "https://my.fail.site"}, IsUp: false, HasError: true},
+		{Site: models.Site{URI: "https://^^invalidurl^^"}, IsUp: false, HasError: true},
+		{Site: models.Site{URI: "ssh://localhost:12345"}, IsUp: true, HasError: false},
+		{Site: models.Site{URI: "ssh://localhost:1234"}, IsUp: false, HasError: true},
+		{Site: models.Site{URI: "https://err.test.site"}, IsUp: false, HasError: true},
 	}
 
 	httpmock.ActivateNonDefault(&httpClient)
@@ -159,7 +159,7 @@ func TestGetStatusHandler(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		s.GetSiteFunc = func(site *model.Site) error {
+		s.GetSiteFunc = func(site *models.Site) error {
 			if site.ID != 1 {
 				return store.ErrNotFound
 			}
@@ -212,7 +212,7 @@ func TestGetStatus(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		s.GetSiteFunc = func(site *model.Site) error {
+		s.GetSiteFunc = func(site *models.Site) error {
 			site.ID = 1
 			site.URI = c.URI
 			return nil

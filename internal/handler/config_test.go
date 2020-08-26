@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/spf13/viper"
@@ -15,7 +16,7 @@ import (
 func TestGetAppConfig(t *testing.T) {
 	viper.Reset()
 	app := echo.New()
-	c := config.InitConfig("1.2.3", "not-found")
+	c := config.New("1.2.3", "not-found")
 	h := Config{Store: c}
 	req := httptest.NewRequest("GET", "/", nil)
 	rec := httptest.NewRecorder()
@@ -30,7 +31,7 @@ func TestGetAppConfig(t *testing.T) {
 func TestConfigHandler(t *testing.T) {
 	viper.Reset()
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := Config{Store: config.Config{
+	h := Config{Store: models.Config{
 		Version: "1.2.3",
 	}}
 	h.Register(app)

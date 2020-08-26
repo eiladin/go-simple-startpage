@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/assert"
@@ -17,43 +17,43 @@ import (
 
 type mockNetworkStore struct {
 	NewFunc           func() (store.Store, error)
-	CreateNetworkFunc func(*model.Network) error
-	GetNetworkFunc    func(*model.Network) error
-	GetSiteFunc       func(*model.Site) error
+	CreateNetworkFunc func(*models.Network) error
+	GetNetworkFunc    func(*models.Network) error
+	GetSiteFunc       func(*models.Site) error
 }
 
 func (m *mockNetworkStore) New() (store.Store, error) {
 	return m.NewFunc()
 }
 
-func (m *mockNetworkStore) CreateNetwork(net *model.Network) error {
+func (m *mockNetworkStore) CreateNetwork(net *models.Network) error {
 	return m.CreateNetworkFunc(net)
 }
 
-func (m *mockNetworkStore) GetNetwork(net *model.Network) error {
+func (m *mockNetworkStore) GetNetwork(net *models.Network) error {
 	return m.GetNetworkFunc(net)
 }
 
-func (m *mockNetworkStore) GetSite(site *model.Site) error {
+func (m *mockNetworkStore) GetSite(site *models.Site) error {
 	return m.GetSiteFunc(site)
 }
 
 func getMockNetwork() Network {
 	s := mockNetworkStore{
-		CreateNetworkFunc: func(net *model.Network) error {
+		CreateNetworkFunc: func(net *models.Network) error {
 			net.ID = 12345
 			return nil
 		},
-		GetNetworkFunc: func(net *model.Network) error {
+		GetNetworkFunc: func(net *models.Network) error {
 			net.ID = 12345
 			net.Network = "test-network"
-			net.Sites = []model.Site{
+			net.Sites = []models.Site{
 				{ID: 1, FriendlyName: "z"},
 				{ID: 2, FriendlyName: "a"},
 			}
 			return nil
 		},
-		GetSiteFunc: func(site *model.Site) error { return nil },
+		GetSiteFunc: func(site *models.Site) error { return nil },
 	}
 
 	return Network{Store: &s}
@@ -83,7 +83,7 @@ func TestGet(t *testing.T) {
 	h := getMockNetwork()
 	if assert.NoError(t, h.Get(ctx)) {
 		dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
-		var net model.Network
+		var net models.Network
 		if assert.NoError(t, dec.Decode(&net)) {
 			assert.Equal(t, "test-network", net.Network, "Get Network should return 'test-network'")
 			assert.Equal(t, "a", net.Sites[0].FriendlyName, "The first site in the list should have FriendlyName 'a'")
@@ -111,9 +111,9 @@ func TestGetError(t *testing.T) {
 	for _, c := range cases {
 		h := Network{
 			Store: &mockNetworkStore{
-				CreateNetworkFunc: func(net *model.Network) error { return errors.New("not implemented") },
-				GetNetworkFunc:    func(net *model.Network) error { return c.Err },
-				GetSiteFunc:       func(site *model.Site) error { return errors.New("not implemented") },
+				CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
+				GetNetworkFunc:    func(net *models.Network) error { return c.Err },
+				GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
 			},
 		}
 		err := h.Get(ctx)
@@ -139,9 +139,9 @@ func TestCreateError(t *testing.T) {
 		ctx := app.NewContext(req, rec)
 		h := Network{
 			Store: &mockNetworkStore{
-				CreateNetworkFunc: func(net *model.Network) error { return errors.New("not implemented") },
-				GetNetworkFunc:    func(net *model.Network) error { return errors.New("not implemented") },
-				GetSiteFunc:       func(site *model.Site) error { return errors.New("not implemented") },
+				CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
+				GetNetworkFunc:    func(net *models.Network) error { return errors.New("not implemented") },
+				GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
 			},
 		}
 		err := h.Create(ctx)

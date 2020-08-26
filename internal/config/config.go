@@ -3,39 +3,15 @@ package config
 import (
 	"strings"
 
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/spf13/viper"
 )
 
-// Config structure
-type Config struct {
-	Database    Database `json:"-"`
-	ListenPort  int      `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
-	Timeout     int      `json:"-"`
-	Version     string   `json:"version"`
-	Environment string   `json:"-"`
-}
-
-// Database structure
-type Database struct {
-	Driver   string
-	Name     string
-	Username string
-	Password string
-	Host     string
-	Port     string
-	Log      bool
-}
-
-var c Config
-
-// IsProduction returns true if running in production mode
-func (c Config) IsProduction() bool {
-	return strings.ToUpper(c.Environment) == "PRODUCTION"
-}
+var c models.Config
 
 // InitConfig initializes application configuration
-func InitConfig(version string, cfgFile string) Config {
-	c = Config{
+func New(version string, cfgFile string) models.Config {
+	c = models.Config{
 		Environment: "Development",
 	}
 	if cfgFile != "" {
@@ -48,25 +24,25 @@ func InitConfig(version string, cfgFile string) Config {
 	viper.SetEnvPrefix("GSS")
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
-	viper.BindEnv("DATABASE.DRIVER")
-	viper.BindEnv("DATABASE.NAME")
-	viper.BindEnv("DATABASE.USERNAME")
-	viper.BindEnv("DATABASE.PASSWORD")
-	viper.BindEnv("DATABASE.HOST")
-	viper.BindEnv("DATABASE.PORT")
-	viper.BindEnv("DATABASE.LOG")
-	viper.BindEnv("LISTEN_PORT")
-	viper.BindEnv("TIMEOUT")
-	viper.BindEnv("ENVIRONMENT")
+	_ = viper.BindEnv("DATABASE.DRIVER")
+	_ = viper.BindEnv("DATABASE.NAME")
+	_ = viper.BindEnv("DATABASE.USERNAME")
+	_ = viper.BindEnv("DATABASE.PASSWORD")
+	_ = viper.BindEnv("DATABASE.HOST")
+	_ = viper.BindEnv("DATABASE.PORT")
+	_ = viper.BindEnv("DATABASE.LOG")
+	_ = viper.BindEnv("LISTEN_PORT")
+	_ = viper.BindEnv("TIMEOUT")
+	_ = viper.BindEnv("ENVIRONMENT")
 
-	viper.ReadInConfig()
+	_ = viper.ReadInConfig()
 	viper.AutomaticEnv()
-	viper.Unmarshal(&c)
+	_ = viper.Unmarshal(&c)
 	c.Version = version
 	return c
 }
 
 // GetConfig returns application configuration
-func GetConfig() Config {
+func GetConfig() models.Config {
 	return c
 }

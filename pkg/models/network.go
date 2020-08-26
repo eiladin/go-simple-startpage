@@ -1,4 +1,4 @@
-package model
+package models
 
 import (
 	"time"
@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Network structure
 type Network struct {
 	ID        uint           `json:"-" gorm:"primaryKey"`
 	CreatedAt time.Time      `json:"-"`

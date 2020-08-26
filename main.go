@@ -9,6 +9,7 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/handler"
 	"github.com/eiladin/go-simple-startpage/internal/store"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -22,7 +23,7 @@ func apiSkipper(ctx echo.Context) bool {
 	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
 }
 
-func setupMiddleware(app *echo.Echo, c config.Config) {
+func setupMiddleware(app *echo.Echo, c models.Config) {
 	if c.IsProduction() {
 		app.Use(middleware.Logger())
 	} else {
@@ -55,7 +56,7 @@ func registerRoutes(app echoswagger.ApiRoot, store store.Store) {
 var version = "dev"
 
 func main() {
-	c := config.InitConfig(version, "")
+	c := config.New(version, "")
 	store, err := database.DB{}.New()
 	if err != nil {
 		log.Fatal(err)

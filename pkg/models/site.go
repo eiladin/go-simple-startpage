@@ -1,4 +1,4 @@
-package model
+package models
 
 import (
 	"time"
@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Site structure
 type Site struct {
 	ID             uint           `json:"id" gorm:"primaryKey"`
 	CreatedAt      time.Time      `json:"-"`

@@ -12,17 +12,16 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 
-// Status struct
 type Status struct {
 	Store store.Store
 }
 
-func updateStatus(s *model.Site) error {
+func updateStatus(s *models.Site) error {
 	url, err := url.Parse(s.URI)
 	if err != nil {
 		return fmt.Errorf("unable to parse URI: %s", s.URI)
@@ -77,8 +76,8 @@ func testHTTP(u *url.URL) error {
 	return nil
 }
 
-func getStatus(h Status, id uint) (*model.Site, error) {
-	site := model.Site{ID: id}
+func getStatus(h Status, id uint) (*models.Site, error) {
+	site := models.Site{ID: id}
 	err := h.Store.GetSite(&site)
 	if err != nil {
 		return nil, err
@@ -87,7 +86,6 @@ func getStatus(h Status, id uint) (*model.Site, error) {
 	return &site, err
 }
 
-// Get /api/status/{id}
 func (h Status) Get(c echo.Context) error {
 	val := c.Param("id")
 	id, err := strconv.Atoi(val)
@@ -104,7 +102,7 @@ func (h Status) Get(c echo.Context) error {
 		}
 		return echo.ErrInternalServerError.SetInternal(err)
 	}
-	res := model.SiteStatus{
+	res := models.SiteStatus{
 		ID:   site.ID,
 		IsUp: site.IsUp,
 		IP:   site.IP,
@@ -112,11 +110,10 @@ func (h Status) Get(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// Register handler
 func (h Status) Register(app echoswagger.ApiRoot) echoswagger.ApiRoot {
 	app.GET("/api/status/:id", h.Get).
 		AddParamPath(0, "id", "SiteID to get status for").
-		AddResponse(http.StatusOK, "success", model.SiteStatus{}, nil).
+		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
 		AddResponse(http.StatusNotFound, "not found", nil, nil).
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
