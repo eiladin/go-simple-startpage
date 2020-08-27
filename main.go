@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/handler"
 	"github.com/eiladin/go-simple-startpage/internal/store"
@@ -23,7 +22,7 @@ func apiSkipper(ctx echo.Context) bool {
 	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
 }
 
-func setupMiddleware(app *echo.Echo, c models.Config) {
+func setupMiddleware(app *echo.Echo, c *models.Config) {
 	if c.IsProduction() {
 		app.Use(middleware.Logger())
 	} else {
@@ -47,17 +46,21 @@ func setupMiddleware(app *echo.Echo, c models.Config) {
 	}))
 }
 
-func registerRoutes(app echoswagger.ApiRoot, store store.Store) {
-	handler.Config{Store: config.GetConfig()}.Register(app)
-	handler.Network{Store: store}.Register(app)
-	handler.Status{Store: store}.Register(app)
+func registerRoutes(app echoswagger.ApiRoot, s store.Store, c *models.Config) {
+	h := handler.NewHandler(s, c)
+	h.AddGetHealthzRoute(app)
+	h.AddGetConfigRoute(app)
+	h.AddGetNetworkRoute(app)
+	h.AddPostNetworkRoute(app)
+	h.AddGetStatusRoute(app)
 }
 
 var version = "dev"
 
 func main() {
-	c := config.New(version, "")
-	store, err := database.DB{}.New()
+	c := &models.Config{}
+	c.New(version, "")
+	store, err := database.DB{}.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,7 +82,7 @@ func main() {
 	e := app.Echo()
 
 	setupMiddleware(e, c)
-	registerRoutes(app, store)
+	registerRoutes(app, store, c)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

@@ -3,6 +3,7 @@ module github.com/eiladin/go-simple-startpage
 go 1.15
 
 require (
+	github.com/etherlabsio/healthcheck v0.0.0-20191224061800-dd3d2fd8c3f6
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/jarcoal/httpmock v1.0.6
 	github.com/labstack/echo/v4 v4.1.16

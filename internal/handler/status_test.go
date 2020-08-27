@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/jarcoal/httpmock"
@@ -17,29 +16,6 @@ import (
 	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockStatusStore struct {
-	NewFunc           func() (store.Store, error)
-	CreateNetworkFunc func(*models.Network) error
-	GetNetworkFunc    func(*models.Network) error
-	GetSiteFunc       func(*models.Site) error
-}
-
-func (m *mockStatusStore) New() (store.Store, error) {
-	return m.NewFunc()
-}
-
-func (m *mockStatusStore) CreateNetwork(net *models.Network) error {
-	return m.CreateNetworkFunc(net)
-}
-
-func (m *mockStatusStore) GetNetwork(net *models.Network) error {
-	return m.GetNetworkFunc(net)
-}
-
-func (m *mockStatusStore) GetSite(site *models.Site) error {
-	return m.GetSiteFunc(site)
-}
 
 func TestHttp(t *testing.T) {
 	httpmock.ActivateNonDefault(&httpClient)
@@ -49,13 +25,11 @@ func TestHttp(t *testing.T) {
 
 	url, err := url.Parse("https://my.test.site")
 	assert.NoError(t, err)
-	err = testHTTP(url)
+	err = testHTTP(0, url)
 	assert.NoError(t, err, "https://my.test.site should not error")
 }
 
 func TestHttpTimeout(t *testing.T) {
-	os.Setenv("GSS_TIMEOUT", "100")
-	config.New("", "no-file")
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
 
@@ -66,7 +40,7 @@ func TestHttpTimeout(t *testing.T) {
 
 	url, err := url.Parse("https://timeout.test.site")
 	assert.NoError(t, err)
-	err = testHTTP(url)
+	err = testHTTP(100, url)
 	assert.Error(t, err, "https://timeout.test.site should timeout")
 	os.Unsetenv("GSS_TIMEOUT")
 }
@@ -114,7 +88,7 @@ func TestUpdateStatus(t *testing.T) {
 	defer ln.Close()
 
 	for _, c := range cases {
-		err := updateStatus(&c.Site)
+		err := updateStatus(0, &c.Site)
 		if c.HasError {
 			assert.Error(t, err, "site: %s should error", c.Site.URI)
 			assert.False(t, c.IsUp, "site: %s should not be up", c.Site.URI)
@@ -127,8 +101,8 @@ func TestUpdateStatus(t *testing.T) {
 
 func TestGetStatusHandler(t *testing.T) {
 	app := echo.New()
-	var s mockStatusStore
-	h := Status{Store: &s}
+	var s mockStore
+	h := handler{Store: &s, Config: &models.Config{}}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
@@ -174,7 +148,7 @@ func TestGetStatusHandler(t *testing.T) {
 		ctx.SetPath("/:id")
 		ctx.SetParamNames("id")
 		ctx.SetParamValues(c.ID)
-		err := h.Get(ctx)
+		err := h.GetStatus(ctx)
 		if c.Error != nil {
 			assert.EqualError(t, err, c.Error.Error(), "%s should return %s", c.URI, c.Error.Error())
 		}
@@ -185,8 +159,8 @@ func TestGetStatusHandler(t *testing.T) {
 }
 
 func TestGetStatus(t *testing.T) {
-	var s mockStatusStore
-	handler := Status{Store: &s}
+	var s mockStore
+	handler := handler{Store: &s, Config: &models.Config{}}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
@@ -227,10 +201,10 @@ func TestGetStatus(t *testing.T) {
 	}
 }
 
-func TestStatusHandler(t *testing.T) {
+func TestStatusRegister(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := Status{Store: getMockNetwork().Store}
-	h.Register(app)
+	h := handler{Store: &mockStore{}}
+	h.AddGetStatusRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

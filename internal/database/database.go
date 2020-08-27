@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"gorm.io/driver/mysql"
@@ -29,10 +28,9 @@ type migrationFailedErr string
 
 func (e migrationFailedErr) Error() string { return "unable to run database migrations: " + string(e) }
 
-func (d DB) New() (store.Store, error) {
-	c := config.GetConfig()
-	cfg := getGormConfig(&c)
-	dsn := getDSN(&c)
+func (d DB) New(config *models.Config) (store.Store, error) {
+	cfg := getGormConfig(config)
+	dsn := getDSN(config)
 	conn, err := gorm.Open(dsn, cfg)
 	if err != nil {
 		return nil, connectionRefusedErr(err.Error())
@@ -42,7 +40,7 @@ func (d DB) New() (store.Store, error) {
 	if err != nil {
 		return nil, migrationFailedErr(err.Error())
 	}
-	return &d, nil
+	return d, nil
 }
 
 func getGormConfig(c *models.Config) *gorm.Config {

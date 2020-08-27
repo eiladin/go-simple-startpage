@@ -2,10 +2,8 @@ package database
 
 import (
 	"errors"
-	"os"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/stretchr/testify/assert"
@@ -46,11 +44,13 @@ func TestGetDSN(t *testing.T) {
 }
 
 func TestOpenError(t *testing.T) {
-	os.Setenv("GSS_DATABASE_DRIVER", "postgres")
-	config.New("1.2.3", "./not-found.yaml")
-	_, err := DB{}.New()
+	c := models.Config{
+		Database: models.Database{
+			Driver: "postgres",
+		},
+	}
+	_, err := DB{}.New(&c)
 	assert.Contains(t, err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
-	os.Unsetenv("GSS_DATABASE_DRIVER")
 }
 
 func TestHandleError(t *testing.T) {
@@ -69,10 +69,13 @@ func TestHandleError(t *testing.T) {
 }
 
 func TestDBFunctions(t *testing.T) {
-	os.Setenv("GSS_DATABASE_DRIVER", "sqlite")
-	os.Setenv("GSS_DATABASE_NAME", ":memory:")
-	config.New("1.2.3", "./not-found.yaml")
-	db, err := DB{}.New()
+	c := models.Config{
+		Database: models.Database{
+			Driver: "sqlite",
+			Name:   ":memory:",
+		},
+	}
+	db, err := DB{}.New(&c)
 	assert.NoError(t, err)
 
 	net := models.Network{
@@ -108,7 +111,4 @@ func TestDBFunctions(t *testing.T) {
 	assert.NoError(t, db.GetSite(&findSite))
 	// GetSite assertions
 	assert.Equal(t, "test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
-
-	os.Unsetenv("GSS_DATABASE_DRIVER")
-	os.Unsetenv("GSS_DATABASE_NAME")
 }

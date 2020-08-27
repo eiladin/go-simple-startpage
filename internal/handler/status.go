@@ -10,18 +10,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 
-type Status struct {
-	Store store.Store
-}
-
-func updateStatus(s *models.Site) error {
+func updateStatus(timeout int, s *models.Site) error {
 	url, err := url.Parse(s.URI)
 	if err != nil {
 		return fmt.Errorf("unable to parse URI: %s", s.URI)
@@ -31,7 +26,7 @@ func updateStatus(s *models.Site) error {
 	case "ssh":
 		err = testSSH(url)
 	default:
-		err = testHTTP(url)
+		err = testHTTP(timeout, url)
 	}
 	s.IsUp = err == nil
 	return err
@@ -61,9 +56,8 @@ var httpClient = http.Client{
 	},
 }
 
-func testHTTP(u *url.URL) error {
-	c := config.GetConfig()
-	httpClient.Timeout = time.Millisecond * time.Duration(c.Timeout)
+func testHTTP(timeout int, u *url.URL) error {
+	httpClient.Timeout = time.Millisecond * time.Duration(timeout)
 
 	r, err := httpClient.Get(u.String())
 	if err != nil {
@@ -76,17 +70,17 @@ func testHTTP(u *url.URL) error {
 	return nil
 }
 
-func getStatus(h Status, id uint) (*models.Site, error) {
+func getStatus(h handler, id uint) (*models.Site, error) {
 	site := models.Site{ID: id}
 	err := h.Store.GetSite(&site)
 	if err != nil {
 		return nil, err
 	}
-	err = updateStatus(&site)
+	err = updateStatus(h.Config.Timeout, &site)
 	return &site, err
 }
 
-func (h Status) Get(c echo.Context) error {
+func (h handler) GetStatus(c echo.Context) error {
 	val := c.Param("id")
 	id, err := strconv.Atoi(val)
 	if err != nil || id < 1 {
@@ -106,8 +100,8 @@ func (h Status) Get(c echo.Context) error {
 	})
 }
 
-func (h Status) Register(app echoswagger.ApiRoot) echoswagger.ApiRoot {
-	app.GET("/api/status/:id", h.Get).
+func (h handler) AddGetStatusRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+	app.GET("/api/status/:id", h.GetStatus).
 		AddParamPath(0, "id", "SiteID to get status for").
 		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
