@@ -9,7 +9,6 @@ import (
 
 var c models.Config
 
-// InitConfig initializes application configuration
 func New(version string, cfgFile string) models.Config {
 	c = models.Config{
 		Environment: "Development",
@@ -42,7 +41,6 @@ func New(version string, cfgFile string) models.Config {
 	return c
 }
 
-// GetConfig returns application configuration
 func GetConfig() models.Config {
 	return c
 }

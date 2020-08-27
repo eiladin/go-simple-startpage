@@ -96,18 +96,14 @@ func (h Status) Get(c echo.Context) error {
 		return echo.ErrBadRequest.SetInternal(err)
 	}
 	site, err := getStatus(h, uint(id))
-	if err != nil {
-		if errors.Is(err, store.ErrNotFound) {
-			return echo.ErrNotFound
-		}
-		return echo.ErrInternalServerError.SetInternal(err)
+	if errors.Is(err, store.ErrNotFound) {
+		return echo.ErrNotFound
 	}
-	res := models.SiteStatus{
+	return c.JSON(http.StatusOK, models.SiteStatus{
 		ID:   site.ID,
 		IsUp: site.IsUp,
 		IP:   site.IP,
-	}
-	return c.JSON(http.StatusOK, res)
+	})
 }
 
 func (h Status) Register(app echoswagger.ApiRoot) echoswagger.ApiRoot {
