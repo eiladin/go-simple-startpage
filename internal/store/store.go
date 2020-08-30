@@ -3,16 +3,14 @@ package store
 import (
 	"errors"
 
-	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/internal/models"
 )
 
-// Store interface
-type Store interface {
-	New() (Store, error)
-	CreateNetwork(net *model.Network) error
-	GetNetwork(net *model.Network) error
-	GetSite(site *model.Site) error
-}
-
-// ErrNotFound not found error
 var ErrNotFound = errors.New("record not found")
+
+type Store interface {
+	New(config *models.Config) (Store, error)
+	CreateNetwork(net *models.Network) error
+	GetNetwork(net *models.Network) error
+	GetSite(site *models.Site) error
+}

@@ -1,4 +1,4 @@
-package model
+package models
 
 import (
 	"time"
@@ -6,13 +6,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// Link structure
-type Link struct {
+type Tag struct {
 	ID        uint           `json:"-" gorm:"primaryKey"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
-	NetworkID uint           `json:"-"`
-	Name      string         `json:"name"`
-	URI       string         `json:"uri"`
+	SiteID    uint           `json:"-"`
+	Value     string         `json:"value"`
 }

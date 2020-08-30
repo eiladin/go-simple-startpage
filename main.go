@@ -3,14 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/internal/api"
 	"github.com/eiladin/go-simple-startpage/internal/database"
-	"github.com/eiladin/go-simple-startpage/internal/handler"
-	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -24,7 +21,7 @@ func apiSkipper(ctx echo.Context) bool {
 	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
 }
 
-func setupMiddleware(app *echo.Echo, c config.Config) {
+func setupMiddleware(app *echo.Echo, c *models.Config) {
 	if c.IsProduction() {
 		app.Use(middleware.Logger())
 	} else {
@@ -42,41 +39,17 @@ func setupMiddleware(app *echo.Echo, c config.Config) {
 	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		Skipper: apiSkipper,
 		Index:   "index.html",
-		Root:    "ui/dist/ui",
+		Root:    "ui/dist",
 		Browse:  false,
 		HTML5:   true,
 	}))
 }
 
-func setupRoutes(app echoswagger.ApiRoot, store store.Store) {
-	app.GET("/api/appconfig", handler.Config{Store: config.GetConfig()}.Get).
-		AddResponse(http.StatusOK, "success", config.Config{}, nil)
-
-	app.GET("/api/network", handler.Network{Store: store}.Get).
-		AddResponse(http.StatusOK, "success", model.Network{}, nil).
-		AddResponse(http.StatusNotFound, "not found", nil, nil).
-		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
-
-	app.POST("/api/network", handler.Network{Store: store}.Create).
-		AddParamBody(model.Network{}, "body", "Network to add", true).
-		AddResponse(http.StatusCreated, "success", model.NetworkID{}, nil).
-		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
-		AddResponse(http.StatusNotFound, "not found", nil, nil).
-		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
-
-	app.GET("/api/status/:id", handler.Status{Store: store}.Get).
-		AddParamPath(0, "id", "SiteID to get status for").
-		AddResponse(http.StatusOK, "success", model.SiteStatus{}, nil).
-		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
-		AddResponse(http.StatusNotFound, "not found", nil, nil).
-		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
-}
-
 var version = "dev"
 
 func main() {
-	c := config.InitConfig(version, "")
-	store, err := database.DB{}.New()
+	c := models.NewConfig(version, "")
+	store, err := database.DB{}.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,7 +71,7 @@ func main() {
 	e := app.Echo()
 
 	setupMiddleware(e, c)
-	setupRoutes(app, store)
+	api.NewHandler(app, store, c)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

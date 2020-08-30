@@ -1,6 +1,5 @@
-package model
+package models
 
-// SiteStatus structure
 type SiteStatus struct {
 	ID   uint   `json:"id"`
 	IsUp bool   `json:"isUp"`

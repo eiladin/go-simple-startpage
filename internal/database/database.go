@@ -7,9 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -17,30 +16,34 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-// DB structure
 type DB struct {
 	conn *gorm.DB
 }
 
 type connectionRefusedErr string
 
-func (e connectionRefusedErr) Error() string { return "Unable to establish connection: " + string(e) }
+func (e connectionRefusedErr) Error() string { return "unable to establish connection: " + string(e) }
 
-// New initialized the selected database
-func (d DB) New() (store.Store, error) {
-	c := config.GetConfig()
-	cfg := getConfig(&c)
-	dsn := getDSN(&c)
+type migrationFailedErr string
+
+func (e migrationFailedErr) Error() string { return "unable to run database migrations: " + string(e) }
+
+func (d DB) New(config *models.Config) (store.Store, error) {
+	cfg := getGormConfig(config)
+	dsn := getDSN(config)
 	conn, err := gorm.Open(dsn, cfg)
 	if err != nil {
 		return nil, connectionRefusedErr(err.Error())
 	}
 	d.conn = conn
-	migrateDB(conn)
-	return &d, nil
+	err = migrateDB(conn)
+	if err != nil {
+		return nil, migrationFailedErr(err.Error())
+	}
+	return d, nil
 }
 
-func getConfig(c *config.Config) *gorm.Config {
+func getGormConfig(c *models.Config) *gorm.Config {
 	llevel := logger.Silent
 	if c.Database.Log {
 		llevel = logger.Info
@@ -55,7 +58,7 @@ func getConfig(c *config.Config) *gorm.Config {
 	}
 }
 
-func getDSN(c *config.Config) gorm.Dialector {
+func getDSN(c *models.Config) gorm.Dialector {
 	driver := strings.ToLower(c.Database.Driver)
 	database := c.Database.Name
 	username := c.Database.Username
@@ -74,11 +77,13 @@ func getDSN(c *config.Config) gorm.Dialector {
 	return sqlite.Open("simple-startpage.db")
 }
 
-func migrateDB(conn *gorm.DB) {
-	conn.AutoMigrate(&model.Network{})
-	conn.AutoMigrate(&model.Site{})
-	conn.AutoMigrate(&model.Tag{})
-	conn.AutoMigrate(&model.Link{})
+func migrateDB(conn *gorm.DB) error {
+	return conn.AutoMigrate(
+		&models.Network{},
+		&models.Site{},
+		&models.Tag{},
+		&models.Link{},
+	)
 }
 
 func handleError(err error) error {
@@ -88,24 +93,21 @@ func handleError(err error) error {
 	return err
 }
 
-// CreateNetwork creates a network in the database
-func (d DB) CreateNetwork(net *model.Network) error {
-	d.conn.Unscoped().Where("1 = 1").Delete(&model.Tag{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&model.Site{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&model.Link{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&model.Network{})
+func (d DB) CreateNetwork(net *models.Network) error {
+	d.conn.Unscoped().Where("1 = 1").Delete(&models.Tag{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&models.Site{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&models.Link{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&models.Network{})
 	result := d.conn.Create(&net)
 	return handleError(result.Error)
 }
 
-// GetNetwork reads a network from the database
-func (d DB) GetNetwork(net *model.Network) error {
+func (d DB) GetNetwork(net *models.Network) error {
 	result := d.conn.Preload("Sites.Tags").Preload("Sites").Preload("Links").First(net)
 	return handleError(result.Error)
 }
 
-// GetSite reads a site from the database
-func (d DB) GetSite(site *model.Site) error {
+func (d DB) GetSite(site *models.Site) error {
 	result := d.conn.First(site)
 	return handleError(result.Error)
 }

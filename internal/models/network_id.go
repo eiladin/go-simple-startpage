@@ -1,6 +1,5 @@
-package model
+package models
 
-// NetworkID struct
 type NetworkID struct {
 	ID uint `json:"id"`
 }

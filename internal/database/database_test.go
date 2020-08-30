@@ -2,12 +2,10 @@ package database
 
 import (
 	"errors"
-	"os"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
@@ -29,8 +27,8 @@ func TestGetDSN(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		cfg := &config.Config{
-			Database: config.Database{
+		cfg := &models.Config{
+			Database: models.Database{
 				Driver:   c.Driver,
 				Name:     c.Dbname,
 				Username: c.Username,
@@ -46,11 +44,13 @@ func TestGetDSN(t *testing.T) {
 }
 
 func TestOpenError(t *testing.T) {
-	os.Setenv("GSS_DATABASE_DRIVER", "postgres")
-	config.InitConfig("1.2.3", "./not-found.yaml")
-	_, err := DB{}.New()
+	c := models.Config{
+		Database: models.Database{
+			Driver: "postgres",
+		},
+	}
+	_, err := DB{}.New(&c)
 	assert.Contains(t, err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
-	os.Unsetenv("GSS_DATABASE_DRIVER")
 }
 
 func TestHandleError(t *testing.T) {
@@ -69,25 +69,27 @@ func TestHandleError(t *testing.T) {
 }
 
 func TestDBFunctions(t *testing.T) {
-	os.Setenv("GSS_DATABASE_DRIVER", "sqlite")
-	os.Setenv("GSS_DATABASE_NAME", "test.db")
-	defer os.RemoveAll("test.db")
-	config.InitConfig("1.2.3", "./not-found.yaml")
-	db, err := DB{}.New()
+	c := models.Config{
+		Database: models.Database{
+			Driver: "sqlite",
+			Name:   ":memory:",
+		},
+	}
+	db, err := DB{}.New(&c)
 	assert.NoError(t, err)
 
-	net := model.Network{
+	net := models.Network{
 		Network: "test",
-		Links: []model.Link{
+		Links: []models.Link{
 			{Name: "test-link-1"},
 			{Name: "test-link-2"},
 		},
-		Sites: []model.Site{
+		Sites: []models.Site{
 			{FriendlyName: "test-site-1"},
 			{FriendlyName: "test-site-2"},
 		},
 	}
-	db.CreateNetwork(&net)
+	assert.NoError(t, db.CreateNetwork(&net))
 	// CreateNetwork assertions
 	assert.Equal(t, uint(1), net.ID, "Network ID should be '1'")
 	assert.Equal(t, uint(1), net.Sites[0].ID, "Site ID should be '1'")
@@ -95,21 +97,18 @@ func TestDBFunctions(t *testing.T) {
 	assert.Equal(t, uint(1), net.Links[0].ID, "Link ID should be '1'")
 	assert.Equal(t, uint(2), net.Links[1].ID, "Link ID should be '2'")
 
-	findNet := model.Network{
+	findNet := models.Network{
 		ID: 1,
 	}
-	db.GetNetwork(&findNet)
+	assert.NoError(t, db.GetNetwork(&findNet))
 	// GetNetwork assertions
 	assert.Equal(t, "test", findNet.Network, "Network should be 'test'")
 	assert.Equal(t, "test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
 
-	findSite := model.Site{
+	findSite := models.Site{
 		ID: 1,
 	}
-	db.GetSite(&findSite)
+	assert.NoError(t, db.GetSite(&findSite))
 	// GetSite assertions
 	assert.Equal(t, "test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
-
-	os.Unsetenv("GSS_DATABASE_DRIVER")
-	os.Unsetenv("GSS_DATABASE_NAME")
 }

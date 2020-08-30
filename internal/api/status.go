@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"crypto/tls"
@@ -10,18 +10,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/internal/config"
-	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/labstack/echo/v4"
 )
 
-// Status struct
-type Status struct {
-	Store store.Store
-}
-
-func updateStatus(s *model.Site) error {
+func updateStatus(timeout int, s *models.Site) error {
 	url, err := url.Parse(s.URI)
 	if err != nil {
 		return fmt.Errorf("unable to parse URI: %s", s.URI)
@@ -31,7 +24,7 @@ func updateStatus(s *model.Site) error {
 	case "ssh":
 		err = testSSH(url)
 	default:
-		err = testHTTP(url)
+		err = testHTTP(timeout, url)
 	}
 	s.IsUp = err == nil
 	return err
@@ -61,9 +54,8 @@ var httpClient = http.Client{
 	},
 }
 
-func testHTTP(u *url.URL) error {
-	c := config.GetConfig()
-	httpClient.Timeout = time.Millisecond * time.Duration(c.Timeout)
+func testHTTP(timeout int, u *url.URL) error {
+	httpClient.Timeout = time.Millisecond * time.Duration(timeout)
 
 	r, err := httpClient.Get(u.String())
 	if err != nil {
@@ -76,37 +68,34 @@ func testHTTP(u *url.URL) error {
 	return nil
 }
 
-func getStatus(h Status, id uint) (*model.Site, error) {
-	site := model.Site{ID: id}
-	err := h.Store.GetSite(&site)
-	if err != nil {
-		return nil, err
-	}
-	err = updateStatus(&site)
-	return &site, err
-}
-
-// Get /api/status/{id}
-func (h Status) Get(c echo.Context) error {
-	val := c.Param("id")
-	id, err := strconv.Atoi(val)
+func (h handler) getStatus(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id < 1 {
 		if err == nil {
-			err = errors.New("invalid id received: " + val)
+			err = errors.New("invalid id received: " + c.Param("id"))
 		}
 		return echo.ErrBadRequest.SetInternal(err)
 	}
-	site, err := getStatus(h, uint(id))
+
+	site := models.Site{ID: uint(id)}
+	err = h.Store.GetSite(&site)
 	if err != nil {
-		if errors.Is(err, store.ErrNotFound) {
-			return echo.ErrNotFound
-		}
-		return echo.ErrInternalServerError.SetInternal(err)
+		return echo.ErrNotFound
 	}
-	res := model.SiteStatus{
+
+	_ = updateStatus(h.Config.Timeout, &site)
+	return c.JSON(http.StatusOK, models.SiteStatus{
 		ID:   site.ID,
 		IsUp: site.IsUp,
 		IP:   site.IP,
-	}
-	return c.JSON(http.StatusOK, res)
+	})
+}
+
+func (h handler) addStatusRoutes() {
+	h.GET("/api/status/:id", h.getStatus).
+		AddParamPath(0, "id", "SiteID to get status for").
+		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
+		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
+		AddResponse(http.StatusNotFound, "not found", nil, nil).
+		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
 }
