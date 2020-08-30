@@ -1,6 +1,6 @@
 # Go-Simple-Startpage
 
-This is an example app built with go and angular 8.
+This is an example app built with go and angular 10.
 
 ## Building / Running 
 
