@@ -39,7 +39,7 @@ func setupMiddleware(app *echo.Echo, c *models.Config) {
 	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		Skipper: apiSkipper,
 		Index:   "index.html",
-		Root:    "ui/dist/ui",
+		Root:    "ui/dist",
 		Browse:  false,
 		HTML5:   true,
 	}))
