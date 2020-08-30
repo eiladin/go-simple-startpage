@@ -6,7 +6,6 @@ import { Link } from '../../shared/models/link.model';
 import { Site } from '../../shared/models/site.model';
 import { ConfigService } from '../services/config.service';
 import { EasingLogic } from 'ngx-page-scroll-core';
-import { ThrowStmt } from '@angular/compiler';
 @Component({
   selector: 'app-config',
   templateUrl: './config.component.html',
