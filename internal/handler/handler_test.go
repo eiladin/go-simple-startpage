@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"testing"
+
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/stretchr/testify/assert"
 )
 
 type mockStore struct {
@@ -28,7 +31,7 @@ func (m mockStore) GetSite(site *models.Site) error {
 	return m.GetSiteFunc(site)
 }
 
-func getMockHandler() handler {
+func newMockStore() mockStore {
 	s := mockStore{
 		CreateNetworkFunc: func(net *models.Network) error {
 			net.ID = 12345
@@ -45,6 +48,20 @@ func getMockHandler() handler {
 		},
 		GetSiteFunc: func(site *models.Site) error { return nil },
 	}
+	return s
+}
 
+func newMockHandler() handler {
+	s := newMockStore()
 	return handler{Store: &s}
+}
+
+func TestGetHandler(t *testing.T) {
+	h := NewHandler(
+		newMockStore(),
+		&models.Config{
+			Version: "test-handler-version",
+		},
+	)
+	assert.Equal(t, "test-handler-version", h.Config.Version)
 }

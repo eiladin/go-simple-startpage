@@ -48,10 +48,10 @@ func setupMiddleware(app *echo.Echo, c *models.Config) {
 
 func registerRoutes(app echoswagger.ApiRoot, s store.Store, c *models.Config) {
 	h := handler.NewHandler(s, c)
-	h.AddGetHealthzRoute(app)
+	h.AddGetHealthcheckRoute(app)
 	h.AddGetConfigRoute(app)
 	h.AddGetNetworkRoute(app)
-	h.AddPostNetworkRoute(app)
+	h.AddGetNetworkRoute(app)
 	h.AddGetStatusRoute(app)
 }
 

@@ -99,7 +99,7 @@ func TestUpdateStatus(t *testing.T) {
 	}
 }
 
-func TestGetStatusHandler(t *testing.T) {
+func TestGetStatus(t *testing.T) {
 	app := echo.New()
 	var s mockStore
 	h := handler{Store: &s, Config: &models.Config{}}
@@ -148,7 +148,7 @@ func TestGetStatusHandler(t *testing.T) {
 		ctx.SetPath("/:id")
 		ctx.SetParamNames("id")
 		ctx.SetParamValues(c.ID)
-		err := h.GetStatus(ctx)
+		err := h.getStatus(ctx)
 		if c.Error != nil {
 			assert.EqualError(t, err, c.Error.Error(), "%s should return %s", c.URI, c.Error.Error())
 		}
@@ -158,50 +158,7 @@ func TestGetStatusHandler(t *testing.T) {
 	}
 }
 
-func TestGetStatus(t *testing.T) {
-	var s mockStore
-	handler := handler{Store: &s, Config: &models.Config{}}
-
-	httpmock.ActivateNonDefault(&httpClient)
-	defer httpmock.DeactivateAndReset()
-
-	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
-	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "fail"))
-
-	ln, err := net.Listen("tcp", "[::]:12345")
-	assert.NoError(t, err)
-	defer ln.Close()
-
-	cases := []struct {
-		URI   string
-		IsUp  bool
-		Error bool
-	}{
-		{URI: "https://my.test.site", IsUp: true, Error: false},
-		{URI: "https://my.fail.site", IsUp: false, Error: true},
-		{URI: "https://^^invalidurl^^", IsUp: false, Error: true},
-		{URI: "ssh://localhost:12345", IsUp: true, Error: false},
-		{URI: "ssh://localhost:1234", IsUp: false, Error: true},
-		{URI: "https://err.test.site", IsUp: false, Error: true},
-	}
-
-	for _, c := range cases {
-		s.GetSiteFunc = func(site *models.Site) error {
-			site.ID = 1
-			site.URI = c.URI
-			return nil
-		}
-		res, err := getStatus(handler, 1)
-		if c.Error {
-			assert.Error(t, err, "%s should error", c.URI)
-		} else {
-			assert.NoError(t, err, "%s should not error", c.URI)
-		}
-		assert.Equal(t, c.IsUp, res.IsUp, "%s should have isUp=%t", c.URI, c.IsUp)
-	}
-}
-
-func TestStatusRegister(t *testing.T) {
+func TestAddGetStatusRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := handler{Store: &mockStore{}}
 	h.AddGetStatusRoute(app)

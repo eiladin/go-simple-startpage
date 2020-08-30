@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateHandler(t *testing.T) {
+func TestCreateNetwork(t *testing.T) {
 	app := echo.New()
 	body := `{ "network": "test-network" }`
 
@@ -22,14 +22,14 @@ func TestCreateHandler(t *testing.T) {
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
 
-	h := getMockHandler()
-	if assert.NoError(t, h.CreateNetwork(ctx)) {
+	h := newMockHandler()
+	if assert.NoError(t, h.createNetwork(ctx)) {
 		assert.Equal(t, http.StatusCreated, rec.Code, "Create should return a 201")
 		assert.Equal(t, "{\"id\":12345}\n", rec.Body.String(), "Create should return an ID")
 	}
 }
 
-func TestCreateError(t *testing.T) {
+func TestCreateNetworkError(t *testing.T) {
 	cases := []struct {
 		Body string
 		Err  error
@@ -52,15 +52,15 @@ func TestCreateError(t *testing.T) {
 				GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
 			},
 		}
-		err := h.CreateNetwork(ctx)
+		err := h.createNetwork(ctx)
 		assert.EqualError(t, err, c.Err.Error())
 	}
 }
 
-func TestCreateNetworkRegister(t *testing.T) {
+func TestAddCreateNetworkRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := getMockHandler()
-	h.AddPostNetworkRoute(app)
+	h := newMockHandler()
+	h.AddCreateNetworkRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

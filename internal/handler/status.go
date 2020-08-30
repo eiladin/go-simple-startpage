@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -70,29 +69,22 @@ func testHTTP(timeout int, u *url.URL) error {
 	return nil
 }
 
-func getStatus(h handler, id uint) (*models.Site, error) {
-	site := models.Site{ID: id}
-	err := h.Store.GetSite(&site)
-	if err != nil {
-		return nil, err
-	}
-	err = updateStatus(h.Config.Timeout, &site)
-	return &site, err
-}
-
-func (h handler) GetStatus(c echo.Context) error {
-	val := c.Param("id")
-	id, err := strconv.Atoi(val)
+func (h handler) getStatus(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil || id < 1 {
 		if err == nil {
-			err = errors.New("invalid id received: " + val)
+			err = errors.New("invalid id received: " + c.Param("id"))
 		}
 		return echo.ErrBadRequest.SetInternal(err)
 	}
-	site, err := getStatus(h, uint(id))
-	if errors.Is(err, store.ErrNotFound) {
+
+	site := models.Site{ID: uint(id)}
+	err = h.Store.GetSite(&site)
+	if err != nil {
 		return echo.ErrNotFound
 	}
+
+	_ = updateStatus(h.Config.Timeout, &site)
 	return c.JSON(http.StatusOK, models.SiteStatus{
 		ID:   site.ID,
 		IsUp: site.IsUp,
@@ -101,7 +93,7 @@ func (h handler) GetStatus(c echo.Context) error {
 }
 
 func (h handler) AddGetStatusRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
-	app.GET("/api/status/:id", h.GetStatus).
+	app.GET("/api/status/:id", h.getStatus).
 		AddParamPath(0, "id", "SiteID to get status for").
 		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).

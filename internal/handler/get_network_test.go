@@ -14,13 +14,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGet(t *testing.T) {
+func TestGetNetwork(t *testing.T) {
 	app := echo.New()
 	req := httptest.NewRequest("GET", "/", nil)
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
-	h := getMockHandler()
-	if assert.NoError(t, h.GetNetwork(ctx)) {
+	h := newMockHandler()
+	if assert.NoError(t, h.getNetwork(ctx)) {
 		dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
 		var net models.Network
 		if assert.NoError(t, dec.Decode(&net)) {
@@ -34,7 +34,7 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestGetError(t *testing.T) {
+func TestGetNetworkError(t *testing.T) {
 	cases := []struct {
 		Err      error
 		Expected error
@@ -55,14 +55,14 @@ func TestGetError(t *testing.T) {
 				GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
 			},
 		}
-		err := h.GetNetwork(ctx)
+		err := h.getNetwork(ctx)
 		assert.EqualError(t, err, c.Expected.Error())
 	}
 }
 
-func TestGetNetworkRegister(t *testing.T) {
+func TestAddGetNetworkRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := getMockHandler()
+	h := newMockHandler()
 	h.AddGetNetworkRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {

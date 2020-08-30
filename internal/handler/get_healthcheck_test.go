@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetHealthcheck(t *testing.T) {
+func TestCheckDB(t *testing.T) {
 	cases := []struct {
 		Driver string
 		Name   string
@@ -36,10 +36,10 @@ func TestGetHealthcheck(t *testing.T) {
 	}
 }
 
-func TestHealthcheckRegister(t *testing.T) {
+func TestAddGetHealthcheckRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := handler{}
-	h.AddGetHealthzRoute(app)
+	h.AddGetHealthcheckRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

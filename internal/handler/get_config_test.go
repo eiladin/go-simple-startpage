@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetAppConfig(t *testing.T) {
+func TestGetConfig(t *testing.T) {
 	app := echo.New()
 	c := models.Config{Version: "1.2.3"}
 	h := handler{Config: &c}
@@ -19,13 +19,13 @@ func TestGetAppConfig(t *testing.T) {
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
 
-	if assert.NoError(t, h.GetConfig(ctx)) {
+	if assert.NoError(t, h.getConfig(ctx)) {
 		assert.Equal(t, http.StatusOK, rec.Code, "Status code should be 200")
 		assert.Equal(t, "{\"version\":\"1.2.3\"}\n", rec.Body.String(), "Version should be 1.2.3")
 	}
 }
 
-func TestConfigRegister(t *testing.T) {
+func TestAddGetConfigRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	c := models.Config{Version: "1.2.3"}
 	h := handler{Config: &c}

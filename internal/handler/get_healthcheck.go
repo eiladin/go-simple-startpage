@@ -21,16 +21,16 @@ func (h handler) checkDB(ctx context.Context) error {
 	return nil
 }
 
-func (h handler) GetHeathcheck() http.Handler {
-	return healthcheck.Handler(
+func (h handler) getHeathcheck() echo.HandlerFunc {
+	return echo.WrapHandler(healthcheck.Handler(
 		healthcheck.WithTimeout(5*time.Second),
 
 		healthcheck.WithChecker("database", healthcheck.CheckerFunc(h.checkDB)),
-	)
+	))
 }
 
-func (h handler) AddGetHealthzRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
-	app.GET("/api/healthz", echo.WrapHandler(h.GetHeathcheck())).
+func (h handler) AddGetHealthcheckRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+	app.GET("/api/healthz", h.getHeathcheck()).
 		AddResponse(http.StatusOK, "success", models.Healthcheck{}, nil)
 
 	return app

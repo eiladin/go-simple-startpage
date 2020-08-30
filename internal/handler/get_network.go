@@ -11,7 +11,7 @@ import (
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 
-func (h handler) GetNetwork(c echo.Context) error {
+func (h handler) getNetwork(c echo.Context) error {
 	var net models.Network
 	err := h.Store.GetNetwork(&net)
 	if err != nil {
@@ -27,7 +27,7 @@ func (h handler) GetNetwork(c echo.Context) error {
 }
 
 func (h handler) AddGetNetworkRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
-	app.GET("/api/network", h.GetNetwork).
+	app.GET("/api/network", h.getNetwork).
 		AddResponse(http.StatusOK, "success", models.Network{}, nil).
 		AddResponse(http.StatusNotFound, "not found", nil, nil).
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
