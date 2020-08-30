@@ -158,10 +158,10 @@ func TestGetStatus(t *testing.T) {
 	}
 }
 
-func TestAddGetStatusRoute(t *testing.T) {
+func TestAddStatusRoutes(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := handler{Store: &mockStore{}}
-	h.addGetStatusRoute(app)
+	h := handler{ApiRoot: app, Store: &mockStore{}}
+	h.addStatusRoutes()
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

@@ -10,7 +10,6 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/etherlabsio/healthcheck"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 )
 
 func (h handler) checkDB(ctx context.Context) error {
@@ -29,9 +28,7 @@ func (h handler) getHeathcheck() echo.HandlerFunc {
 	))
 }
 
-func (h handler) addGetHealthcheckRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
-	app.GET("/api/healthz", h.getHeathcheck()).
+func (h handler) addHeathcheckRoutes() {
+	h.GET("/api/healthz", h.getHeathcheck()).
 		AddResponse(http.StatusOK, "success", models.Healthcheck{}, nil)
-
-	return app
 }

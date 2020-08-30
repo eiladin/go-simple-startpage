@@ -25,11 +25,11 @@ func TestGetConfig(t *testing.T) {
 	}
 }
 
-func TestAddGetConfigRoute(t *testing.T) {
+func TestAddConfigRoutes(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	c := models.Config{Version: "1.2.3"}
-	h := handler{Config: &c}
-	h.addGetConfigRoute(app)
+	h := handler{ApiRoot: app, Config: &c}
+	h.addConfigRoutes()
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Path)

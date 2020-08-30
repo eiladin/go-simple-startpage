@@ -7,16 +7,16 @@ import (
 )
 
 type handler struct {
+	echoswagger.ApiRoot
 	Config *models.Config
 	Store  store.Store
 }
 
-func NewHandler(app echoswagger.ApiRoot, store store.Store, config *models.Config) *handler {
-	h := &handler{Config: config, Store: store}
-	h.addGetHealthcheckRoute(app)
-	h.addGetConfigRoute(app)
-	h.addCreateNetworkRoute(app)
-	h.addGetNetworkRoute(app)
-	h.addGetStatusRoute(app)
+func NewHandler(app echoswagger.ApiRoot, store store.Store, config *models.Config) handler {
+	h := handler{ApiRoot: app, Config: config, Store: store}
+	h.addHeathcheckRoutes()
+	h.addConfigRoutes()
+	h.addNetworkRoutes()
+	h.addStatusRoutes()
 	return h
 }

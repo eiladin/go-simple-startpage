@@ -12,7 +12,6 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 )
 
 func updateStatus(timeout int, s *models.Site) error {
@@ -92,13 +91,11 @@ func (h handler) getStatus(c echo.Context) error {
 	})
 }
 
-func (h handler) addGetStatusRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
-	app.GET("/api/status/:id", h.getStatus).
+func (h handler) addStatusRoutes() {
+	h.GET("/api/status/:id", h.getStatus).
 		AddParamPath(0, "id", "SiteID to get status for").
 		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
 		AddResponse(http.StatusNotFound, "not found", nil, nil).
 		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
-
-	return app
 }
