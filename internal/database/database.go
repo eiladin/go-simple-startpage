@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"

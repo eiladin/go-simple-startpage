@@ -3,8 +3,8 @@ package handler
 import (
 	"testing"
 
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 

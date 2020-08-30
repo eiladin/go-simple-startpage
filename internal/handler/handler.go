@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
 )
 
 type handler struct {

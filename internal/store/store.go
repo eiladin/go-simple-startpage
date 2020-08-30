@@ -3,7 +3,7 @@ package store
 import (
 	"errors"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/internal/models"
 )
 
 var ErrNotFound = errors.New("record not found")

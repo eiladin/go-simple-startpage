@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/assert"
