@@ -41,7 +41,7 @@ func TestEnvConfig(t *testing.T) {
 	os.Setenv("GSS_LISTEN_PORT", "5")
 	os.Setenv("GSS_TIMEOUT", "6")
 	os.Setenv("GSS_ENVIRONMENT", "Production")
-	c := (&Config{}).New("1.2.3", cfgFile)
+	c := NewConfig("1.2.3", cfgFile)
 	assert.Equal(t, "name1", c.Database.Name)
 	assert.Equal(t, false, c.Database.Log)
 	assert.Equal(t, 5, c.ListenPort)
@@ -56,8 +56,8 @@ func TestEnvConfig(t *testing.T) {
 
 func TestIsProduction(t *testing.T) {
 	cases := []struct {
-		Environment  string
-		IsProduction bool
+		Environment string
+		Expected    bool
 	}{
 		{"Production", true},
 		{"", false},
@@ -71,12 +71,8 @@ func TestIsProduction(t *testing.T) {
 		if c.Environment != "" {
 			os.Setenv("GSS_ENVIRONMENT", c.Environment)
 		}
-		cfg := (&Config{}).New("test", "not-found")
-		if c.IsProduction {
-			assert.True(t, cfg.IsProduction(), "IsProduction should be true")
-		} else {
-			assert.False(t, cfg.IsProduction(), "IsProduction should be false")
-		}
+		cfg := NewConfig("test", "not-found")
+		assert.Equal(t, c.Expected, cfg.IsProduction(), "IsProduction should be ", c.Expected)
 		if c.Environment != "" {
 			os.Unsetenv("GSS_ENVIRONMENT")
 		}
@@ -90,7 +86,7 @@ func TestDefaultConfig(t *testing.T) {
 	createConfigFile(t, cfgFile)
 	defer os.RemoveAll(cfgFile)
 
-	c := (&Config{}).New("1.2.3", "")
+	c := NewConfig("1.2.3", "")
 	assert.Equal(t, "dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
 	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
 	assert.Equal(t, 3000, c.ListenPort, "Listen Port should be '3000'")
@@ -104,7 +100,7 @@ func TestConfigFile(t *testing.T) {
 	createConfigFile(t, cfgFile)
 	defer os.RemoveAll(cfgFile)
 
-	c := (&Config{}).New("1.2.3", cfgFile)
+	c := NewConfig("1.2.3", cfgFile)
 	assert.Equal(t, "dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
 	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
 	assert.Equal(t, 3000, c.ListenPort, "Listen Port should be '3000'")
@@ -117,7 +113,7 @@ func TestConfigFileErr(t *testing.T) {
 	cfgFile := "./test-config-file-error.yml"
 	createErrorConfigFile(t, cfgFile)
 	defer os.RemoveAll(cfgFile)
-	c := (&Config{}).New("1.2.3", cfgFile)
+	c := NewConfig("1.2.3", cfgFile)
 	assert.NotEqual(t, "dbname.db", c.Database.Name, "Database Name should not be 'dbname.db'")
 	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
 	assert.NotEqual(t, 3000, c.ListenPort, "Listen Port should not be '3000'")

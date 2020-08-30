@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"net/http"
@@ -29,7 +29,7 @@ func TestAddGetConfigRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	c := models.Config{Version: "1.2.3"}
 	h := handler{Config: &c}
-	h.AddGetConfigRoute(app)
+	h.addGetConfigRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Path)

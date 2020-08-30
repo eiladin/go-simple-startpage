@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"crypto/tls"
@@ -92,7 +92,7 @@ func (h handler) getStatus(c echo.Context) error {
 	})
 }
 
-func (h handler) AddGetStatusRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+func (h handler) addGetStatusRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
 	app.GET("/api/status/:id", h.getStatus).
 		AddParamPath(0, "id", "SiteID to get status for").
 		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).

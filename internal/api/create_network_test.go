@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"errors"
@@ -60,7 +60,7 @@ func TestCreateNetworkError(t *testing.T) {
 func TestAddCreateNetworkRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := newMockHandler()
-	h.AddCreateNetworkRoute(app)
+	h.addCreateNetworkRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

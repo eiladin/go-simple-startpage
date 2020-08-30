@@ -28,8 +28,11 @@ func (c Config) IsProduction() bool {
 	return strings.ToUpper(c.Environment) == "PRODUCTION"
 }
 
-func (c *Config) New(version string, cfgFile string) *Config {
-	c.Environment = "Development"
+func NewConfig(version string, cfgFile string) *Config {
+	c := &Config{
+		Environment: "Development",
+		Version:     version,
+	}
 
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
@@ -55,6 +58,5 @@ func (c *Config) New(version string, cfgFile string) *Config {
 	_ = viper.ReadInConfig()
 	viper.AutomaticEnv()
 	_ = viper.Unmarshal(&c)
-	c.Version = version
 	return c
 }

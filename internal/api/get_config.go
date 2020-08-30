@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"net/http"
@@ -12,7 +12,7 @@ func (h handler) getConfig(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.Config)
 }
 
-func (h handler) AddGetConfigRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+func (h handler) addGetConfigRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
 	app.GET("/api/appconfig", h.getConfig).
 		AddResponse(http.StatusOK, "success", models.Config{}, nil)
 

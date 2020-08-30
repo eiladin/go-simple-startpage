@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func (h handler) getHeathcheck() echo.HandlerFunc {
 	))
 }
 
-func (h handler) AddGetHealthcheckRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+func (h handler) addGetHealthcheckRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
 	app.GET("/api/healthz", h.getHeathcheck()).
 		AddResponse(http.StatusOK, "success", models.Healthcheck{}, nil)
 

@@ -5,10 +5,9 @@ import (
 	"log"
 	"strings"
 
+	"github.com/eiladin/go-simple-startpage/internal/api"
 	"github.com/eiladin/go-simple-startpage/internal/database"
-	"github.com/eiladin/go-simple-startpage/internal/handler"
 	"github.com/eiladin/go-simple-startpage/internal/models"
-	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -46,20 +45,10 @@ func setupMiddleware(app *echo.Echo, c *models.Config) {
 	}))
 }
 
-func registerRoutes(app echoswagger.ApiRoot, s store.Store, c *models.Config) {
-	h := handler.NewHandler(s, c)
-	h.AddGetHealthcheckRoute(app)
-	h.AddGetConfigRoute(app)
-	h.AddGetNetworkRoute(app)
-	h.AddGetNetworkRoute(app)
-	h.AddGetStatusRoute(app)
-}
-
 var version = "dev"
 
 func main() {
-	c := &models.Config{}
-	c.New(version, "")
+	c := models.NewConfig(version, "")
 	store, err := database.DB{}.New(c)
 	if err != nil {
 		log.Fatal(err)
@@ -82,7 +71,7 @@ func main() {
 	e := app.Echo()
 
 	setupMiddleware(e, c)
-	registerRoutes(app, store, c)
+	api.NewHandler(app, store, c)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

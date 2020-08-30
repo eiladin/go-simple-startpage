@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"errors"
@@ -27,7 +27,7 @@ func (h handler) createNetwork(c echo.Context) error {
 	return c.JSON(http.StatusCreated, models.NetworkID{ID: net.ID})
 }
 
-func (h handler) AddCreateNetworkRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+func (h handler) addCreateNetworkRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
 	app.POST("/api/network", h.createNetwork).
 		AddParamBody(models.Network{}, "body", "Network to add", true).
 		AddResponse(http.StatusCreated, "success", models.NetworkID{}, nil).

@@ -1,10 +1,12 @@
-package handler
+package api
 
 import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/eiladin/go-simple-startpage/internal/store"
+	"github.com/labstack/echo/v4"
+	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,11 +59,22 @@ func newMockHandler() handler {
 }
 
 func TestGetHandler(t *testing.T) {
+	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := NewHandler(
+		app,
 		newMockStore(),
 		&models.Config{
 			Version: "test-handler-version",
 		},
 	)
+	e := []string{}
+	for _, r := range app.Echo().Routes() {
+		e = append(e, r.Method+" "+r.Path)
+	}
 	assert.Equal(t, "test-handler-version", h.Config.Version)
+	assert.Contains(t, e, "GET /api/network")
+	assert.Contains(t, e, "POST /api/network")
+	assert.Contains(t, e, "GET /api/healthz")
+	assert.Contains(t, e, "GET /api/appconfig")
+	assert.Contains(t, e, "GET /api/status/:id")
 }

@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"encoding/json"
@@ -63,7 +63,7 @@ func TestGetNetworkError(t *testing.T) {
 func TestAddGetNetworkRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := newMockHandler()
-	h.AddGetNetworkRoute(app)
+	h.addGetNetworkRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"net"
@@ -161,7 +161,7 @@ func TestGetStatus(t *testing.T) {
 func TestAddGetStatusRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := handler{Store: &mockStore{}}
-	h.AddGetStatusRoute(app)
+	h.addGetStatusRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

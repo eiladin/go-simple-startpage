@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func TestCheckDB(t *testing.T) {
 func TestAddGetHealthcheckRoute(t *testing.T) {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := handler{}
-	h.AddGetHealthcheckRoute(app)
+	h.addGetHealthcheckRoute(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

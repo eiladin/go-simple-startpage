@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"errors"
@@ -26,7 +26,7 @@ func (h handler) getNetwork(c echo.Context) error {
 	return c.JSON(http.StatusOK, net)
 }
 
-func (h handler) AddGetNetworkRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
+func (h handler) addGetNetworkRoute(app echoswagger.ApiRoot) echoswagger.ApiRoot {
 	app.GET("/api/network", h.getNetwork).
 		AddResponse(http.StatusOK, "success", models.Network{}, nil).
 		AddResponse(http.StatusNotFound, "not found", nil, nil).
