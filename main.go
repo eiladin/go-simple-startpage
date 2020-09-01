@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/eiladin/go-simple-startpage/internal/api"
@@ -13,11 +14,12 @@ import (
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 
-func swaggerRefSkipper(ctx echo.Context) bool {
-	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
+func localhostSkipper(ctx echo.Context) bool {
+	return strings.Contains(ctx.Request().Header.Get("Referer"), "localhost") &&
+		strings.Contains(ctx.Request().Host, "localhost")
 }
 
-func apiSkipper(ctx echo.Context) bool {
+func fromSwaggerSkipper(ctx echo.Context) bool {
 	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
 }
 
@@ -26,6 +28,7 @@ func setupMiddleware(app *echo.Echo, c *models.Config) {
 		app.Use(middleware.Logger())
 	} else {
 		app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+			Output: os.Stdout,
 			Format: "method=${method}, uri=${uri}, status=${status}, error=${error}\n",
 		}))
 	}
@@ -33,11 +36,14 @@ func setupMiddleware(app *echo.Echo, c *models.Config) {
 	app.Use(middleware.CORS())
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Secure())
-	app.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{Skipper: swaggerRefSkipper}))
+	app.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		Skipper:      localhostSkipper,
+		CookieSecure: true,
+	}))
 	app.Use(middleware.Recover())
 	app.Use(middleware.Gzip())
 	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Skipper: apiSkipper,
+		Skipper: fromSwaggerSkipper,
 		Index:   "index.html",
 		Root:    "ui/dist",
 		Browse:  false,

@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/internal/models"
@@ -21,12 +22,21 @@ func TestCheckDB(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		h := handler{Config: &models.Config{
+		cfg := &models.Config{
 			Database: models.Database{
 				Driver: c.Driver,
 				Name:   c.Name,
 			},
-		}}
+		}
+
+		var pingFunc func() error
+		if c.Error {
+			pingFunc = func() error { return errors.New("connection error") }
+		} else {
+			pingFunc = func() error { return nil }
+		}
+
+		h := handler{Config: cfg, Store: mockStore{PingFunc: pingFunc}}
 		err := h.checkDB(context.TODO())
 		if c.Error {
 			assert.Error(t, err)

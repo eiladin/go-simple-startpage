@@ -111,3 +111,11 @@ func (d DB) GetSite(site *models.Site) error {
 	result := d.conn.First(site)
 	return handleError(result.Error)
 }
+
+func (d DB) Ping() error {
+	sqlDB, err := d.conn.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Ping()
+}
