@@ -68,6 +68,18 @@ func TestHandleError(t *testing.T) {
 	}
 }
 
+func TestPing(t *testing.T) {
+	c := models.Config{
+		Database: models.Database{
+			Driver: "sqlite",
+			Name:   ":memory:",
+		},
+	}
+	db, err := DB{}.New(&c)
+	assert.NoError(t, err)
+	assert.NoError(t, db.Ping())
+}
+
 func TestDBFunctions(t *testing.T) {
 	c := models.Config{
 		Database: models.Database{
@@ -97,18 +109,16 @@ func TestDBFunctions(t *testing.T) {
 	assert.Equal(t, uint(1), net.Links[0].ID, "Link ID should be '1'")
 	assert.Equal(t, uint(2), net.Links[1].ID, "Link ID should be '2'")
 
-	findNet := models.Network{
-		ID: 1,
-	}
+	findNet := models.Network{ID: 1}
 	assert.NoError(t, db.GetNetwork(&findNet))
 	// GetNetwork assertions
 	assert.Equal(t, "test", findNet.Network, "Network should be 'test'")
 	assert.Equal(t, "test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
+	assert.Equal(t, "test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
 
-	findSite := models.Site{
-		ID: 1,
-	}
+	findSite := models.Site{ID: 1}
 	assert.NoError(t, db.GetSite(&findSite))
 	// GetSite assertions
 	assert.Equal(t, "test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
+
 }

@@ -6,14 +6,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/etherlabsio/healthcheck"
 	"github.com/labstack/echo/v4"
 )
 
 func (h handler) checkDB(ctx context.Context) error {
-	_, err := (&database.DB{}).New(h.Config)
+	err := h.Store.Ping()
 	if err != nil {
 		return fmt.Errorf("unable to connect to database %w", err)
 	}

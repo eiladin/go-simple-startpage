@@ -12,6 +12,7 @@ import (
 
 type mockStore struct {
 	NewFunc           func(*models.Config) (store.Store, error)
+	PingFunc          func() error
 	CreateNetworkFunc func(*models.Network) error
 	GetNetworkFunc    func(*models.Network) error
 	GetSiteFunc       func(*models.Site) error
@@ -19,6 +20,10 @@ type mockStore struct {
 
 func (m mockStore) New(c *models.Config) (store.Store, error) {
 	return m.NewFunc(c)
+}
+
+func (m mockStore) Ping() error {
+	return m.PingFunc()
 }
 
 func (m mockStore) CreateNetwork(net *models.Network) error {
