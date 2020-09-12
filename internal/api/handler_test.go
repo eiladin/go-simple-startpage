@@ -7,7 +7,7 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type mockStore struct {
@@ -18,56 +18,35 @@ type mockStore struct {
 	GetSiteFunc       func(*models.Site) error
 }
 
-func (m mockStore) New(c *models.Config) (store.Store, error) {
+func (m *mockStore) New(c *models.Config) (store.Store, error) {
 	return m.NewFunc(c)
 }
 
-func (m mockStore) Ping() error {
+func (m *mockStore) Ping() error {
 	return m.PingFunc()
 }
 
-func (m mockStore) CreateNetwork(net *models.Network) error {
+func (m *mockStore) CreateNetwork(net *models.Network) error {
 	return m.CreateNetworkFunc(net)
 }
 
-func (m mockStore) GetNetwork(net *models.Network) error {
+func (m *mockStore) GetNetwork(net *models.Network) error {
 	return m.GetNetworkFunc(net)
 }
 
-func (m mockStore) GetSite(site *models.Site) error {
+func (m *mockStore) GetSite(site *models.Site) error {
 	return m.GetSiteFunc(site)
 }
 
-func newMockStore() mockStore {
-	s := mockStore{
-		CreateNetworkFunc: func(net *models.Network) error {
-			net.ID = 12345
-			return nil
-		},
-		GetNetworkFunc: func(net *models.Network) error {
-			net.ID = 12345
-			net.Network = "test-network"
-			net.Sites = []models.Site{
-				{ID: 1, FriendlyName: "z"},
-				{ID: 2, FriendlyName: "a"},
-			}
-			return nil
-		},
-		GetSiteFunc: func(site *models.Site) error { return nil },
-	}
-	return s
+type HandlerSuite struct {
+	suite.Suite
 }
 
-func newMockHandler() handler {
-	s := newMockStore()
-	return handler{Store: &s}
-}
-
-func TestGetHandler(t *testing.T) {
+func (suite HandlerSuite) TestNewHandler() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := NewHandler(
 		app,
-		newMockStore(),
+		&mockStore{},
 		&models.Config{
 			Version: "test-handler-version",
 		},
@@ -76,10 +55,14 @@ func TestGetHandler(t *testing.T) {
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
-	assert.Equal(t, "test-handler-version", h.Config.Version)
-	assert.Contains(t, e, "GET /api/network")
-	assert.Contains(t, e, "POST /api/network")
-	assert.Contains(t, e, "GET /api/healthz")
-	assert.Contains(t, e, "GET /api/appconfig")
-	assert.Contains(t, e, "GET /api/status/:id")
+	suite.Equal("test-handler-version", h.Config.Version)
+	suite.Contains(e, "GET /api/network")
+	suite.Contains(e, "POST /api/network")
+	suite.Contains(e, "GET /api/healthz")
+	suite.Contains(e, "GET /api/appconfig")
+	suite.Contains(e, "GET /api/status/:id")
+}
+
+func TestHandlerSuite(t *testing.T) {
+	suite.Run(t, new(HandlerSuite))
 }

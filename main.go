@@ -15,8 +15,7 @@ import (
 )
 
 func localhostSkipper(ctx echo.Context) bool {
-	return strings.Contains(ctx.Request().Header.Get("Referer"), "localhost") &&
-		strings.Contains(ctx.Request().Host, "localhost")
+	return strings.Contains(ctx.Request().Host, "localhost")
 }
 
 func fromSwaggerSkipper(ctx echo.Context) bool {
@@ -55,7 +54,7 @@ var version = "dev"
 
 func main() {
 	c := models.NewConfig(version, "")
-	store, err := database.DB{}.New(c)
+	store, err := database.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}

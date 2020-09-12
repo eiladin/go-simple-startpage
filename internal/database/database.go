@@ -28,7 +28,8 @@ type migrationFailedErr string
 
 func (e migrationFailedErr) Error() string { return "unable to run database migrations: " + string(e) }
 
-func (d DB) New(config *models.Config) (store.Store, error) {
+func New(config *models.Config) (store.Store, error) {
+	d := DB{}
 	cfg := getGormConfig(config)
 	dsn := getDSN(config)
 	conn, err := gorm.Open(dsn, cfg)
@@ -40,7 +41,7 @@ func (d DB) New(config *models.Config) (store.Store, error) {
 	if err != nil {
 		return nil, migrationFailedErr(err.Error())
 	}
-	return d, nil
+	return &d, nil
 }
 
 func getGormConfig(c *models.Config) *gorm.Config {
@@ -93,7 +94,7 @@ func handleError(err error) error {
 	return err
 }
 
-func (d DB) CreateNetwork(net *models.Network) error {
+func (d *DB) CreateNetwork(net *models.Network) error {
 	d.conn.Unscoped().Where("1 = 1").Delete(&models.Tag{})
 	d.conn.Unscoped().Where("1 = 1").Delete(&models.Site{})
 	d.conn.Unscoped().Where("1 = 1").Delete(&models.Link{})
@@ -102,17 +103,17 @@ func (d DB) CreateNetwork(net *models.Network) error {
 	return handleError(result.Error)
 }
 
-func (d DB) GetNetwork(net *models.Network) error {
+func (d *DB) GetNetwork(net *models.Network) error {
 	result := d.conn.Preload("Sites.Tags").Preload("Sites").Preload("Links").First(net)
 	return handleError(result.Error)
 }
 
-func (d DB) GetSite(site *models.Site) error {
+func (d *DB) GetSite(site *models.Site) error {
 	result := d.conn.First(site)
 	return handleError(result.Error)
 }
 
-func (d DB) Ping() error {
+func (d *DB) Ping() error {
 	sqlDB, err := d.conn.DB()
 	if err != nil {
 		return err

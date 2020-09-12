@@ -6,11 +6,16 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/eiladin/go-simple-startpage/internal/store"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func TestGetDSN(t *testing.T) {
+type DatabaseSuite struct {
+	suite.Suite
+}
+
+func (suite *DatabaseSuite) TestGetDSN() {
 	cases := []struct {
 		Driver   string
 		Dbname   string
@@ -39,21 +44,28 @@ func TestGetDSN(t *testing.T) {
 		}
 
 		dsn := getDSN(cfg)
-		assert.Equal(t, c.Expected, dsn.Name(), "DSN Name should be %s", c.Expected)
+		suite.Equal(c.Expected, dsn.Name(), "DSN Name should be %s", c.Expected)
 	}
 }
 
-func TestOpenError(t *testing.T) {
+func (suite *DatabaseSuite) TestOpenError() {
 	c := models.Config{
 		Database: models.Database{
 			Driver: "postgres",
 		},
 	}
-	_, err := DB{}.New(&c)
-	assert.Contains(t, err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
+	_, err := New(&c)
+	suite.Contains(err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
 }
 
-func TestHandleError(t *testing.T) {
+func (suite *DatabaseSuite) TestMigrateDB() {
+	conn, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	suite.NoError(err)
+	err = migrateDB(conn)
+	suite.NoError(err)
+}
+
+func (suite *DatabaseSuite) TestHandleError() {
 	cases := []struct {
 		Err      error
 		Expected error
@@ -64,31 +76,31 @@ func TestHandleError(t *testing.T) {
 
 	for _, c := range cases {
 		err := handleError(c.Err)
-		assert.EqualError(t, err, c.Expected.Error())
+		suite.EqualError(err, c.Expected.Error())
 	}
 }
 
-func TestPing(t *testing.T) {
+func (suite *DatabaseSuite) TestPing() {
 	c := models.Config{
 		Database: models.Database{
 			Driver: "sqlite",
 			Name:   ":memory:",
 		},
 	}
-	db, err := DB{}.New(&c)
-	assert.NoError(t, err)
-	assert.NoError(t, db.Ping())
+	db, err := New(&c)
+	suite.NoError(err)
+	suite.NoError(db.Ping())
 }
 
-func TestDBFunctions(t *testing.T) {
+func (suite *DatabaseSuite) TestDBFunctions() {
 	c := models.Config{
 		Database: models.Database{
 			Driver: "sqlite",
 			Name:   ":memory:",
 		},
 	}
-	db, err := DB{}.New(&c)
-	assert.NoError(t, err)
+	db, err := New(&c)
+	suite.NoError(err)
 
 	net := models.Network{
 		Network: "test",
@@ -101,24 +113,27 @@ func TestDBFunctions(t *testing.T) {
 			{FriendlyName: "test-site-2"},
 		},
 	}
-	assert.NoError(t, db.CreateNetwork(&net))
+	suite.NoError(db.CreateNetwork(&net))
 	// CreateNetwork assertions
-	assert.Equal(t, uint(1), net.ID, "Network ID should be '1'")
-	assert.Equal(t, uint(1), net.Sites[0].ID, "Site ID should be '1'")
-	assert.Equal(t, uint(2), net.Sites[1].ID, "Site ID should be '2'")
-	assert.Equal(t, uint(1), net.Links[0].ID, "Link ID should be '1'")
-	assert.Equal(t, uint(2), net.Links[1].ID, "Link ID should be '2'")
+	suite.Equal(uint(1), net.ID, "Network ID should be '1'")
+	suite.Equal(uint(1), net.Sites[0].ID, "Site ID should be '1'")
+	suite.Equal(uint(2), net.Sites[1].ID, "Site ID should be '2'")
+	suite.Equal(uint(1), net.Links[0].ID, "Link ID should be '1'")
+	suite.Equal(uint(2), net.Links[1].ID, "Link ID should be '2'")
 
 	findNet := models.Network{ID: 1}
-	assert.NoError(t, db.GetNetwork(&findNet))
+	suite.NoError(db.GetNetwork(&findNet))
 	// GetNetwork assertions
-	assert.Equal(t, "test", findNet.Network, "Network should be 'test'")
-	assert.Equal(t, "test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
-	assert.Equal(t, "test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
+	suite.Equal("test", findNet.Network, "Network should be 'test'")
+	suite.Equal("test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
+	suite.Equal("test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
 
 	findSite := models.Site{ID: 1}
-	assert.NoError(t, db.GetSite(&findSite))
+	suite.NoError(db.GetSite(&findSite))
 	// GetSite assertions
-	assert.Equal(t, "test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
+	suite.Equal("test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
+}
 
+func TestDatabaseSuite(t *testing.T) {
+	suite.Run(t, new(DatabaseSuite))
 }

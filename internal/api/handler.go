@@ -13,9 +13,9 @@ type handler struct {
 }
 
 func NewHandler(app echoswagger.ApiRoot, store store.Store, config *models.Config) handler {
+	NewConfigService(config).Register(app)
 	h := handler{ApiRoot: app, Config: config, Store: store}
 	h.addHeathcheckRoutes()
-	h.addConfigRoutes()
 	h.addNetworkRoutes()
 	h.addStatusRoutes()
 	return h

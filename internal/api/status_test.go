@@ -14,33 +14,14 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-type mockStatusStore struct {
-	NewFunc           func() (store.Store, error)
-	CreateNetworkFunc func(*models.Network) error
-	GetNetworkFunc    func(*models.Network) error
-	GetSiteFunc       func(*models.Site) error
+type StatusServiceSuite struct {
+	suite.Suite
 }
 
-func (m *mockStatusStore) New() (store.Store, error) {
-	return m.NewFunc()
-}
-
-func (m *mockStatusStore) CreateNetwork(net *models.Network) error {
-	return m.CreateNetworkFunc(net)
-}
-
-func (m *mockStatusStore) GetNetwork(net *models.Network) error {
-	return m.GetNetworkFunc(net)
-}
-
-func (m *mockStatusStore) GetSite(site *models.Site) error {
-	return m.GetSiteFunc(site)
-}
-
-func TestGetStatus(t *testing.T) {
+func (suite *StatusServiceSuite) TestGet() {
 	app := echo.New()
 	var s mockStore
 	h := handler{Store: &s, Config: &models.Config{
@@ -58,7 +39,7 @@ func TestGetStatus(t *testing.T) {
 	})
 
 	ln, err := net.Listen("tcp", "[::]:12345")
-	assert.NoError(t, err)
+	suite.NoError(err)
 	defer ln.Close()
 
 	cases := []struct {
@@ -98,18 +79,18 @@ func TestGetStatus(t *testing.T) {
 		ctx.SetParamValues(c.id)
 		err := h.getStatus(ctx)
 		if c.wantErr != nil {
-			assert.EqualError(t, err, c.wantErr.Error(), "%s should return %s", c.uri, c.wantErr.Error())
+			suite.EqualError(err, c.wantErr.Error(), "%s should return %s", c.uri, c.wantErr.Error())
 		} else {
 			dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
 			ss := models.SiteStatus{}
 			err := dec.Decode(&ss)
-			assert.NoError(t, err)
-			assert.Equal(t, c.isUp, ss.IsUp, "%s isUp should be %t", c.uri, c.isUp)
+			suite.NoError(err)
+			suite.Equal(c.isUp, ss.IsUp, "%s isUp should be %t", c.uri, c.isUp)
 		}
 	}
 }
 
-func TestAddStatusRoutes(t *testing.T) {
+func (suite *StatusServiceSuite) TestRegister() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := handler{ApiRoot: app, Store: &mockStore{}}
 	h.addStatusRoutes()
@@ -117,5 +98,9 @@ func TestAddStatusRoutes(t *testing.T) {
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
-	assert.Contains(t, e, "GET /api/status/:id")
+	suite.Contains(e, "GET /api/status/:id")
+}
+
+func TestStatusServiceSuite(t *testing.T) {
+	suite.Run(t, new(StatusServiceSuite))
 }

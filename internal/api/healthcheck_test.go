@@ -8,10 +8,14 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/models"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestCheckDB(t *testing.T) {
+type HealthcheckServiceSuite struct {
+	suite.Suite
+}
+
+func (suite *HealthcheckServiceSuite) TestCheckDB() {
 	cases := []struct {
 		Driver string
 		Name   string
@@ -36,17 +40,17 @@ func TestCheckDB(t *testing.T) {
 			pingFunc = func() error { return nil }
 		}
 
-		h := handler{Config: cfg, Store: mockStore{PingFunc: pingFunc}}
+		h := handler{Config: cfg, Store: &mockStore{PingFunc: pingFunc}}
 		err := h.checkDB(context.TODO())
 		if c.Error {
-			assert.Error(t, err)
+			suite.Error(err)
 		} else {
-			assert.NoError(t, err)
+			suite.NoError(err)
 		}
 	}
 }
 
-func TestAddHealthCheckRoutes(t *testing.T) {
+func (suite *HealthcheckServiceSuite) TestRegister() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
 	h := handler{ApiRoot: app}
 	h.addHeathcheckRoutes()
@@ -54,5 +58,9 @@ func TestAddHealthCheckRoutes(t *testing.T) {
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
-	assert.Contains(t, e, "GET /api/healthz")
+	suite.Contains(e, "GET /api/healthz")
+}
+
+func TestHealthcheckSuite(t *testing.T) {
+	suite.Run(t, new(HealthcheckServiceSuite))
 }

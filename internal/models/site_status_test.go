@@ -9,10 +9,14 @@ import (
 	"time"
 
 	"github.com/jarcoal/httpmock"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestHttp(t *testing.T) {
+type SiteStatusSuite struct {
+	suite.Suite
+}
+
+func (suite *SiteStatusSuite) TestHttp() {
 	cases := []struct {
 		url     string
 		timeout int
@@ -40,35 +44,35 @@ func TestHttp(t *testing.T) {
 	for _, c := range cases {
 		httpClient.Timeout = time.Millisecond * time.Duration(c.timeout)
 		url, err := url.Parse(c.url)
-		assert.NoError(t, err)
+		suite.NoError(err)
 		err = testHTTP(httpClient, url)
 		if c.wantErr {
-			assert.Error(t, err)
+			suite.Error(err)
 		} else {
-			assert.NoError(t, err)
+			suite.NoError(err)
 		}
 	}
 }
 
-func TestTCP(t *testing.T) {
+func (suite *SiteStatusSuite) TestTCP() {
 	ln, err := net.Listen("tcp", "[::]:1234")
-	assert.NoError(t, err)
+	suite.NoError(err)
 	defer ln.Close()
 
 	url, err := url.Parse("ssh://localhost:1234")
-	assert.NoError(t, err)
+	suite.NoError(err)
 	err = testSSH(url)
-	assert.NoError(t, err, "ssh://localhost:1234 should not error")
+	suite.NoError(err, "ssh://localhost:1234 should not error")
 }
 
-func TestGetIP(t *testing.T) {
+func (suite *SiteStatusSuite) TestGetIP() {
 	url, err := url.Parse("http://localhost")
-	assert.NoError(t, err)
+	suite.NoError(err)
 	ip := getIP(url)
-	assert.Contains(t, []string{"127.0.0.1", "::1"}, ip, "http://localhost should return the following ips: [127.0.0.1, ::1]")
+	suite.Contains([]string{"127.0.0.1", "::1"}, ip, "http://localhost should return the following ips: [127.0.0.1, ::1]")
 }
 
-func TestNewSiteStatus(t *testing.T) {
+func (suite *SiteStatusSuite) TestNewSiteStatus() {
 	cases := []struct {
 		site Site
 		isUp bool
@@ -94,11 +98,15 @@ func TestNewSiteStatus(t *testing.T) {
 	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "redirect"))
 
 	ln, err := net.Listen("tcp", "[::]:12345")
-	assert.NoError(t, err)
+	suite.NoError(err)
 	defer ln.Close()
 
 	for _, c := range cases {
 		s := NewSiteStatus(httpClient, &c.site)
-		assert.Equal(t, c.isUp, s.IsUp, "site %s isUp should be %t", c.site.URI, c.isUp)
+		suite.Equal(c.isUp, s.IsUp, "site %s isUp should be %t", c.site.URI, c.isUp)
 	}
+}
+
+func TestSiteStatusSuite(t *testing.T) {
+	suite.Run(t, new(SiteStatusSuite))
 }

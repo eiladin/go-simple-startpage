@@ -9,7 +9,6 @@ import (
 var ErrNotFound = errors.New("record not found")
 
 type Store interface {
-	New(config *models.Config) (Store, error)
 	Ping() error
 	CreateNetwork(net *models.Network) error
 	GetNetwork(net *models.Network) error
