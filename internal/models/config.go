@@ -32,6 +32,12 @@ func NewConfig(version string, cfgFile string) *Config {
 	c := &Config{
 		Environment: "Development",
 		Version:     version,
+		ListenPort:  3000,
+		Timeout:     2000,
+		Database: Database{
+			Driver: "sqlite",
+			Name:   "simple-startpage.db",
+		},
 	}
 
 	if cfgFile != "" {

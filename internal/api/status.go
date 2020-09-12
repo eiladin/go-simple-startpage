@@ -3,49 +3,26 @@ package api
 import (
 	"crypto/tls"
 	"errors"
-	"fmt"
-	"net"
 	"net/http"
-	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/internal/models"
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/labstack/echo/v4"
+	"github.com/pangpanglabs/echoswagger/v2"
 )
 
-func updateStatus(timeout int, s *models.Site) error {
-	url, err := url.Parse(s.URI)
-	if err != nil {
-		return fmt.Errorf("unable to parse URI: %s", s.URI)
-	}
-	s.IP = getIP(url)
-	switch url.Scheme {
-	case "ssh":
-		err = testSSH(url)
-	default:
-		err = testHTTP(timeout, url)
-	}
-	s.IsUp = err == nil
-	return err
+type StatusService struct {
+	config *models.Config
+	store  store.Store
 }
 
-func getIP(u *url.URL) string {
-	host := u.Hostname()
-	ips, err := net.LookupIP(host)
-	if err != nil {
-		return ""
+func NewStatusService(cfg *models.Config, store store.Store) StatusService {
+	return StatusService{
+		config: cfg,
+		store:  store,
 	}
-	return ips[0].String()
-}
-
-func testSSH(u *url.URL) error {
-	conn, err := net.Dial("tcp", u.Host)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	return nil
 }
 
 var httpClient = http.Client{
@@ -54,45 +31,28 @@ var httpClient = http.Client{
 	},
 }
 
-func testHTTP(timeout int, u *url.URL) error {
-	httpClient.Timeout = time.Millisecond * time.Duration(timeout)
-
-	r, err := httpClient.Get(u.String())
-	if err != nil {
-		return err
-	}
-	defer r.Body.Close()
-	if r.StatusCode < 200 || (r.StatusCode >= 300 && r.StatusCode != 401) {
-		return fmt.Errorf("invalid StatusCode: %d", r.StatusCode)
-	}
-	return nil
-}
-
-func (h handler) getStatus(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+func (s StatusService) Get(ctx echo.Context) error {
+	httpClient.Timeout = time.Millisecond * time.Duration(s.config.Timeout)
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil || id < 1 {
 		if err == nil {
-			err = errors.New("invalid id received: " + c.Param("id"))
+			err = errors.New("invalid id received: " + ctx.Param("id"))
 		}
 		return echo.ErrBadRequest.SetInternal(err)
 	}
 
 	site := models.Site{ID: uint(id)}
-	err = h.Store.GetSite(&site)
+	err = s.store.GetSite(&site)
 	if err != nil {
 		return echo.ErrNotFound
 	}
 
-	_ = updateStatus(h.Config.Timeout, &site)
-	return c.JSON(http.StatusOK, models.SiteStatus{
-		ID:   site.ID,
-		IsUp: site.IsUp,
-		IP:   site.IP,
-	})
+	res := models.NewSiteStatus(httpClient, &site)
+	return ctx.JSON(http.StatusOK, res)
 }
 
-func (h handler) addStatusRoutes() {
-	h.GET("/api/status/:id", h.getStatus).
+func (s StatusService) Register(api echoswagger.ApiRoot) {
+	api.GET("/api/status/:id", s.Get).
 		AddParamPath(0, "id", "SiteID to get status for").
 		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).

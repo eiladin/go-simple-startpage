@@ -12,10 +12,10 @@ require (
 	github.com/pelletier/go-toml v1.8.0 // indirect
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a // indirect
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gorm.io/driver/mysql v1.0.0
+	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
+	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b // indirect
+	gorm.io/driver/mysql v1.0.1
 	gorm.io/driver/postgres v1.0.0
-	gorm.io/driver/sqlite v1.1.0
-	gorm.io/gorm v1.20.0
+	gorm.io/driver/sqlite v1.1.2
+	gorm.io/gorm v1.20.1
 )

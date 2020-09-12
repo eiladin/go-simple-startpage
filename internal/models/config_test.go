@@ -7,15 +7,24 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
+
+type ConfigSuite struct {
+	suite.Suite
+}
+
+func (suite *ConfigSuite) SetupTest() {
+	viper.Reset()
+}
 
 func createConfigFile(t *testing.T, cfgFile string) {
 	content := []byte(`database:
   driver: "sqlite"
   name: "dbname.db"
   log: "false"
-listen_port: "3000"
-timeout: "2000"
+listen_port: "8080"
+timeout: "5000"
 `)
 
 	assert.NoError(t, ioutil.WriteFile(cfgFile, content, 0644))
@@ -25,16 +34,15 @@ func createErrorConfigFile(t *testing.T, cfgFile string) {
 	content := []byte(`database:
 driver: "sqlite1"
   name: "dbname.db"
-  log: "false"
-listen_port: "3000"
-timeout: "2000"
+  log: "true"
+listen_port: "8080"
+timeout: "3000"
 `)
 
 	assert.NoError(t, ioutil.WriteFile(cfgFile, content, 0644))
 }
 
-func TestEnvConfig(t *testing.T) {
-	viper.Reset()
+func (suite *ConfigSuite) TestEnvConfig() {
 	cfgFile := "./not-found.yaml"
 	os.Setenv("GSS_DATABASE_NAME", "name1")
 	os.Setenv("GSS_DATABASE_LOG", "false")
@@ -42,11 +50,11 @@ func TestEnvConfig(t *testing.T) {
 	os.Setenv("GSS_TIMEOUT", "6")
 	os.Setenv("GSS_ENVIRONMENT", "Production")
 	c := NewConfig("1.2.3", cfgFile)
-	assert.Equal(t, "name1", c.Database.Name)
-	assert.Equal(t, false, c.Database.Log)
-	assert.Equal(t, 5, c.ListenPort)
-	assert.Equal(t, 6, c.Timeout)
-	assert.Equal(t, "Production", c.Environment)
+	suite.Equal("name1", c.Database.Name)
+	suite.Equal(false, c.Database.Log)
+	suite.Equal(5, c.ListenPort)
+	suite.Equal(6, c.Timeout)
+	suite.Equal("Production", c.Environment)
 	os.Unsetenv("GSS_DATABASE_NAME")
 	os.Unsetenv("GSS_DATABASE_LOG")
 	os.Unsetenv("GSS_LISTEN_PORT")
@@ -54,7 +62,7 @@ func TestEnvConfig(t *testing.T) {
 	os.Unsetenv("GSS_ENVIRONMENT")
 }
 
-func TestIsProduction(t *testing.T) {
+func (suite *ConfigSuite) TestIsProduction() {
 	cases := []struct {
 		Environment string
 		Expected    bool
@@ -67,56 +75,56 @@ func TestIsProduction(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		viper.Reset()
+		os.Unsetenv("GSS_ENVIRONMENT")
 		if c.Environment != "" {
 			os.Setenv("GSS_ENVIRONMENT", c.Environment)
 		}
 		cfg := NewConfig("test", "not-found")
-		assert.Equal(t, c.Expected, cfg.IsProduction(), "IsProduction should be ", c.Expected)
-		if c.Environment != "" {
-			os.Unsetenv("GSS_ENVIRONMENT")
-		}
+		suite.Equal(c.Expected, cfg.IsProduction(), "IsProduction should be %t", c.Expected)
 	}
-
+	os.Unsetenv("GSS_ENVIRONMENT")
 }
 
-func TestDefaultConfig(t *testing.T) {
+func (suite *ConfigSuite) TestConfigFile() {
 	viper.Reset()
-	cfgFile := "./config.yaml"
-	createConfigFile(t, cfgFile)
+	cfgFile := "./test-config-file.yml"
+	createConfigFile(suite.T(), cfgFile)
+	defer os.RemoveAll(cfgFile)
+
+	c := NewConfig("1.2.3", cfgFile)
+	suite.Equal("dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
+	suite.Equal(false, c.Database.Log, "Database Log should be 'false'")
+	suite.Equal(8080, c.ListenPort, "Listen Port should be '8080'")
+	suite.Equal(5000, c.Timeout, "Timeout should be '5000'")
+	suite.Equal("1.2.3", c.Version, "Version should be '1.2.3'")
+}
+
+func (suite *ConfigSuite) TestDefaultConfigFile() {
+	viper.Reset()
+	cfgFile := "./config.yml"
+	createConfigFile(suite.T(), cfgFile)
 	defer os.RemoveAll(cfgFile)
 
 	c := NewConfig("1.2.3", "")
-	assert.Equal(t, "dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
-	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
-	assert.Equal(t, 3000, c.ListenPort, "Listen Port should be '3000'")
-	assert.Equal(t, 2000, c.Timeout, "Timeout should be '2000'")
-	assert.Equal(t, "1.2.3", c.Version, "Version should be '1.2.3'")
+	suite.Equal("dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
+	suite.Equal(false, c.Database.Log, "Database Log should be 'false'")
+	suite.Equal(8080, c.ListenPort, "Listen Port should be '8080'")
+	suite.Equal(5000, c.Timeout, "Timeout should be '5000'")
+	suite.Equal("1.2.3", c.Version, "Version should be '1.2.3'")
 }
 
-func TestConfigFile(t *testing.T) {
-	viper.Reset()
-	cfgFile := "./test-config-file.yml"
-	createConfigFile(t, cfgFile)
-	defer os.RemoveAll(cfgFile)
-
-	c := NewConfig("1.2.3", cfgFile)
-	assert.Equal(t, "dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
-	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
-	assert.Equal(t, 3000, c.ListenPort, "Listen Port should be '3000'")
-	assert.Equal(t, 2000, c.Timeout, "Timeout should be '2000'")
-	assert.Equal(t, "1.2.3", c.Version, "Version should be '1.2.3'")
-}
-
-func TestConfigFileErr(t *testing.T) {
-	viper.Reset()
+func (suite *ConfigSuite) TestConfigFileErr() {
 	cfgFile := "./test-config-file-error.yml"
-	createErrorConfigFile(t, cfgFile)
+	createErrorConfigFile(suite.T(), cfgFile)
 	defer os.RemoveAll(cfgFile)
 	c := NewConfig("1.2.3", cfgFile)
-	assert.NotEqual(t, "dbname.db", c.Database.Name, "Database Name should not be 'dbname.db'")
-	assert.Equal(t, false, c.Database.Log, "Database Log should be 'false'")
-	assert.NotEqual(t, 3000, c.ListenPort, "Listen Port should not be '3000'")
-	assert.NotEqual(t, 2000, c.Timeout, "Timeout should not be '2000'")
-	assert.Equal(t, "1.2.3", c.Version, "Version should be '1.2.3'")
+	suite.Equal("simple-startpage.db", c.Database.Name, "Database Name should be 'simple-startpage.db'")
+	suite.Equal(false, c.Database.Log, "Database Log should be 'false'")
+	suite.Equal(3000, c.ListenPort, "Listen Port should be '3000'")
+	suite.Equal(2000, c.Timeout, "Timeout should be '2000'")
+	suite.Equal("1.2.3", c.Version, "Version should be '1.2.3'")
+}
+
+func TestConfigSuite(t *testing.T) {
+	suite.Run(t, new(ConfigSuite))
 }

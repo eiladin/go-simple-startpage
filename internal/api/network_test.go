@@ -12,10 +12,14 @@ import (
 	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestCreateNetwork(t *testing.T) {
+type NetworkServiceSuite struct {
+	suite.Suite
+}
+
+func (suite *NetworkServiceSuite) TestCreate() {
 	app := echo.New()
 	body := `{ "network": "test-network" }`
 
@@ -24,14 +28,19 @@ func TestCreateNetwork(t *testing.T) {
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
 
-	h := newMockHandler()
-	if assert.NoError(t, h.createNetwork(ctx)) {
-		assert.Equal(t, http.StatusCreated, rec.Code, "Create should return a 201")
-		assert.Equal(t, "{\"id\":12345}\n", rec.Body.String(), "Create should return an ID")
+	ns := NewNetworkService(&models.Config{}, &mockStore{
+		CreateNetworkFunc: func(net *models.Network) error {
+			net.ID = 12345
+			return nil
+		},
+	})
+	if suite.NoError(ns.Create(ctx)) {
+		suite.Equal(http.StatusCreated, rec.Code, "Create should return a 201")
+		suite.Equal("{\"id\":12345}\n", rec.Body.String(), "Create should return an ID")
 	}
 }
 
-func TestCreateNetworkError(t *testing.T) {
+func (suite *NetworkServiceSuite) TestCreateError() {
 	cases := []struct {
 		Body string
 		Err  error
@@ -47,39 +56,45 @@ func TestCreateNetworkError(t *testing.T) {
 		req := httptest.NewRequest("POST", "/", strings.NewReader(c.Body))
 		req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		ctx := app.NewContext(req, rec)
-		h := handler{
-			Store: mockStore{
-				CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
-				GetNetworkFunc:    func(net *models.Network) error { return errors.New("not implemented") },
-				GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
-			},
-		}
-		err := h.createNetwork(ctx)
-		assert.EqualError(t, err, c.Err.Error())
+		ns := NewNetworkService(&models.Config{}, &mockStore{
+			CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
+		})
+		err := ns.Create(ctx)
+		suite.EqualError(err, c.Err.Error())
 	}
 }
 
-func TestGetNetwork(t *testing.T) {
+func (suite *NetworkServiceSuite) TestGet() {
 	app := echo.New()
 	req := httptest.NewRequest("GET", "/", nil)
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
-	h := newMockHandler()
-	if assert.NoError(t, h.getNetwork(ctx)) {
+	ns := NewNetworkService(&models.Config{}, &mockStore{
+		GetNetworkFunc: func(net *models.Network) error {
+			net.Network = "test-network"
+			net.Sites = []models.Site{
+				{ID: 1, FriendlyName: "z"},
+				{ID: 2, FriendlyName: "a"},
+			}
+			return nil
+		},
+	})
+	if suite.NoError(ns.Get(ctx)) {
 		dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
 		var net models.Network
-		if assert.NoError(t, dec.Decode(&net)) {
-			assert.Equal(t, "test-network", net.Network, "Get Network should return 'test-network'")
-			assert.Equal(t, "a", net.Sites[0].FriendlyName, "The first site in the list should have FriendlyName 'a'")
-			assert.Equal(t, uint(2), net.Sites[0].ID, "The first site in the list should be ID '2'")
-			assert.Equal(t, "z", net.Sites[1].FriendlyName, "The second site in the list should have FriendlyName 'z'")
-			assert.Equal(t, uint(1), net.Sites[1].ID, "The second site in the list should have ID '1'")
+		if suite.NoError(dec.Decode(&net)) {
+			suite.Equal("test-network", net.Network, "Get Network should return 'test-network'")
+			suite.Len(net.Sites, 2, "There should be 2 sites")
+			suite.Equal("a", net.Sites[0].FriendlyName, "The first site in the list should have FriendlyName 'a'")
+			suite.Equal(uint(2), net.Sites[0].ID, "The first site in the list should be ID '2'")
+			suite.Equal("z", net.Sites[1].FriendlyName, "The second site in the list should have FriendlyName 'z'")
+			suite.Equal(uint(1), net.Sites[1].ID, "The second site in the list should have ID '1'")
 		}
 
 	}
 }
 
-func TestGetNetworkError(t *testing.T) {
+func (suite *NetworkServiceSuite) TestGetError() {
 	cases := []struct {
 		Err      error
 		Expected error
@@ -93,27 +108,27 @@ func TestGetNetworkError(t *testing.T) {
 	ctx := app.NewContext(req, rec)
 
 	for _, c := range cases {
-		h := handler{
-			Store: mockStore{
-				CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
-				GetNetworkFunc:    func(net *models.Network) error { return c.Err },
-				GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
-			},
-		}
-		err := h.getNetwork(ctx)
-		assert.EqualError(t, err, c.Expected.Error())
+		ns := NewNetworkService(&models.Config{}, &mockStore{
+			CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
+			GetNetworkFunc:    func(net *models.Network) error { return c.Err },
+			GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
+		})
+		err := ns.Get(ctx)
+		suite.EqualError(err, c.Expected.Error())
 	}
 }
 
-func TestAddNetworkRoute(t *testing.T) {
+func (suite *NetworkServiceSuite) TestRegister() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := newMockHandler()
-	h.ApiRoot = app
-	h.addNetworkRoutes()
+	NewNetworkService(&models.Config{}, &mockStore{}).Register(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
-	assert.Contains(t, e, "GET /api/network")
-	assert.Contains(t, e, "POST /api/network")
+	suite.Contains(e, "GET /api/network")
+	suite.Contains(e, "POST /api/network")
+}
+
+func TestNetworkServiceSuite(t *testing.T) {
+	suite.Run(t, new(NetworkServiceSuite))
 }
