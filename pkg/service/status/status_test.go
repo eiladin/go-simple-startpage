@@ -1,4 +1,4 @@
-package api
+package status
 
 import (
 	"encoding/json"
@@ -9,11 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/internal/models"
-	"github.com/eiladin/go-simple-startpage/internal/store"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -34,7 +35,7 @@ func (suite *StatusServiceSuite) TestGet() {
 		return httpmock.NewStringResponse(200, "success"), nil
 	})
 
-	ln, err := net.Listen("tcp", "[::]:12345")
+	ln, err := net.Listen("tcp", "[::]:22224")
 	suite.NoError(err)
 	defer ln.Close()
 
@@ -47,7 +48,7 @@ func (suite *StatusServiceSuite) TestGet() {
 		{id: "1", uri: "https://my.test.site", isUp: true, wantErr: nil},
 		{id: "1", uri: "https://my.fail.site", isUp: false, wantErr: nil},
 		{id: "1", uri: "https://^^invalidurl^^", isUp: false, wantErr: nil},
-		{id: "1", uri: "ssh://localhost:12345", isUp: true, wantErr: nil},
+		{id: "1", uri: "ssh://localhost:22224", isUp: true, wantErr: nil},
 		{id: "1", uri: "ssh://localhost:1234", isUp: false, wantErr: nil},
 		{id: "1", uri: "https://500.test.site", isUp: false, wantErr: nil},
 		{id: "abc", uri: "https://400.test.site", isUp: false, wantErr: echo.ErrBadRequest},
@@ -104,3 +105,16 @@ func (suite *StatusServiceSuite) TestRegister() {
 func TestStatusServiceSuite(t *testing.T) {
 	suite.Run(t, new(StatusServiceSuite))
 }
+
+type mockStore struct {
+	mock.Mock
+	PingFunc          func() error
+	CreateNetworkFunc func(*models.Network) error
+	GetNetworkFunc    func(*models.Network) error
+	GetSiteFunc       func(*models.Site) error
+}
+
+func (m *mockStore) Ping() error                             { return m.PingFunc() }
+func (m *mockStore) CreateNetwork(net *models.Network) error { return m.CreateNetworkFunc(net) }
+func (m *mockStore) GetNetwork(net *models.Network) error    { return m.GetNetworkFunc(net) }
+func (m *mockStore) GetSite(site *models.Site) error         { return m.GetSiteFunc(site) }

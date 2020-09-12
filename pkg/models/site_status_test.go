@@ -55,14 +55,14 @@ func (suite *SiteStatusSuite) TestHttp() {
 }
 
 func (suite *SiteStatusSuite) TestTCP() {
-	ln, err := net.Listen("tcp", "[::]:1234")
+	ln, err := net.Listen("tcp", "[::]:22222")
 	suite.NoError(err)
 	defer ln.Close()
 
-	url, err := url.Parse("ssh://localhost:1234")
+	url, err := url.Parse("ssh://localhost:22222")
 	suite.NoError(err)
 	err = testSSH(url)
-	suite.NoError(err, "ssh://localhost:1234 should not error")
+	suite.NoError(err, "ssh://localhost:22222 should not error")
 }
 
 func (suite *SiteStatusSuite) TestGetIP() {
@@ -80,7 +80,7 @@ func (suite *SiteStatusSuite) TestNewSiteStatus() {
 		{site: Site{URI: "https://my.test.site"}, isUp: true},
 		{site: Site{URI: "https://my.fail.site"}, isUp: false},
 		{site: Site{URI: "https://^^invalidurl^^"}, isUp: false},
-		{site: Site{URI: "ssh://localhost:12345"}, isUp: true},
+		{site: Site{URI: "ssh://localhost:22223"}, isUp: true},
 		{site: Site{URI: "ssh://localhost:1234"}, isUp: false},
 		{site: Site{URI: "https://err.test.site"}, isUp: false},
 	}
@@ -97,7 +97,7 @@ func (suite *SiteStatusSuite) TestNewSiteStatus() {
 	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
 	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "redirect"))
 
-	ln, err := net.Listen("tcp", "[::]:12345")
+	ln, err := net.Listen("tcp", "[::]:22223")
 	suite.NoError(err)
 	defer ln.Close()
 

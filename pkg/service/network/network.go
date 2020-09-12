@@ -1,12 +1,12 @@
-package api
+package network
 
 import (
 	"errors"
 	"net/http"
 	"sort"
 
-	"github.com/eiladin/go-simple-startpage/internal/models"
-	"github.com/eiladin/go-simple-startpage/internal/store"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
 )
@@ -25,34 +25,38 @@ func NewNetworkService(cfg *models.Config, store store.Store) NetworkService {
 
 func (s NetworkService) Create(ctx echo.Context) error {
 	net := new(models.Network)
-	err := ctx.Bind(net)
-	if err != nil || (net.Network == "" && net.ID == 0 && net.Links == nil && net.Sites == nil) {
+
+	if err := ctx.Bind(net); err != nil || (net.Network == "" && net.ID == 0 && net.Links == nil && net.Sites == nil) {
 		if err == nil {
 			err = errors.New("empty request recieved")
 		}
 		return echo.ErrBadRequest.SetInternal(err)
 	}
 
-	err = s.store.CreateNetwork(net)
-	if err != nil {
+	if err := s.store.CreateNetwork(net); err != nil {
 		return echo.ErrInternalServerError.SetInternal(err)
 	}
 
 	return ctx.JSON(http.StatusCreated, models.NetworkID{ID: net.ID})
 }
 
+func sortSitesByName(sites []models.Site) {
+	sort.Slice(sites, func(p, q int) bool {
+		return sites[p].FriendlyName < sites[q].FriendlyName
+	})
+}
+
 func (s NetworkService) Get(ctx echo.Context) error {
 	var net models.Network
-	err := s.store.GetNetwork(&net)
-	if err != nil {
+
+	if err := s.store.GetNetwork(&net); err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			return echo.ErrNotFound
 		}
 		return echo.ErrInternalServerError.SetInternal(err)
 	}
-	sort.Slice(net.Sites, func(p, q int) bool {
-		return net.Sites[p].FriendlyName < net.Sites[q].FriendlyName
-	})
+	sortSitesByName(net.Sites)
+
 	return ctx.JSON(http.StatusOK, net)
 }
 

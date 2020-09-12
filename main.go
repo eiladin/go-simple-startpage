@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/eiladin/go-simple-startpage/internal/api"
 	"github.com/eiladin/go-simple-startpage/internal/database"
-	"github.com/eiladin/go-simple-startpage/internal/models"
+	"github.com/eiladin/go-simple-startpage/internal/router"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -76,7 +76,7 @@ func main() {
 	e := app.Echo()
 
 	setupMiddleware(e, c)
-	api.AddRoutes(app, store, c)
+	router.AddRoutes(app, store, c)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

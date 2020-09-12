@@ -1,4 +1,4 @@
-package api
+package healthcheck
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/internal/models"
-	"github.com/eiladin/go-simple-startpage/internal/store"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/etherlabsio/healthcheck"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -19,15 +19,11 @@ type HealthcheckService struct {
 }
 
 func NewHealthcheckService(cfg *models.Config, store store.Store) HealthcheckService {
-	return HealthcheckService{
-		config: cfg,
-		store:  store,
-	}
+	return HealthcheckService{config: cfg, store: store}
 }
 
 func (s HealthcheckService) checkDB(ctx context.Context) error {
-	err := s.store.Ping()
-	if err != nil {
+	if err := s.store.Ping(); err != nil {
 		return fmt.Errorf("unable to connect to database %w", err)
 	}
 	return nil

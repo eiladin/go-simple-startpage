@@ -1,4 +1,4 @@
-package api
+package network
 
 import (
 	"encoding/json"
@@ -8,10 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/internal/models"
-	"github.com/eiladin/go-simple-startpage/internal/store"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -132,3 +133,16 @@ func (suite *NetworkServiceSuite) TestRegister() {
 func TestNetworkServiceSuite(t *testing.T) {
 	suite.Run(t, new(NetworkServiceSuite))
 }
+
+type mockStore struct {
+	mock.Mock
+	PingFunc          func() error
+	CreateNetworkFunc func(*models.Network) error
+	GetNetworkFunc    func(*models.Network) error
+	GetSiteFunc       func(*models.Site) error
+}
+
+func (m *mockStore) Ping() error                             { return m.PingFunc() }
+func (m *mockStore) CreateNetwork(net *models.Network) error { return m.CreateNetworkFunc(net) }
+func (m *mockStore) GetNetwork(net *models.Network) error    { return m.GetNetworkFunc(net) }
+func (m *mockStore) GetSite(site *models.Site) error         { return m.GetSiteFunc(site) }
