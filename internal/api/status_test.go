@@ -23,10 +23,6 @@ type StatusServiceSuite struct {
 
 func (suite *StatusServiceSuite) TestGet() {
 	app := echo.New()
-	var s mockStore
-	h := handler{Store: &s, Config: &models.Config{
-		Timeout: 100,
-	}}
 
 	httpmock.ActivateNonDefault(&httpClient)
 	defer httpmock.DeactivateAndReset()
@@ -62,14 +58,19 @@ func (suite *StatusServiceSuite) TestGet() {
 	}
 
 	for _, c := range cases {
-		s.GetSiteFunc = func(site *models.Site) error {
-			if site.ID != 1 {
-				return store.ErrNotFound
-			}
-			site.ID = 1
-			site.URI = c.uri
-			return nil
+
+		cfg := &models.Config{Timeout: 100}
+		s := &mockStore{
+			GetSiteFunc: func(site *models.Site) error {
+				if site.ID != 1 {
+					return store.ErrNotFound
+				}
+				site.ID = 1
+				site.URI = c.uri
+				return nil
+			},
 		}
+		ss := NewStatusService(cfg, s)
 
 		req := httptest.NewRequest("GET", "/", nil)
 		rec := httptest.NewRecorder()
@@ -77,7 +78,7 @@ func (suite *StatusServiceSuite) TestGet() {
 		ctx.SetPath("/:id")
 		ctx.SetParamNames("id")
 		ctx.SetParamValues(c.id)
-		err := h.getStatus(ctx)
+		err := ss.Get(ctx)
 		if c.wantErr != nil {
 			suite.EqualError(err, c.wantErr.Error(), "%s should return %s", c.uri, c.wantErr.Error())
 		} else {
@@ -92,8 +93,7 @@ func (suite *StatusServiceSuite) TestGet() {
 
 func (suite *StatusServiceSuite) TestRegister() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := handler{ApiRoot: app, Store: &mockStore{}}
-	h.addStatusRoutes()
+	NewStatusService(&models.Config{}, &mockStore{}).Register(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

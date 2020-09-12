@@ -40,8 +40,8 @@ func (suite *HealthcheckServiceSuite) TestCheckDB() {
 			pingFunc = func() error { return nil }
 		}
 
-		h := handler{Config: cfg, Store: &mockStore{PingFunc: pingFunc}}
-		err := h.checkDB(context.TODO())
+		hs := NewHealthcheckService(cfg, &mockStore{PingFunc: pingFunc})
+		err := hs.checkDB(context.TODO())
 		if c.Error {
 			suite.Error(err)
 		} else {
@@ -52,8 +52,7 @@ func (suite *HealthcheckServiceSuite) TestCheckDB() {
 
 func (suite *HealthcheckServiceSuite) TestRegister() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := handler{ApiRoot: app}
-	h.addHeathcheckRoutes()
+	NewHealthcheckService(&models.Config{}, &mockStore{}).Register(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

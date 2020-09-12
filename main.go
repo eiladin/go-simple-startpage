@@ -76,7 +76,7 @@ func main() {
 	e := app.Echo()
 
 	setupMiddleware(e, c)
-	api.NewHandler(app, store, c)
+	api.AddRoutes(app, store, c)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

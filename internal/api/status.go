@@ -8,8 +8,22 @@ import (
 	"time"
 
 	"github.com/eiladin/go-simple-startpage/internal/models"
+	"github.com/eiladin/go-simple-startpage/internal/store"
 	"github.com/labstack/echo/v4"
+	"github.com/pangpanglabs/echoswagger/v2"
 )
+
+type StatusService struct {
+	config *models.Config
+	store  store.Store
+}
+
+func NewStatusService(cfg *models.Config, store store.Store) StatusService {
+	return StatusService{
+		config: cfg,
+		store:  store,
+	}
+}
 
 var httpClient = http.Client{
 	Transport: &http.Transport{
@@ -17,28 +31,28 @@ var httpClient = http.Client{
 	},
 }
 
-func (h handler) getStatus(c echo.Context) error {
-	httpClient.Timeout = time.Millisecond * time.Duration(h.Config.Timeout)
-	id, err := strconv.Atoi(c.Param("id"))
+func (s StatusService) Get(ctx echo.Context) error {
+	httpClient.Timeout = time.Millisecond * time.Duration(s.config.Timeout)
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil || id < 1 {
 		if err == nil {
-			err = errors.New("invalid id received: " + c.Param("id"))
+			err = errors.New("invalid id received: " + ctx.Param("id"))
 		}
 		return echo.ErrBadRequest.SetInternal(err)
 	}
 
 	site := models.Site{ID: uint(id)}
-	err = h.Store.GetSite(&site)
+	err = s.store.GetSite(&site)
 	if err != nil {
 		return echo.ErrNotFound
 	}
 
 	res := models.NewSiteStatus(httpClient, &site)
-	return c.JSON(http.StatusOK, res)
+	return ctx.JSON(http.StatusOK, res)
 }
 
-func (h handler) addStatusRoutes() {
-	h.GET("/api/status/:id", h.getStatus).
+func (s StatusService) Register(api echoswagger.ApiRoot) {
+	api.GET("/api/status/:id", s.Get).
 		AddParamPath(0, "id", "SiteID to get status for").
 		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
 		AddResponse(http.StatusBadRequest, "bad request", nil, nil).

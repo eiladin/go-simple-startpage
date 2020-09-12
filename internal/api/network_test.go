@@ -28,13 +28,13 @@ func (suite *NetworkServiceSuite) TestCreate() {
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
 
-	h := handler{Store: &mockStore{
+	ns := NewNetworkService(&models.Config{}, &mockStore{
 		CreateNetworkFunc: func(net *models.Network) error {
 			net.ID = 12345
 			return nil
 		},
-	}}
-	if suite.NoError(h.createNetwork(ctx)) {
+	})
+	if suite.NoError(ns.Create(ctx)) {
 		suite.Equal(http.StatusCreated, rec.Code, "Create should return a 201")
 		suite.Equal("{\"id\":12345}\n", rec.Body.String(), "Create should return an ID")
 	}
@@ -56,12 +56,10 @@ func (suite *NetworkServiceSuite) TestCreateError() {
 		req := httptest.NewRequest("POST", "/", strings.NewReader(c.Body))
 		req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		ctx := app.NewContext(req, rec)
-		h := handler{
-			Store: &mockStore{
-				CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
-			},
-		}
-		err := h.createNetwork(ctx)
+		ns := NewNetworkService(&models.Config{}, &mockStore{
+			CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
+		})
+		err := ns.Create(ctx)
 		suite.EqualError(err, c.Err.Error())
 	}
 }
@@ -71,7 +69,7 @@ func (suite *NetworkServiceSuite) TestGet() {
 	req := httptest.NewRequest("GET", "/", nil)
 	rec := httptest.NewRecorder()
 	ctx := app.NewContext(req, rec)
-	h := handler{Store: &mockStore{
+	ns := NewNetworkService(&models.Config{}, &mockStore{
 		GetNetworkFunc: func(net *models.Network) error {
 			net.Network = "test-network"
 			net.Sites = []models.Site{
@@ -80,8 +78,8 @@ func (suite *NetworkServiceSuite) TestGet() {
 			}
 			return nil
 		},
-	}}
-	if suite.NoError(h.getNetwork(ctx)) {
+	})
+	if suite.NoError(ns.Get(ctx)) {
 		dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
 		var net models.Network
 		if suite.NoError(dec.Decode(&net)) {
@@ -110,23 +108,19 @@ func (suite *NetworkServiceSuite) TestGetError() {
 	ctx := app.NewContext(req, rec)
 
 	for _, c := range cases {
-		h := handler{
-			Store: &mockStore{
-				CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
-				GetNetworkFunc:    func(net *models.Network) error { return c.Err },
-				GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
-			},
-		}
-		err := h.getNetwork(ctx)
+		ns := NewNetworkService(&models.Config{}, &mockStore{
+			CreateNetworkFunc: func(net *models.Network) error { return errors.New("not implemented") },
+			GetNetworkFunc:    func(net *models.Network) error { return c.Err },
+			GetSiteFunc:       func(site *models.Site) error { return errors.New("not implemented") },
+		})
+		err := ns.Get(ctx)
 		suite.EqualError(err, c.Expected.Error())
 	}
 }
 
 func (suite *NetworkServiceSuite) TestRegister() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := handler{Store: &mockStore{}}
-	h.ApiRoot = app
-	h.addNetworkRoutes()
+	NewNetworkService(&models.Config{}, &mockStore{}).Register(app)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)

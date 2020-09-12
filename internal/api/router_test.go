@@ -44,18 +44,15 @@ type HandlerSuite struct {
 
 func (suite HandlerSuite) TestNewHandler() {
 	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	h := NewHandler(
+	AddRoutes(
 		app,
 		&mockStore{},
-		&models.Config{
-			Version: "test-handler-version",
-		},
+		&models.Config{},
 	)
 	e := []string{}
 	for _, r := range app.Echo().Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
-	suite.Equal("test-handler-version", h.Config.Version)
 	suite.Contains(e, "GET /api/network")
 	suite.Contains(e, "POST /api/network")
 	suite.Contains(e, "GET /api/healthz")
