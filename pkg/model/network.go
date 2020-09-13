@@ -1,4 +1,4 @@
-package models
+package model
 
 import (
 	"time"
@@ -6,12 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type Link struct {
+type Network struct {
 	ID        uint           `json:"-" gorm:"primaryKey"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
-	NetworkID uint           `json:"-"`
-	Name      string         `json:"name"`
-	URI       string         `json:"uri"`
+	Network   string         `json:"network"`
+	Links     []Link         `json:"links" gorm:"foreignkey:NetworkID"`
+	Sites     []Site         `json:"sites" gorm:"foreignkey:NetworkID"`
 }

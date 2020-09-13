@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { StatusSite } from '../../shared/models/statusSite.model';
+import { StatusSite } from '../../shared/model/statusSite.model';
 
 /**
  * View/Edit Site information

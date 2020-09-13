@@ -9,11 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/jarcoal/httpmock"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -60,9 +59,9 @@ func (suite *StatusServiceSuite) TestGet() {
 
 	for _, c := range cases {
 
-		cfg := &models.Config{Timeout: 100}
+		cfg := &model.Config{Timeout: 100}
 		s := &mockStore{
-			GetSiteFunc: func(site *models.Site) error {
+			GetSiteFunc: func(site *model.Site) error {
 				if site.ID != 1 {
 					return store.ErrNotFound
 				}
@@ -84,7 +83,7 @@ func (suite *StatusServiceSuite) TestGet() {
 			suite.EqualError(err, c.wantErr.Error(), "%s should return %s", c.uri, c.wantErr.Error())
 		} else {
 			dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
-			ss := models.SiteStatus{}
+			ss := model.SiteStatus{}
 			err := dec.Decode(&ss)
 			suite.NoError(err)
 			suite.Equal(c.isUp, ss.IsUp, "%s isUp should be %t", c.uri, c.isUp)
@@ -93,10 +92,10 @@ func (suite *StatusServiceSuite) TestGet() {
 }
 
 func (suite *StatusServiceSuite) TestRegister() {
-	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	NewStatusService(&models.Config{}, &mockStore{}).Register(app)
+	app := echo.New()
+	NewStatusService(&model.Config{}, &mockStore{}).Register(app)
 	e := []string{}
-	for _, r := range app.Echo().Routes() {
+	for _, r := range app.Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
 	suite.Contains(e, "GET /api/status/:id")
@@ -109,12 +108,12 @@ func TestStatusServiceSuite(t *testing.T) {
 type mockStore struct {
 	mock.Mock
 	PingFunc          func() error
-	CreateNetworkFunc func(*models.Network) error
-	GetNetworkFunc    func(*models.Network) error
-	GetSiteFunc       func(*models.Site) error
+	CreateNetworkFunc func(*model.Network) error
+	GetNetworkFunc    func(*model.Network) error
+	GetSiteFunc       func(*model.Site) error
 }
 
-func (m *mockStore) Ping() error                             { return m.PingFunc() }
-func (m *mockStore) CreateNetwork(net *models.Network) error { return m.CreateNetworkFunc(net) }
-func (m *mockStore) GetNetwork(net *models.Network) error    { return m.GetNetworkFunc(net) }
-func (m *mockStore) GetSite(site *models.Site) error         { return m.GetSiteFunc(site) }
+func (m *mockStore) Ping() error                            { return m.PingFunc() }
+func (m *mockStore) CreateNetwork(net *model.Network) error { return m.CreateNetworkFunc(net) }
+func (m *mockStore) GetNetwork(net *model.Network) error    { return m.GetNetworkFunc(net) }
+func (m *mockStore) GetSite(site *model.Site) error         { return m.GetSiteFunc(site) }

@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -28,7 +28,7 @@ type migrationFailedErr string
 
 func (e migrationFailedErr) Error() string { return "unable to run database migrations: " + string(e) }
 
-func New(config *models.Config) (store.Store, error) {
+func New(config *model.Config) (store.Store, error) {
 	d := DB{}
 	cfg := getGormConfig(config)
 	dsn := getDSN(config)
@@ -44,7 +44,7 @@ func New(config *models.Config) (store.Store, error) {
 	return &d, nil
 }
 
-func getGormConfig(c *models.Config) *gorm.Config {
+func getGormConfig(c *model.Config) *gorm.Config {
 	llevel := logger.Silent
 	if c.Database.Log {
 		llevel = logger.Info
@@ -59,7 +59,7 @@ func getGormConfig(c *models.Config) *gorm.Config {
 	}
 }
 
-func getDSN(c *models.Config) gorm.Dialector {
+func getDSN(c *model.Config) gorm.Dialector {
 	driver := strings.ToLower(c.Database.Driver)
 	database := c.Database.Name
 	username := c.Database.Username
@@ -80,10 +80,10 @@ func getDSN(c *models.Config) gorm.Dialector {
 
 func migrateDB(conn *gorm.DB) error {
 	return conn.AutoMigrate(
-		&models.Network{},
-		&models.Site{},
-		&models.Tag{},
-		&models.Link{},
+		&model.Network{},
+		&model.Site{},
+		&model.Tag{},
+		&model.Link{},
 	)
 }
 
@@ -94,21 +94,21 @@ func handleError(err error) error {
 	return err
 }
 
-func (d *DB) CreateNetwork(net *models.Network) error {
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Tag{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Site{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Link{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Network{})
+func (d *DB) CreateNetwork(net *model.Network) error {
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Tag{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Site{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Link{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&model.Network{})
 	result := d.conn.Create(&net)
 	return handleError(result.Error)
 }
 
-func (d *DB) GetNetwork(net *models.Network) error {
+func (d *DB) GetNetwork(net *model.Network) error {
 	result := d.conn.Preload("Sites.Tags").Preload("Sites").Preload("Links").First(net)
 	return handleError(result.Error)
 }
 
-func (d *DB) GetSite(site *models.Site) error {
+func (d *DB) GetSite(site *model.Site) error {
 	result := d.conn.First(site)
 	return handleError(result.Error)
 }

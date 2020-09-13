@@ -6,12 +6,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/eiladin/go-simple-startpage/docs"
 	"github.com/eiladin/go-simple-startpage/internal/database"
 	"github.com/eiladin/go-simple-startpage/internal/router"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/pangpanglabs/echoswagger/v2"
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func localhostSkipper(ctx echo.Context) bool {
@@ -19,10 +20,10 @@ func localhostSkipper(ctx echo.Context) bool {
 }
 
 func fromSwaggerSkipper(ctx echo.Context) bool {
-	return strings.Contains(ctx.Request().Header.Get("Referer"), "swagger")
+	return strings.Contains(ctx.Request().URL.Path, "/swagger")
 }
 
-func setupMiddleware(app *echo.Echo, c *models.Config) {
+func setupMiddleware(app *echo.Echo, c *model.Config) {
 	if c.IsProduction() {
 		app.Use(middleware.Logger())
 	} else {
@@ -40,7 +41,9 @@ func setupMiddleware(app *echo.Echo, c *models.Config) {
 		CookieSecure: true,
 	}))
 	app.Use(middleware.Recover())
-	app.Use(middleware.Gzip())
+	app.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Skipper: fromSwaggerSkipper,
+	}))
 	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		Skipper: fromSwaggerSkipper,
 		Index:   "index.html",
@@ -52,31 +55,28 @@ func setupMiddleware(app *echo.Echo, c *models.Config) {
 
 var version = "dev"
 
+// @title Go Simple Startpage API
+// @description This is the API for the Go Simple Startpage App
+
+// @contact.name Sami Khan
+// @contact.url https://github.com/eiladin/go-simple-startpage
+
+// @license.name MIT
+// @license.url https://github.com/eiladin/go-simple-startpage/blob/master/LICENSE
+//go:generate swag init
 func main() {
-	c := models.NewConfig(version, "")
+	c := model.NewConfig(version, "")
 	store, err := database.New(c)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	app := echoswagger.New(echo.New(), "/swagger", &echoswagger.Info{
-		Title:       "Go Simple Startpage API",
-		Description: "This in the API for the Go Simple Startpage App",
-		Version:     "1.0.0",
-		Contact: &echoswagger.Contact{
-			Name: "Sami Khan",
-			URL:  "https://github.com/eiladin/go-simple-startpage",
-		},
-		License: &echoswagger.License{
-			Name: "MIT",
-			URL:  "https://github.com/eiladin/go-simple-startpage/blob/master/LICENSE",
-		},
-	})
-
-	e := app.Echo()
+	e := echo.New()
+	docs.SwaggerInfo.Version = version
 
 	setupMiddleware(e, c)
-	router.AddRoutes(app, store, c)
+	router.AddRoutes(e, store, c)
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

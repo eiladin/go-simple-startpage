@@ -3,9 +3,8 @@ package router
 import (
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -15,14 +14,14 @@ type HandlerSuite struct {
 }
 
 func (suite HandlerSuite) TestNewHandler() {
-	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
+	app := echo.New()
 	AddRoutes(
 		app,
 		&mockStore{},
-		&models.Config{},
+		&model.Config{},
 	)
 	e := []string{}
-	for _, r := range app.Echo().Routes() {
+	for _, r := range app.Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
 	suite.Contains(e, "GET /api/network")
@@ -39,12 +38,12 @@ func TestHandlerSuite(t *testing.T) {
 type mockStore struct {
 	mock.Mock
 	PingFunc          func() error
-	CreateNetworkFunc func(*models.Network) error
-	GetNetworkFunc    func(*models.Network) error
-	GetSiteFunc       func(*models.Site) error
+	CreateNetworkFunc func(*model.Network) error
+	GetNetworkFunc    func(*model.Network) error
+	GetSiteFunc       func(*model.Site) error
 }
 
-func (m *mockStore) Ping() error                             { return m.PingFunc() }
-func (m *mockStore) CreateNetwork(net *models.Network) error { return m.CreateNetworkFunc(net) }
-func (m *mockStore) GetNetwork(net *models.Network) error    { return m.GetNetworkFunc(net) }
-func (m *mockStore) GetSite(site *models.Site) error         { return m.GetSiteFunc(site) }
+func (m *mockStore) Ping() error                            { return m.PingFunc() }
+func (m *mockStore) CreateNetwork(net *model.Network) error { return m.CreateNetworkFunc(net) }
+func (m *mockStore) GetNetwork(net *model.Network) error    { return m.GetNetworkFunc(net) }
+func (m *mockStore) GetSite(site *model.Site) error         { return m.GetSiteFunc(site) }

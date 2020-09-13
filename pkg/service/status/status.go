@@ -7,18 +7,17 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 )
 
 type StatusService struct {
-	config *models.Config
+	config *model.Config
 	store  store.Store
 }
 
-func NewStatusService(cfg *models.Config, store store.Store) StatusService {
+func NewStatusService(cfg *model.Config, store store.Store) StatusService {
 	return StatusService{
 		config: cfg,
 		store:  store,
@@ -31,6 +30,17 @@ var httpClient = http.Client{
 	},
 }
 
+// Get godoc
+// @Summary Get Status
+// @Description get status given a site id
+// @Tags Status
+// @Accept  json
+// @Produce  json
+// @Param  id path int true "Site ID"
+// @Success 200 {object} model.SiteStatus
+// @Failure 400 {object} model.HTTPError
+// @Failure 404 {object} model.HTTPError
+// @Router /api/status/{id} [get]
 func (s StatusService) Get(ctx echo.Context) error {
 	httpClient.Timeout = time.Millisecond * time.Duration(s.config.Timeout)
 	id, err := strconv.Atoi(ctx.Param("id"))
@@ -41,21 +51,16 @@ func (s StatusService) Get(ctx echo.Context) error {
 		return echo.ErrBadRequest.SetInternal(err)
 	}
 
-	site := models.Site{ID: uint(id)}
+	site := model.Site{ID: uint(id)}
 	err = s.store.GetSite(&site)
 	if err != nil {
 		return echo.ErrNotFound
 	}
 
-	res := models.NewSiteStatus(httpClient, &site)
+	res := model.NewSiteStatus(httpClient, &site)
 	return ctx.JSON(http.StatusOK, res)
 }
 
-func (s StatusService) Register(api echoswagger.ApiRoot) {
-	api.GET("/api/status/:id", s.Get).
-		AddParamPath(0, "id", "SiteID to get status for").
-		AddResponse(http.StatusOK, "success", models.SiteStatus{}, nil).
-		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
-		AddResponse(http.StatusNotFound, "not found", nil, nil).
-		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
+func (s StatusService) Register(api *echo.Echo) {
+	api.GET("/api/status/:id", s.Get)
 }

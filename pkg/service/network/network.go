@@ -5,26 +5,36 @@ import (
 	"net/http"
 	"sort"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 )
 
 type NetworkService struct {
-	config *models.Config
+	config *model.Config
 	store  store.Store
 }
 
-func NewNetworkService(cfg *models.Config, store store.Store) NetworkService {
+func NewNetworkService(cfg *model.Config, store store.Store) NetworkService {
 	return NetworkService{
 		config: cfg,
 		store:  store,
 	}
 }
 
+// Create godoc
+// @Summary Add Network
+// @Description add or update network
+// @Tags Network
+// @Accept  json
+// @Produce  json
+// @Param network body model.Network true "Add Network"
+// @Success 201 {object} model.NetworkID
+// @Failure 400 {object} model.HTTPError
+// @Failure 500 {object} model.HTTPError
+// @Router /api/network [post]
 func (s NetworkService) Create(ctx echo.Context) error {
-	net := new(models.Network)
+	net := new(model.Network)
 
 	if err := ctx.Bind(net); err != nil || (net.Network == "" && net.ID == 0 && net.Links == nil && net.Sites == nil) {
 		if err == nil {
@@ -37,17 +47,27 @@ func (s NetworkService) Create(ctx echo.Context) error {
 		return echo.ErrInternalServerError.SetInternal(err)
 	}
 
-	return ctx.JSON(http.StatusCreated, models.NetworkID{ID: net.ID})
+	return ctx.JSON(http.StatusCreated, model.NetworkID{ID: net.ID})
 }
 
-func sortSitesByName(sites []models.Site) {
+func sortSitesByName(sites []model.Site) {
 	sort.Slice(sites, func(p, q int) bool {
 		return sites[p].FriendlyName < sites[q].FriendlyName
 	})
 }
 
+// Get godoc
+// @Summary Get Network
+// @Description get network
+// @Tags Network
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.Network
+// @Failure 404 {object} model.HTTPError
+// @Failure 503 {object} model.HTTPError
+// @Router /api/network [get]
 func (s NetworkService) Get(ctx echo.Context) error {
-	var net models.Network
+	var net model.Network
 
 	if err := s.store.GetNetwork(&net); err != nil {
 		if errors.Is(err, store.ErrNotFound) {
@@ -60,16 +80,8 @@ func (s NetworkService) Get(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, net)
 }
 
-func (s NetworkService) Register(api echoswagger.ApiRoot) {
-	api.POST("/api/network", s.Create).
-		AddParamBody(models.Network{}, "body", "Network to add", true).
-		AddResponse(http.StatusCreated, "success", models.NetworkID{}, nil).
-		AddResponse(http.StatusBadRequest, "bad request", nil, nil).
-		AddResponse(http.StatusNotFound, "not found", nil, nil).
-		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
+func (s NetworkService) Register(api *echo.Echo) {
+	api.POST("/api/network", s.Create)
 
-	api.GET("/api/network", s.Get).
-		AddResponse(http.StatusOK, "success", models.Network{}, nil).
-		AddResponse(http.StatusNotFound, "not found", nil, nil).
-		AddResponse(http.StatusInternalServerError, "internal server error", nil, nil)
+	api.GET("/api/network", s.Get)
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { Site } from '../../shared/models/site.model';
+import { Site } from '../../shared/model/site.model';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { Tag } from '../../shared/models/tag.model';
+import { Tag } from '../../shared/model/tag.model';
 
 /**
  * Component for adding/editing sites

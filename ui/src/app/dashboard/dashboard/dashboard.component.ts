@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ResponsiveState } from 'ngx-responsive';
 
-import { Status } from '../../shared/models/status.model';
+import { Status } from '../../shared/model/status.model';
 import { SiteFilter } from '../site-filter/site-filter.model';
 import { Subscription, Observable } from 'rxjs';
 import { Select, Store } from '@ngxs/store';

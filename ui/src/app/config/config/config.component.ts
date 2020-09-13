@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-import { Config } from '../../shared/models/config.model';
-import { Link } from '../../shared/models/link.model';
-import { Site } from '../../shared/models/site.model';
+import { Config } from '../../shared/model/config.model';
+import { Link } from '../../shared/model/link.model';
+import { Site } from '../../shared/model/site.model';
 import { ConfigService } from '../services/config.service';
 import { EasingLogic } from 'ngx-page-scroll-core';
 @Component({

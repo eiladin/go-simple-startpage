@@ -5,9 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -17,10 +16,10 @@ type mockStore struct {
 	PingFunc func() error
 }
 
-func (m *mockStore) Ping() error                             { return m.PingFunc() }
-func (m *mockStore) CreateNetwork(net *models.Network) error { return nil }
-func (m *mockStore) GetNetwork(net *models.Network) error    { return nil }
-func (m *mockStore) GetSite(site *models.Site) error         { return nil }
+func (m *mockStore) Ping() error                            { return m.PingFunc() }
+func (m *mockStore) CreateNetwork(net *model.Network) error { return nil }
+func (m *mockStore) GetNetwork(net *model.Network) error    { return nil }
+func (m *mockStore) GetSite(site *model.Site) error         { return nil }
 
 type HealthcheckServiceSuite struct {
 	suite.Suite
@@ -28,15 +27,15 @@ type HealthcheckServiceSuite struct {
 
 func (suite *HealthcheckServiceSuite) TestCheckDB() {
 	cases := []struct {
-		Database models.Database
+		Database model.Database
 		Error    error
 	}{
-		{Database: models.Database{Driver: "postgres", Name: "name1"}, Error: errors.New("connection error")},
-		{Database: models.Database{Driver: "sqlite", Name: ":memory:"}, Error: nil},
+		{Database: model.Database{Driver: "postgres", Name: "name1"}, Error: errors.New("connection error")},
+		{Database: model.Database{Driver: "sqlite", Name: ":memory:"}, Error: nil},
 	}
 
 	store := &mockStore{}
-	cfg := &models.Config{}
+	cfg := &model.Config{}
 	hs := NewHealthcheckService(cfg, store)
 
 	for _, c := range cases {
@@ -53,10 +52,10 @@ func (suite *HealthcheckServiceSuite) TestCheckDB() {
 }
 
 func (suite *HealthcheckServiceSuite) TestRegister() {
-	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	NewHealthcheckService(&models.Config{}, &mockStore{}).Register(app)
+	app := echo.New()
+	NewHealthcheckService(&model.Config{}, &mockStore{}).Register(app)
 	e := []string{}
-	for _, r := range app.Echo().Routes() {
+	for _, r := range app.Routes() {
 		e = append(e, r.Method+" "+r.Path)
 	}
 	suite.Contains(e, "GET /api/healthz")
