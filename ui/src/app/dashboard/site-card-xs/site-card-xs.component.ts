@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { StatusSite } from '../../shared/model/statusSite.model';
+import { StatusSite } from '../../shared/models/statusSite.model';
 
 /**
  * Site Card Component used on the dashboard for phones

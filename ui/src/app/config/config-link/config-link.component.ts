@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { Link } from '../../shared/model/link.model';
+import { Link } from '../../shared/models/link.model';
 
 /**
  * Component for adding/editing links

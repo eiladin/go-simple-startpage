@@ -3,7 +3,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
-import { Config } from '../../shared/model/config.model';
+import { Config } from '../../shared/models/config.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 

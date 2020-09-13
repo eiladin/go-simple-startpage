@@ -1,9 +1,9 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
-import { Status } from './shared/model/status.model';
+import { Status } from './shared/models/status.model';
 import { HttpClient } from '@angular/common/http';
 import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { StatusSite } from './shared/model/statusSite.model';
+import { StatusSite } from './shared/models/statusSite.model';
 import { environment } from '../environments/environment';
 import { Injectable } from '@angular/core';
 

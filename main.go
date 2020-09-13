@@ -76,7 +76,11 @@ func main() {
 
 	setupMiddleware(e, c)
 	router.AddRoutes(e, store, c)
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	if !c.IsProduction() {
+		e.GET("/swagger/doc.json", echoSwagger.WrapHandler)
+	} else {
+		e.GET("/swagger/*", echoSwagger.WrapHandler)
+	}
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

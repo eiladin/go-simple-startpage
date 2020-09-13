@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 import { SiteFilter } from './site-filter.model';
-import { StatusSite } from '../../shared/model/statusSite.model';
+import { StatusSite } from '../../shared/models/statusSite.model';
 
 /**
  * Pipe to filter sites by name, used by search
