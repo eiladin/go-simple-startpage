@@ -3,55 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"strings"
 
 	"github.com/eiladin/go-simple-startpage/docs"
 	"github.com/eiladin/go-simple-startpage/internal/database"
+	"github.com/eiladin/go-simple-startpage/internal/middleware"
 	"github.com/eiladin/go-simple-startpage/internal/router"
 	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
-
-func localhostSkipper(ctx echo.Context) bool {
-	return strings.Contains(ctx.Request().Host, "localhost")
-}
-
-func fromSwaggerSkipper(ctx echo.Context) bool {
-	return strings.Contains(ctx.Request().URL.Path, "/swagger")
-}
-
-func setupMiddleware(app *echo.Echo, c *model.Config) {
-	if c.IsProduction() {
-		app.Use(middleware.Logger())
-	} else {
-		app.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-			Output: os.Stdout,
-			Format: "method=${method}, uri=${uri}, status=${status}, error=${error}\n",
-		}))
-	}
-
-	app.Use(middleware.CORS())
-	app.Use(middleware.RequestID())
-	app.Use(middleware.Secure())
-	app.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-		Skipper:      localhostSkipper,
-		CookieSecure: true,
-	}))
-	app.Use(middleware.Recover())
-	app.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Skipper: fromSwaggerSkipper,
-	}))
-	app.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Skipper: fromSwaggerSkipper,
-		Index:   "index.html",
-		Root:    "ui/dist",
-		Browse:  false,
-		HTML5:   true,
-	}))
-}
 
 var version = "dev"
 
@@ -74,9 +34,9 @@ func main() {
 	e := echo.New()
 	docs.SwaggerInfo.Version = version
 
-	setupMiddleware(e, c)
+	e.Use(middleware.GetMiddleware(c)...)
 	router.AddRoutes(e, store, c)
-	if !c.IsProduction() {
+	if c.IsProduction() {
 		e.GET("/swagger/doc.json", echoSwagger.WrapHandler)
 	} else {
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
