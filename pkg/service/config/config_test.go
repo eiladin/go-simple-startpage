@@ -1,13 +1,12 @@
-package api
+package config
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/internal/models"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
 	"github.com/labstack/echo/v4"
-	"github.com/pangpanglabs/echoswagger/v2"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -17,7 +16,7 @@ type ConfigServiceSuite struct {
 
 func (suite *ConfigServiceSuite) TestGet() {
 	app := echo.New()
-	c := models.Config{Version: "1.2.3"}
+	c := model.Config{Version: "1.2.3"}
 	cs := NewConfigService(&c)
 	req := httptest.NewRequest("GET", "/", nil)
 	rec := httptest.NewRecorder()
@@ -30,11 +29,11 @@ func (suite *ConfigServiceSuite) TestGet() {
 }
 
 func (suite *ConfigServiceSuite) TestRegister() {
-	app := echoswagger.New(echo.New(), "/swagger-test", &echoswagger.Info{})
-	c := models.Config{Version: "1.2.3"}
+	app := echo.New()
+	c := model.Config{Version: "1.2.3"}
 	NewConfigService(&c).Register(app)
 	e := []string{}
-	for _, r := range app.Echo().Routes() {
+	for _, r := range app.Routes() {
 		e = append(e, r.Path)
 	}
 	suite.Contains(e, "/api/appconfig")

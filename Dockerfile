@@ -8,7 +8,7 @@ COPY . $GOPATH/src/github.com/go-simple-startpage
 WORKDIR $GOPATH/src/github.com/go-simple-startpage
 
 ENV GO111MODULE=on
-RUN go mod download
+RUN go get -u github.com/swaggo/swag/cmd/swag && go generate
 ENV CGO_FLAGS='-g -O2 -Wno-return-local-addr'
 RUN CGO_ENABLED=1 GOARCH=amd64 GOOS=linux go build -ldflags='-extldflags "-static" -s -w -X main.version='${version}'' -o /go/bin/go-simple-startpage .
 

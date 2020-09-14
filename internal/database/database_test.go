@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/internal/models"
-	"github.com/eiladin/go-simple-startpage/internal/store"
+	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -32,8 +32,8 @@ func (suite *DatabaseSuite) TestGetDSN() {
 	}
 
 	for _, c := range cases {
-		cfg := &models.Config{
-			Database: models.Database{
+		cfg := &model.Config{
+			Database: model.Database{
 				Driver:   c.Driver,
 				Name:     c.Dbname,
 				Username: c.Username,
@@ -49,8 +49,8 @@ func (suite *DatabaseSuite) TestGetDSN() {
 }
 
 func (suite *DatabaseSuite) TestOpenError() {
-	c := models.Config{
-		Database: models.Database{
+	c := model.Config{
+		Database: model.Database{
 			Driver: "postgres",
 		},
 	}
@@ -81,8 +81,8 @@ func (suite *DatabaseSuite) TestHandleError() {
 }
 
 func (suite *DatabaseSuite) TestPing() {
-	c := models.Config{
-		Database: models.Database{
+	c := model.Config{
+		Database: model.Database{
 			Driver: "sqlite",
 			Name:   ":memory:",
 		},
@@ -93,8 +93,8 @@ func (suite *DatabaseSuite) TestPing() {
 }
 
 func (suite *DatabaseSuite) TestDBFunctions() {
-	c := models.Config{
-		Database: models.Database{
+	c := model.Config{
+		Database: model.Database{
 			Driver: "sqlite",
 			Name:   ":memory:",
 		},
@@ -102,13 +102,13 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	db, err := New(&c)
 	suite.NoError(err)
 
-	net := models.Network{
+	net := model.Network{
 		Network: "test",
-		Links: []models.Link{
+		Links: []model.Link{
 			{Name: "test-link-1"},
 			{Name: "test-link-2"},
 		},
-		Sites: []models.Site{
+		Sites: []model.Site{
 			{FriendlyName: "test-site-1"},
 			{FriendlyName: "test-site-2"},
 		},
@@ -121,14 +121,14 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	suite.Equal(uint(1), net.Links[0].ID, "Link ID should be '1'")
 	suite.Equal(uint(2), net.Links[1].ID, "Link ID should be '2'")
 
-	findNet := models.Network{ID: 1}
+	findNet := model.Network{ID: 1}
 	suite.NoError(db.GetNetwork(&findNet))
 	// GetNetwork assertions
 	suite.Equal("test", findNet.Network, "Network should be 'test'")
 	suite.Equal("test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
 	suite.Equal("test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
 
-	findSite := models.Site{ID: 1}
+	findSite := model.Site{ID: 1}
 	suite.NoError(db.GetSite(&findSite))
 	// GetSite assertions
 	suite.Equal("test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
