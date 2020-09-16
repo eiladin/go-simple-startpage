@@ -21,8 +21,8 @@ var version = "dev"
 // @license.url https://github.com/eiladin/go-simple-startpage/blob/master/LICENSE
 //go:generate swag init -o ./internal/server/docs
 func main() {
-	c := config.New(version, "")
-	store, err := database.New(c)
+	c := config.Load(version, "")
+	store, err := database.New(&c.Database)
 	if err != nil {
 		log.Fatal(err)
 	}

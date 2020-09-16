@@ -49,7 +49,7 @@ func (suite *ConfigSuite) TestEnvConfig() {
 	os.Setenv("GSS_LISTEN_PORT", "5")
 	os.Setenv("GSS_TIMEOUT", "6")
 	os.Setenv("GSS_ENVIRONMENT", "Production")
-	c := New("1.2.3", cfgFile)
+	c := Load("1.2.3", cfgFile)
 	suite.Equal("name1", c.Database.Name)
 	suite.Equal(false, c.Database.Log)
 	suite.Equal(5, c.ListenPort)
@@ -79,7 +79,7 @@ func (suite *ConfigSuite) TestIsProduction() {
 		if c.Environment != "" {
 			os.Setenv("GSS_ENVIRONMENT", c.Environment)
 		}
-		cfg := New("test", "not-found")
+		cfg := Load("test", "not-found")
 		suite.Equal(c.Expected, cfg.IsProduction(), "IsProduction should be %t", c.Expected)
 	}
 	os.Unsetenv("GSS_ENVIRONMENT")
@@ -91,7 +91,7 @@ func (suite *ConfigSuite) TestConfigFile() {
 	createConfigFile(suite.T(), cfgFile)
 	defer os.RemoveAll(cfgFile)
 
-	c := New("1.2.3", cfgFile)
+	c := Load("1.2.3", cfgFile)
 	suite.Equal("dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
 	suite.Equal(false, c.Database.Log, "Database Log should be 'false'")
 	suite.Equal(8080, c.ListenPort, "Listen Port should be '8080'")
@@ -105,7 +105,7 @@ func (suite *ConfigSuite) TestDefaultConfigFile() {
 	createConfigFile(suite.T(), cfgFile)
 	defer os.RemoveAll(cfgFile)
 
-	c := New("1.2.3", "")
+	c := Load("1.2.3", "")
 	suite.Equal("dbname.db", c.Database.Name, "Database Name should be 'dbname.db'")
 	suite.Equal(false, c.Database.Log, "Database Log should be 'false'")
 	suite.Equal(8080, c.ListenPort, "Listen Port should be '8080'")
@@ -117,7 +117,7 @@ func (suite *ConfigSuite) TestConfigFileErr() {
 	cfgFile := "./test-config-file-error.yml"
 	createErrorConfigFile(suite.T(), cfgFile)
 	defer os.RemoveAll(cfgFile)
-	c := New("1.2.3", cfgFile)
+	c := Load("1.2.3", cfgFile)
 	suite.Equal("simple-startpage.db", c.Database.Name, "Database Name should be 'simple-startpage.db'")
 	suite.Equal(false, c.Database.Log, "Database Log should be 'false'")
 	suite.Equal(3000, c.ListenPort, "Listen Port should be '3000'")

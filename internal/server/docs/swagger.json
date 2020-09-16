@@ -30,7 +30,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Config"
+                            "$ref": "#/definitions/config.Config"
                         }
                     }
                 }
@@ -53,13 +53,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Healthcheck"
+                            "$ref": "#/definitions/models.Healthcheck"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/model.Healthcheck"
+                            "$ref": "#/definitions/models.Healthcheck"
                         }
                     }
                 }
@@ -82,19 +82,19 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Network"
+                            "$ref": "#/definitions/models.Network"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/httperror.HTTPError"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/httperror.HTTPError"
                         }
                     }
                 }
@@ -118,7 +118,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Network"
+                            "$ref": "#/definitions/models.Network"
                         }
                     }
                 ],
@@ -126,19 +126,19 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.NetworkID"
+                            "$ref": "#/definitions/models.NetworkID"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/httperror.HTTPError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/httperror.HTTPError"
                         }
                     }
                 }
@@ -170,19 +170,25 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.SiteStatus"
+                            "$ref": "#/definitions/models.Status"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/httperror.HTTPError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/model.HTTPError"
+                            "$ref": "#/definitions/httperror.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HTTPError"
                         }
                     }
                 }
@@ -190,7 +196,7 @@
         }
     },
     "definitions": {
-        "model.Config": {
+        "config.Config": {
             "type": "object",
             "properties": {
                 "version": {
@@ -198,7 +204,7 @@
                 }
             }
         },
-        "model.HTTPError": {
+        "httperror.HTTPError": {
             "type": "object",
             "properties": {
                 "message": {
@@ -206,19 +212,19 @@
                 }
             }
         },
-        "model.Healthcheck": {
+        "models.Healthcheck": {
             "type": "object",
             "properties": {
                 "errors": {
                     "type": "object",
-                    "$ref": "#/definitions/model.HealthcheckErrors"
+                    "$ref": "#/definitions/models.HealthcheckErrors"
                 },
                 "status": {
                     "type": "string"
                 }
             }
         },
-        "model.HealthcheckErrors": {
+        "models.HealthcheckErrors": {
             "type": "object",
             "properties": {
                 "database": {
@@ -226,7 +232,7 @@
                 }
             }
         },
-        "model.Link": {
+        "models.Link": {
             "type": "object",
             "properties": {
                 "name": {
@@ -237,13 +243,13 @@
                 }
             }
         },
-        "model.Network": {
+        "models.Network": {
             "type": "object",
             "properties": {
                 "links": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Link"
+                        "$ref": "#/definitions/models.Link"
                     }
                 },
                 "network": {
@@ -252,12 +258,12 @@
                 "sites": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Site"
+                        "$ref": "#/definitions/models.Site"
                     }
                 }
             }
         },
-        "model.NetworkID": {
+        "models.NetworkID": {
             "type": "object",
             "properties": {
                 "id": {
@@ -265,7 +271,7 @@
                 }
             }
         },
-        "model.Site": {
+        "models.Site": {
             "type": "object",
             "properties": {
                 "friendlyName": {
@@ -289,7 +295,7 @@
                 "tags": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Tag"
+                        "$ref": "#/definitions/models.Tag"
                     }
                 },
                 "uri": {
@@ -297,7 +303,7 @@
                 }
             }
         },
-        "model.SiteStatus": {
+        "models.Status": {
             "type": "object",
             "properties": {
                 "id": {
@@ -311,7 +317,7 @@
                 }
             }
         },
-        "model.Tag": {
+        "models.Tag": {
             "type": "object",
             "properties": {
                 "value": {

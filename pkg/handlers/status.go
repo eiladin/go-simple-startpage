@@ -20,7 +20,7 @@ type StatusHandler struct {
 // @Accept  json
 // @Produce  json
 // @Param  id path int true "Site ID"
-// @Success 200 {object} models.SiteStatus
+// @Success 200 {object} models.Status
 // @Failure 400 {object} httperror.HTTPError
 // @Failure 404 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError

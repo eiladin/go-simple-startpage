@@ -1,53 +1,53 @@
 definitions:
-  model.Config:
+  config.Config:
     properties:
       version:
         type: string
     type: object
-  model.HTTPError:
+  httperror.HTTPError:
     properties:
       message:
         type: object
     type: object
-  model.Healthcheck:
+  models.Healthcheck:
     properties:
       errors:
-        $ref: '#/definitions/model.HealthcheckErrors'
+        $ref: '#/definitions/models.HealthcheckErrors'
         type: object
       status:
         type: string
     type: object
-  model.HealthcheckErrors:
+  models.HealthcheckErrors:
     properties:
       database:
         type: string
     type: object
-  model.Link:
+  models.Link:
     properties:
       name:
         type: string
       uri:
         type: string
     type: object
-  model.Network:
+  models.Network:
     properties:
       links:
         items:
-          $ref: '#/definitions/model.Link'
+          $ref: '#/definitions/models.Link'
         type: array
       network:
         type: string
       sites:
         items:
-          $ref: '#/definitions/model.Site'
+          $ref: '#/definitions/models.Site'
         type: array
     type: object
-  model.NetworkID:
+  models.NetworkID:
     properties:
       id:
         type: integer
     type: object
-  model.Site:
+  models.Site:
     properties:
       friendlyName:
         type: string
@@ -63,12 +63,12 @@ definitions:
         type: boolean
       tags:
         items:
-          $ref: '#/definitions/model.Tag'
+          $ref: '#/definitions/models.Tag'
         type: array
       uri:
         type: string
     type: object
-  model.SiteStatus:
+  models.Status:
     properties:
       id:
         type: integer
@@ -77,7 +77,7 @@ definitions:
       isUp:
         type: boolean
     type: object
-  model.Tag:
+  models.Tag:
     properties:
       value:
         type: string
@@ -103,7 +103,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Config'
+            $ref: '#/definitions/config.Config'
       summary: Get AppConfig
       tags:
       - AppConfig
@@ -118,11 +118,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Healthcheck'
+            $ref: '#/definitions/models.Healthcheck'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/model.Healthcheck'
+            $ref: '#/definitions/models.Healthcheck'
       summary: Get Health
       tags:
       - HealthCheck
@@ -137,15 +137,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Network'
+            $ref: '#/definitions/models.Network'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/httperror.HTTPError'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/httperror.HTTPError'
       summary: Get Network
       tags:
       - Network
@@ -159,22 +159,22 @@ paths:
         name: network
         required: true
         schema:
-          $ref: '#/definitions/model.Network'
+          $ref: '#/definitions/models.Network'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/model.NetworkID'
+            $ref: '#/definitions/models.NetworkID'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/httperror.HTTPError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/httperror.HTTPError'
       summary: Add Network
       tags:
       - Network
@@ -195,15 +195,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.SiteStatus'
+            $ref: '#/definitions/models.Status'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/httperror.HTTPError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/model.HTTPError'
+            $ref: '#/definitions/httperror.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
       summary: Get Status
       tags:
       - Status

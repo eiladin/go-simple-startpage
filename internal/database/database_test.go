@@ -33,15 +33,13 @@ func (suite *DatabaseSuite) TestGetDSN() {
 	}
 
 	for _, c := range cases {
-		cfg := &config.Config{
-			Database: config.Database{
-				Driver:   c.Driver,
-				Name:     c.Dbname,
-				Username: c.Username,
-				Password: c.Password,
-				Host:     c.Host,
-				Port:     c.Port,
-			},
+		cfg := &config.Database{
+			Driver:   c.Driver,
+			Name:     c.Dbname,
+			Username: c.Username,
+			Password: c.Password,
+			Host:     c.Host,
+			Port:     c.Port,
 		}
 
 		dsn := getDSN(cfg)
@@ -50,10 +48,8 @@ func (suite *DatabaseSuite) TestGetDSN() {
 }
 
 func (suite *DatabaseSuite) TestOpenError() {
-	c := config.Config{
-		Database: config.Database{
-			Driver: "postgres",
-		},
+	c := config.Database{
+		Driver: "postgres",
 	}
 	_, err := New(&c)
 	suite.Contains(err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
@@ -82,11 +78,9 @@ func (suite *DatabaseSuite) TestHandleError() {
 }
 
 func (suite *DatabaseSuite) TestPing() {
-	c := config.Config{
-		Database: config.Database{
-			Driver: "sqlite",
-			Name:   ":memory:",
-		},
+	c := config.Database{
+		Driver: "sqlite",
+		Name:   ":memory:",
 	}
 	db, err := New(&c)
 	suite.NoError(err)
@@ -94,11 +88,9 @@ func (suite *DatabaseSuite) TestPing() {
 }
 
 func (suite *DatabaseSuite) TestDBFunctions() {
-	c := config.Config{
-		Database: config.Database{
-			Driver: "sqlite",
-			Name:   ":memory:",
-		},
+	c := config.Database{
+		Driver: "sqlite",
+		Name:   ":memory:",
 	}
 	db, err := New(&c)
 	suite.NoError(err)

@@ -30,7 +30,7 @@ type migrationFailedErr string
 
 func (e migrationFailedErr) Error() string { return "unable to run database migrations: " + string(e) }
 
-func New(config *config.Config) (store.Store, error) {
+func New(config *config.Database) (store.Store, error) {
 	d := DB{}
 	cfg := getGormConfig(config)
 	dsn := getDSN(config)
@@ -46,9 +46,9 @@ func New(config *config.Config) (store.Store, error) {
 	return &d, nil
 }
 
-func getGormConfig(c *config.Config) *gorm.Config {
+func getGormConfig(c *config.Database) *gorm.Config {
 	llevel := logger.Silent
-	if c.Database.Log {
+	if c.Log {
 		llevel = logger.Info
 	}
 	return &gorm.Config{
@@ -61,13 +61,13 @@ func getGormConfig(c *config.Config) *gorm.Config {
 	}
 }
 
-func getDSN(c *config.Config) gorm.Dialector {
-	driver := strings.ToLower(c.Database.Driver)
-	database := c.Database.Name
-	username := c.Database.Username
-	password := c.Database.Password
-	host := c.Database.Host
-	port := c.Database.Port
+func getDSN(c *config.Database) gorm.Dialector {
+	driver := strings.ToLower(c.Driver)
+	database := c.Name
+	username := c.Username
+	password := c.Password
+	host := c.Host
+	port := c.Port
 	if driver == "sqlite" {
 		return sqlite.Open(database)
 	} else if driver == "postgres" {

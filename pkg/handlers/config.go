@@ -17,7 +17,7 @@ type ConfigHandler struct {
 // @Tags AppConfig
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.Config
+// @Success 200 {object} config.Config
 // @Router /api/appconfig [get]
 func (c ConfigHandler) Get(ctx echo.Context) error {
 	cfg, err := c.ConfigUseCase.Get()

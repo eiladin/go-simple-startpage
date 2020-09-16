@@ -15,8 +15,8 @@ type HealthcheckHandler struct {
 // @Tags HealthCheck
 // @Accept  json
 // @Produce  json
-// @Success 200 {object} model.Healthcheck
-// @Failure 503 {object} model.Healthcheck
+// @Success 200 {object} models.Healthcheck
+// @Failure 503 {object} models.Healthcheck
 // @Router /api/healthz [get]
 func (c *HealthcheckHandler) Get() echo.HandlerFunc {
 	return echo.WrapHandler(c.HealthcheckUseCase.Check())

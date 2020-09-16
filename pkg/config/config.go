@@ -28,7 +28,7 @@ func (c Config) IsProduction() bool {
 	return strings.ToUpper(c.Environment) == "PRODUCTION"
 }
 
-func New(version string, cfgFile string) *Config {
+func Load(version string, cfgFile string) *Config {
 	c := &Config{
 		Environment: "Development",
 		Version:     version,

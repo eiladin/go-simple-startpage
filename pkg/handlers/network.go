@@ -19,7 +19,7 @@ type NetworkHandler struct {
 // @Tags Network
 // @Accept  json
 // @Produce  json
-// @Param network body Network true "Add Network"
+// @Param network body models.Network true "Add Network"
 // @Success 201 {object} models.NetworkID
 // @Failure 400 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError
