@@ -14,15 +14,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type mockStatusRepo struct {
-	mock.Mock
-}
-
-func (m *mockStatusRepo) GetSite(site *models.Site) error {
-	args := m.Called()
-	return args.Error(0)
-}
-
 type mockStatusUseCase struct {
 	mock.Mock
 }

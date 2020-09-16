@@ -22,6 +22,11 @@ type StatusSuite struct {
 	suite.Suite
 }
 
+func (suite *StatusSuite) TestNew() {
+	h := New(&mockRepo{}, &config.Config{})
+	suite.NotNil(h)
+}
+
 func (suite *StatusSuite) TestGet() {
 	cases := []struct {
 		id      uint
