@@ -1,16 +1,10 @@
 package store
 
-import (
-	"errors"
-
-	"github.com/eiladin/go-simple-startpage/pkg/model"
-)
-
-var ErrNotFound = errors.New("record not found")
+import "github.com/eiladin/go-simple-startpage/pkg/models"
 
 type Store interface {
 	Ping() error
-	CreateNetwork(net *model.Network) error
-	GetNetwork(net *model.Network) error
-	GetSite(site *model.Site) error
+	CreateNetwork(net *models.Network) error
+	GetNetwork(net *models.Network) error
+	GetSite(site *models.Site) error
 }
