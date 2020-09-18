@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
-	"github.com/eiladin/go-simple-startpage/pkg/httperror"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"gorm.io/driver/mysql"
@@ -47,7 +46,7 @@ func New(config *config.Database) (store.Store, error) {
 }
 
 func getGormConfig(c *config.Database) *gorm.Config {
-	llevel := logger.Silent
+	llevel := logger.Warn
 	if c.Log {
 		llevel = logger.Info
 	}
@@ -91,7 +90,7 @@ func migrateDB(conn *gorm.DB) error {
 
 func handleError(err error) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return httperror.ErrNotFound
+		return store.ErrNotFound
 	}
 	return err
 }

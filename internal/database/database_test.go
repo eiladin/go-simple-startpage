@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
-	"github.com/eiladin/go-simple-startpage/pkg/httperror"
 	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -68,7 +68,7 @@ func (suite *DatabaseSuite) TestHandleError() {
 		Expected error
 	}{
 		{Err: errors.New("unknown error"), Expected: errors.New("unknown error")},
-		{Err: gorm.ErrRecordNotFound, Expected: httperror.ErrNotFound},
+		{Err: gorm.ErrRecordNotFound, Expected: store.ErrNotFound},
 	}
 
 	for _, c := range cases {
@@ -125,6 +125,10 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	suite.NoError(db.GetSite(&findSite))
 	// GetSite assertions
 	suite.Equal("test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
+
+	missingSite := models.Site{ID: 3}
+	err = db.GetSite(&missingSite)
+	suite.EqualError(err, store.ErrNotFound.Error())
 }
 
 func TestDatabaseSuite(t *testing.T) {
