@@ -14,12 +14,12 @@ type Server struct {
 	*echo.Echo
 }
 
-func New(c *config.Config, store store.Store) Server {
+func New(c *config.Config, s store.Store) Server {
 	e := Server{Echo: echo.New()}
 	docs.SwaggerInfo.Version = c.Version
 
 	e.Use(getMiddleware(c)...)
-	handlers.RegisterRoutes(e.Echo, providers.InitProvider(c, store))
+	handlers.RegisterRoutes(e.Echo, providers.InitProvider(c, s))
 	if c.IsProduction() {
 		e.GET("/swagger/doc.json", echoSwagger.WrapHandler)
 	} else {

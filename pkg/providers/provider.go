@@ -1,9 +1,9 @@
 package providers
 
 import (
-	"github.com/eiladin/go-simple-startpage/pkg/config"
+	cfg "github.com/eiladin/go-simple-startpage/pkg/config"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
-	cfguse "github.com/eiladin/go-simple-startpage/pkg/usecases/config"
+	"github.com/eiladin/go-simple-startpage/pkg/usecases/config"
 	"github.com/eiladin/go-simple-startpage/pkg/usecases/healthcheck"
 	"github.com/eiladin/go-simple-startpage/pkg/usecases/network"
 	"github.com/eiladin/go-simple-startpage/pkg/usecases/status"
@@ -13,14 +13,14 @@ type Provider struct {
 	Network     network.INetwork
 	Healthcheck healthcheck.IHealthcheck
 	Status      status.IStatus
-	Config      cfguse.IConfig
+	Config      config.IConfig
 }
 
-func InitProvider(cfg *config.Config, store store.Store) *Provider {
+func InitProvider(cfg *cfg.Config, store store.Store) *Provider {
 	net := network.New(store)
 	hc := healthcheck.New(store)
 	status := status.New(store, cfg)
-	ch := cfguse.New(cfg)
+	ch := config.New(cfg)
 
 	return &Provider{
 		Network:     net,

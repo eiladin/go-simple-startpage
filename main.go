@@ -26,6 +26,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err = store.Ping(); err != nil {
+		log.Fatal(err)
+	}
 
 	s := server.New(c, store)
 	s.Logger.Fatal(s.Start(fmt.Sprintf(":%d", c.ListenPort)))
