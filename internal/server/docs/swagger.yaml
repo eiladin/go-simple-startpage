@@ -1,0 +1,214 @@
+definitions:
+  config.Config:
+    properties:
+      version:
+        type: string
+    type: object
+  httperror.HTTPError:
+    properties:
+      message:
+        type: object
+    type: object
+  models.Healthcheck:
+    properties:
+      errors:
+        $ref: '#/definitions/models.HealthcheckErrors'
+        type: object
+      status:
+        type: string
+    type: object
+  models.HealthcheckErrors:
+    properties:
+      database:
+        type: string
+    type: object
+  models.Link:
+    properties:
+      name:
+        type: string
+      uri:
+        type: string
+    type: object
+  models.Network:
+    properties:
+      links:
+        items:
+          $ref: '#/definitions/models.Link'
+        type: array
+      network:
+        type: string
+      sites:
+        items:
+          $ref: '#/definitions/models.Site'
+        type: array
+    type: object
+  models.NetworkID:
+    properties:
+      id:
+        type: integer
+    type: object
+  models.Site:
+    properties:
+      friendlyName:
+        type: string
+      icon:
+        type: string
+      id:
+        type: integer
+      ip:
+        type: string
+      isSupportedApp:
+        type: boolean
+      isUp:
+        type: boolean
+      tags:
+        items:
+          $ref: '#/definitions/models.Tag'
+        type: array
+      uri:
+        type: string
+    type: object
+  models.Status:
+    properties:
+      id:
+        type: integer
+      ip:
+        type: string
+      isUp:
+        type: boolean
+    type: object
+  models.Tag:
+    properties:
+      value:
+        type: string
+    type: object
+info:
+  contact:
+    name: Sami Khan
+    url: https://github.com/eiladin/go-simple-startpage
+  description: This is the API for the Go Simple Startpage App
+  license:
+    name: MIT
+    url: https://github.com/eiladin/go-simple-startpage/blob/master/LICENSE
+  title: Go Simple Startpage API
+paths:
+  /api/appconfig:
+    get:
+      consumes:
+      - application/json
+      description: get application configuration
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Config'
+      summary: Get AppConfig
+      tags:
+      - AppConfig
+  /api/healthz:
+    get:
+      consumes:
+      - application/json
+      description: run healthcheck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Healthcheck'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/models.Healthcheck'
+      summary: Get Health
+      tags:
+      - HealthCheck
+  /api/network:
+    get:
+      consumes:
+      - application/json
+      description: get network
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Network'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
+      summary: Get Network
+      tags:
+      - Network
+    post:
+      consumes:
+      - application/json
+      description: add or update network
+      parameters:
+      - description: Add Network
+        in: body
+        name: network
+        required: true
+        schema:
+          $ref: '#/definitions/models.Network'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.NetworkID'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
+      summary: Add Network
+      tags:
+      - Network
+  /api/status/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get status given a site id
+      parameters:
+      - description: Site ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Status'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperror.HTTPError'
+      summary: Get Status
+      tags:
+      - Status
+swagger: "2.0"

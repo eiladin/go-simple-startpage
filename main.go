@@ -4,13 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/eiladin/go-simple-startpage/docs"
 	"github.com/eiladin/go-simple-startpage/internal/database"
-	"github.com/eiladin/go-simple-startpage/internal/middleware"
-	"github.com/eiladin/go-simple-startpage/internal/router"
-	"github.com/eiladin/go-simple-startpage/pkg/model"
-	"github.com/labstack/echo/v4"
-	echoSwagger "github.com/swaggo/echo-swagger"
+	"github.com/eiladin/go-simple-startpage/internal/server"
+	"github.com/eiladin/go-simple-startpage/pkg/config"
 )
 
 var version = "dev"
@@ -23,24 +19,17 @@ var version = "dev"
 
 // @license.name MIT
 // @license.url https://github.com/eiladin/go-simple-startpage/blob/master/LICENSE
-//go:generate swag init
+//go:generate swag init -o ./internal/server/docs
 func main() {
-	c := model.NewConfig(version, "")
-	store, err := database.New(c)
+	c := config.Load(version, "")
+	store, err := database.New(&c.Database)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	e := echo.New()
-	docs.SwaggerInfo.Version = version
-
-	e.Use(middleware.GetMiddleware(c)...)
-	router.AddRoutes(e, store, c)
-	if c.IsProduction() {
-		e.GET("/swagger/doc.json", echoSwagger.WrapHandler)
-	} else {
-		e.GET("/swagger/*", echoSwagger.WrapHandler)
+	if err = store.Ping(); err != nil {
+		log.Fatal(err)
 	}
 
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", c.ListenPort)))
+	s := server.New(c, store)
+	s.Logger.Fatal(s.Start(fmt.Sprintf(":%d", c.ListenPort)))
 }

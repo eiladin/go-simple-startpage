@@ -4,7 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/model"
+	"github.com/eiladin/go-simple-startpage/pkg/config"
+	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/sqlite"
@@ -32,15 +33,13 @@ func (suite *DatabaseSuite) TestGetDSN() {
 	}
 
 	for _, c := range cases {
-		cfg := &model.Config{
-			Database: model.Database{
-				Driver:   c.Driver,
-				Name:     c.Dbname,
-				Username: c.Username,
-				Password: c.Password,
-				Host:     c.Host,
-				Port:     c.Port,
-			},
+		cfg := &config.Database{
+			Driver:   c.Driver,
+			Name:     c.Dbname,
+			Username: c.Username,
+			Password: c.Password,
+			Host:     c.Host,
+			Port:     c.Port,
 		}
 
 		dsn := getDSN(cfg)
@@ -49,10 +48,8 @@ func (suite *DatabaseSuite) TestGetDSN() {
 }
 
 func (suite *DatabaseSuite) TestOpenError() {
-	c := model.Config{
-		Database: model.Database{
-			Driver: "postgres",
-		},
+	c := config.Database{
+		Driver: "postgres",
 	}
 	_, err := New(&c)
 	suite.Contains(err.Error(), connectionRefusedErr(""), "A connectionRefusedError should be raised")
@@ -81,11 +78,9 @@ func (suite *DatabaseSuite) TestHandleError() {
 }
 
 func (suite *DatabaseSuite) TestPing() {
-	c := model.Config{
-		Database: model.Database{
-			Driver: "sqlite",
-			Name:   ":memory:",
-		},
+	c := config.Database{
+		Driver: "sqlite",
+		Name:   ":memory:",
 	}
 	db, err := New(&c)
 	suite.NoError(err)
@@ -93,22 +88,20 @@ func (suite *DatabaseSuite) TestPing() {
 }
 
 func (suite *DatabaseSuite) TestDBFunctions() {
-	c := model.Config{
-		Database: model.Database{
-			Driver: "sqlite",
-			Name:   ":memory:",
-		},
+	c := config.Database{
+		Driver: "sqlite",
+		Name:   ":memory:",
 	}
 	db, err := New(&c)
 	suite.NoError(err)
 
-	net := model.Network{
+	net := models.Network{
 		Network: "test",
-		Links: []model.Link{
+		Links: []models.Link{
 			{Name: "test-link-1"},
 			{Name: "test-link-2"},
 		},
-		Sites: []model.Site{
+		Sites: []models.Site{
 			{FriendlyName: "test-site-1"},
 			{FriendlyName: "test-site-2"},
 		},
@@ -121,17 +114,21 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	suite.Equal(uint(1), net.Links[0].ID, "Link ID should be '1'")
 	suite.Equal(uint(2), net.Links[1].ID, "Link ID should be '2'")
 
-	findNet := model.Network{ID: 1}
+	findNet := models.Network{ID: 1}
 	suite.NoError(db.GetNetwork(&findNet))
 	// GetNetwork assertions
 	suite.Equal("test", findNet.Network, "Network should be 'test'")
 	suite.Equal("test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
 	suite.Equal("test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
 
-	findSite := model.Site{ID: 1}
+	findSite := models.Site{ID: 1}
 	suite.NoError(db.GetSite(&findSite))
 	// GetSite assertions
 	suite.Equal("test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
+
+	missingSite := models.Site{ID: 3}
+	err = db.GetSite(&missingSite)
+	suite.EqualError(err, store.ErrNotFound.Error())
 }
 
 func TestDatabaseSuite(t *testing.T) {
