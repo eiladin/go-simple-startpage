@@ -17,6 +17,9 @@ type repository interface {
 	Ping() error
 }
 
+// Compile-time proof of interface implementation.
+var _ IHealthcheck = (*service)(nil)
+
 type service struct {
 	repo repository
 }

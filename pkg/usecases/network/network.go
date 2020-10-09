@@ -21,6 +21,9 @@ type repository interface {
 	GetNetwork(*models.Network) error
 }
 
+// Compile-time proof of interface implementation.
+var _ INetwork = (*service)(nil)
+
 type service struct {
 	repo repository
 }
