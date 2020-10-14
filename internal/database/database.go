@@ -17,6 +17,9 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// Compile-time proof of interface implementation.
+var _ store.Store = (*DB)(nil)
+
 type DB struct {
 	conn *gorm.DB
 }

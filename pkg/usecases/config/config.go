@@ -8,6 +8,9 @@ type IConfig interface {
 	Get() (*config.Config, error)
 }
 
+// Compile-time proof of interface implementation.
+var _ IConfig = (*service)(nil)
+
 type service struct {
 	config *config.Config
 }

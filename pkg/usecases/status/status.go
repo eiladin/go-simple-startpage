@@ -19,6 +19,9 @@ type repository interface {
 	GetSite(*models.Site) error
 }
 
+// Compile-time proof of interface implementation.
+var _ IStatus = (*service)(nil)
+
 type service struct {
 	repo   repository
 	config *config.Config
