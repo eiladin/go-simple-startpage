@@ -3,6 +3,12 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    "compounds": [
+        {
+          "name": "Go+ng serve",
+          "configurations": ["Start API", "ng serve"]
+        }
+    ],
     "configurations": [
         {
             "name": "Start API",          
@@ -17,6 +23,15 @@
             "env": {},
             "args": [],
             "showLog": true
+        },
+        {
+            "name": "ng serve",
+            "request": "launch",
+            "type": "node",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [ "start" ],
+            "port": 4200,
+            "cwd": "${workspaceFolder}/ui"
         }
     ]
 }
