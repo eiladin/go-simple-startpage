@@ -5,8 +5,12 @@
     "version": "0.2.0",
     "compounds": [
         {
-          "name": "Go+ng serve",
+          "name": "API + NG",
           "configurations": ["Start API", "ng serve"]
+        },
+        {
+          "name": "API + NG + Attach",
+          "configurations": ["Start API", "ng serve", "Attach Chrome"]
         }
     ],
     "configurations": [
@@ -32,6 +36,27 @@
             "runtimeArgs": [ "start" ],
             "port": 4200,
             "cwd": "${workspaceFolder}/ui"
-        }
+        },
+        {
+            "name": "Launch localhost",
+            "browserLaunchLocation": "ui",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "urlFilter": "http://localhost:4200/*",
+            "webRoot": "${workspaceFolder}/ui",
+            "runtimeArgs": [
+                "--auto-open-devtools-for-tabs",
+                "--remote-debugging-port=9222",
+            ],
+            "userDataDir": true
+        },
+        {
+            "name": "Attach Chrome",
+            "type": "pwa-chrome",
+            "request": "attach",
+            "url": "http://localhost:4200",
+            "webRoot": "${workspaceFolder}/ui",
+            "port": 9222
+        },
     ]
 }

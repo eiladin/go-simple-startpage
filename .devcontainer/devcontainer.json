@@ -19,13 +19,18 @@
 		"go.useLanguageServer": true,
 		"go.gopath": "/go",
 		"go.goroot": "/usr/local/go",
-		"go.toolsGopath": "/go/bin"
+		"go.toolsGopath": "/go/bin",
 	},
-	
+
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"golang.Go"
 	],
+
+	"remote.extensionKind": {
+		"ms-vscode.js-debug": ["ui"],
+		"ms-vscode.js-debug-companion": ["ui"]
+	}, 
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [4200,3000],
@@ -34,5 +39,6 @@
 	"postCreateCommand": "cd ui && npm i",
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"remoteUser": "vscode",
+
 }
