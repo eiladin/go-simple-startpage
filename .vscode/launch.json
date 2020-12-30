@@ -23,7 +23,7 @@
             "mode": "debug",
             "port": 2345,
             "host": "127.0.0.1",
-            "program": "${workspaceRoot}",
+            "program": "${workspaceFolder}",
             "env": {},
             "args": [],
             "showLog": true
@@ -35,20 +35,20 @@
             "runtimeExecutable": "npm",
             "runtimeArgs": [ "start" ],
             "port": 4200,
-            "cwd": "${workspaceFolder}/ui"
+            "cwd": "${workspaceFolder}/ui",
         },
         {
             "name": "Launch localhost",
             "browserLaunchLocation": "ui",
             "type": "pwa-chrome",
             "request": "launch",
-            "urlFilter": "http://localhost:4200/*",
+            "url": "http://localhost:4200/",
             "webRoot": "${workspaceFolder}/ui",
             "runtimeArgs": [
-                "--auto-open-devtools-for-tabs",
-                "--remote-debugging-port=9222",
+                "--auto-open-devtools-for-tabs"
             ],
-            "userDataDir": true
+            "port": 9222,
+            "userDataDir": true            
         },
         {
             "name": "Attach Chrome",

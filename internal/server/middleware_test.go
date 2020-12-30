@@ -91,7 +91,7 @@ func (suite MiddlewareSuite) TestLoggerConfig() {
 
 func (suite MiddlewareSuite) TestGetMiddleware() {
 	m := getMiddleware(&config.Config{})
-	suite.Len(m, 8)
+	suite.Len(m, 7)
 }
 
 func TestMiddlewareSuite(t *testing.T) {
