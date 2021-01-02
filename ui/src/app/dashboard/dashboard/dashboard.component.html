@@ -11,7 +11,7 @@
         <a mat-icon-button routerLink="/config"><mat-icon>settings</mat-icon></a>
     </mat-toolbar>
     
-    <mat-sidenav-container>
+    <mat-sidenav-container class=dashboard-container>
 
         <mat-progress-bar mode="indeterminate" *ngIf="(isLoading$ | async)"></mat-progress-bar>
 
@@ -23,11 +23,15 @@
                 <a mat-list-item (click)="filterToDown()" *ngIf="(counts$ | async)?.down > 0">
                     <span class="down-count">{{(counts$ | async)?.down}} sites down</span>
                 </a>
+                <a mat-list-item (click)="filterToUp()" *ngIf="(counts$ | async)?.up > 0">
+                    <span class="up-count">{{(counts$ | async)?.up}} sites up</span>
+                </a>
             </mat-nav-list>
             <div class="spacer"></div>
             <app-footer></app-footer>
         </mat-sidenav>
 
+        <mat-sidenav-content>
         <div *hideItDevice="['mobile','tablet']" class="desktop-container">
             <app-site-card *ngFor="let site of (status$ | async)?.sites | siteFilter:filterArgs" [site]="site"></app-site-card>
         </div>
@@ -51,5 +55,6 @@
                 </div>
             </mat-nav-list>
         </div>
+    </mat-sidenav-content>
     </mat-sidenav-container>
 </div>

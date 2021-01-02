@@ -41,14 +41,22 @@ mat-sidenav {
     flex-direction: column;
 }
 
-mat-sidenav-container {
+.dashboard-container {
     flex: 1;
+    position: absolute;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .down-count {
     color: #ff5722;
 }
 
+.up-count {
+    color: #22ff57
+}
 
 ::ng-deep .dark-theme {
     .down-count {

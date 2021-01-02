@@ -74,4 +74,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   filterToDown() {
     this.filterArgs.data = 'status:down';
   }
+
+  filterToUp() {
+    this.filterArgs.data = 'status:up';
+  }
 }
