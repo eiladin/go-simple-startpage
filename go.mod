@@ -11,6 +11,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/echo-swagger v1.0.0
 	github.com/swaggo/swag v1.6.7
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	gorm.io/driver/mysql v1.0.2
 	gorm.io/driver/postgres v1.0.2
 	gorm.io/driver/sqlite v1.1.3
