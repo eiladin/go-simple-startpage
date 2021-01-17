@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	Filepath    string   `json:"-"`
 	Database    Database `json:"-"`
 	ListenPort  int      `mapstructure:"listen_port" yaml:"listen_port" json:"-"`
 	Timeout     int      `json:"-"`

@@ -7,49 +7,49 @@ import (
 )
 
 type Network struct {
-	ID        uint           `json:"-" gorm:"primaryKey"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
-	Network   string         `json:"network"`
-	Links     []Link         `json:"links" gorm:"foreignkey:NetworkID"`
-	Sites     []Site         `json:"sites" gorm:"foreignkey:NetworkID"`
+	ID        uint           `json:"-" gorm:"primaryKey" yaml:"-"`
+	CreatedAt time.Time      `json:"-" yaml:"-"`
+	UpdatedAt time.Time      `json:"-" yaml:"-"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index" yaml:"-"`
+	Network   string         `json:"network" yaml:"network"`
+	Links     []Link         `json:"links" gorm:"foreignkey:NetworkID" yaml:"links"`
+	Sites     []Site         `json:"sites" gorm:"foreignkey:NetworkID" yaml:"sites"`
 }
 
 type NetworkID struct {
-	ID uint `json:"id"`
+	ID uint `json:"id" yaml:"id"`
 }
 
 type Link struct {
-	ID        uint           `json:"-" gorm:"primaryKey"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
-	NetworkID uint           `json:"-"`
-	Name      string         `json:"name"`
-	URI       string         `json:"uri"`
+	ID        uint           `json:"-" gorm:"primaryKey" yaml:"-"`
+	CreatedAt time.Time      `json:"-" yaml:"-"`
+	UpdatedAt time.Time      `json:"-" yaml:"-"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index" yaml:"-"`
+	NetworkID uint           `json:"-" yaml:"-"`
+	Name      string         `json:"name" yaml:"name"`
+	URI       string         `json:"uri" yaml:"uri"`
 }
 
 type Site struct {
-	ID             uint           `json:"id" gorm:"primaryKey"`
-	CreatedAt      time.Time      `json:"-"`
-	UpdatedAt      time.Time      `json:"-"`
-	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
-	NetworkID      uint           `json:"-"`
-	FriendlyName   string         `json:"friendlyName"`
-	URI            string         `json:"uri"`
-	Icon           string         `json:"icon"`
-	IsSupportedApp bool           `json:"isSupportedApp"`
-	Tags           []Tag          `json:"tags" gorm:"foreignkey:SiteID"`
-	IP             string         `json:"ip" gorm:"-"`
-	IsUp           bool           `json:"isUp" gorm:"-"`
+	ID             uint           `json:"id" gorm:"primaryKey" yaml:"id"`
+	CreatedAt      time.Time      `json:"-" yaml:"-"`
+	UpdatedAt      time.Time      `json:"-" yaml:"-"`
+	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index" yaml:"-"`
+	NetworkID      uint           `json:"-" yaml:"-"`
+	FriendlyName   string         `json:"friendlyName" yaml:"friendlyName"`
+	URI            string         `json:"uri" yaml:"uri"`
+	Icon           string         `json:"icon" yaml:"icon"`
+	IsSupportedApp bool           `json:"isSupportedApp" yaml:"isSupportedApp"`
+	Tags           []Tag          `json:"tags" gorm:"foreignkey:SiteID" yaml:"tags"`
+	IP             string         `json:"ip" gorm:"-" yaml:"-"`
+	IsUp           bool           `json:"isUp" gorm:"-" yaml:"-"`
 }
 
 type Tag struct {
-	ID        uint           `json:"-" gorm:"primaryKey"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
-	SiteID    uint           `json:"-"`
-	Value     string         `json:"value"`
+	ID        uint           `json:"-" gorm:"primaryKey" yaml:"-"`
+	CreatedAt time.Time      `json:"-" yaml:"-"`
+	UpdatedAt time.Time      `json:"-" yaml:"-"`
+	DeletedAt gorm.DeletedAt `json:"-" gorm:"index" yaml:"-"`
+	SiteID    uint           `json:"-" yaml:"-"`
+	Value     string         `json:"value" yaml:"value"`
 }
