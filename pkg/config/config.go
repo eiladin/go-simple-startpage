@@ -51,6 +51,7 @@ func Load(version string, cfgFile string) *Config {
 	viper.SetEnvPrefix("GSS")
 	replacer := strings.NewReplacer(".", "_")
 	viper.SetEnvKeyReplacer(replacer)
+	_ = viper.BindEnv("FILEPATH")
 	_ = viper.BindEnv("DATABASE.DRIVER")
 	_ = viper.BindEnv("DATABASE.NAME")
 	_ = viper.BindEnv("DATABASE.USERNAME")

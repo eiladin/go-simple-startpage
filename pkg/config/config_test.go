@@ -44,17 +44,20 @@ timeout: "3000"
 
 func (suite *ConfigSuite) TestEnvConfig() {
 	cfgFile := "./not-found.yaml"
+	os.Setenv("GSS_FILEPATH", "filepath.yaml")
 	os.Setenv("GSS_DATABASE_NAME", "name1")
 	os.Setenv("GSS_DATABASE_LOG", "false")
 	os.Setenv("GSS_LISTEN_PORT", "5")
 	os.Setenv("GSS_TIMEOUT", "6")
 	os.Setenv("GSS_ENVIRONMENT", "Production")
 	c := Load("1.2.3", cfgFile)
+	suite.Equal("filepath.yaml", c.Filepath)
 	suite.Equal("name1", c.Database.Name)
 	suite.Equal(false, c.Database.Log)
 	suite.Equal(5, c.ListenPort)
 	suite.Equal(6, c.Timeout)
 	suite.Equal("Production", c.Environment)
+	os.Unsetenv("GSS_FILEPATH")
 	os.Unsetenv("GSS_DATABASE_NAME")
 	os.Unsetenv("GSS_DATABASE_LOG")
 	os.Unsetenv("GSS_LISTEN_PORT")
