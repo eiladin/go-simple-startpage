@@ -25,6 +25,7 @@ mat-sidenav {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
+    padding-top: 50px;
 }
 
 ::ng-deep .dark-theme .mat-toolbar mat-form-field.search-input {

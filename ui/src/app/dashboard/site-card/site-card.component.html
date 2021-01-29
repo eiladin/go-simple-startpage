@@ -1,7 +1,23 @@
 <a class="site-link" mat-button (click)="navigate(site.uri)">
-  <mat-card>
+  <div class="wrapper">
+    <div style="display: flex;"> 
+      <mat-icon *ngIf="!site.isSupportedApp" class="site-icon">{{site.icon}}</mat-icon>
+      <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/supportedapps/{{site.icon}}" />
+    </div>
+    <div class="site-info">
+      <div class="title">{{site.friendlyName | uppercase}}</div>
+      <div class="small">{{site.ip}}</div>
+    </div>
+    <button *ngIf="site.isStatusLoaded"
+              mat-mini-fab class="status mat-elevation-z2"
+              [class.status-up]="site.isUp"
+              [class.status-down]="!site.isUp && site.isStatusLoaded">
+          <mat-icon *ngIf="site.isUp">check</mat-icon>
+          <mat-icon *ngIf="!site.isUp && site.isStatusLoaded">priority_high</mat-icon>
+      </button>
+  </div>
+  <!-- <mat-card>
     <div class="icon">
-      <!-- <div class="status" [class.status-up]="site.isUp" [class.status-down]="!site.isUp && site.isStatusLoaded"></div> -->
       <div class="icon-bg" >
         <mat-icon *ngIf="!site.isSupportedApp" class="site-icon">{{site.icon}}</mat-icon>
         <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/supportedapps/{{site.icon}}" />
@@ -18,5 +34,5 @@
         <div class="small">{{site.ip}}</div>
       </div>
     </div>
-  </mat-card>
+  </mat-card> -->
 </a>
