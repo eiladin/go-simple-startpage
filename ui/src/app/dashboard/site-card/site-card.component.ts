@@ -34,7 +34,7 @@ export class SiteCardComponent implements OnInit {
    *
    * @memberof SiteCardComponent
    */
-  ngOnInit() { }
+  ngOnInit() {}
 
   /**
    * Navigates to the provided uri in a new window

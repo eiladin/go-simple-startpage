@@ -1,3 +1,7 @@
+.iconify.icon {
+    font-size: 24px;
+}
+
 .wrapper {
     display: flex;
     width: 200px;
@@ -8,7 +12,7 @@
     height: 40px;
     width: 40px;
     padding: 20px;
-    color: white;
+    color: #70adbb;
 }
 
 .site-image {
@@ -37,6 +41,7 @@
         font-size: 12px;
         margin-top: 4px;
         font-weight: 400;
+        color: #bbb
     }
 }
 
@@ -50,7 +55,7 @@
         background-color: #ff5722;
         color: white;
     }
-    .mat-button-wrapper > .mat-icon {
+    .mat-button-wrapper > .icon {
         height: 10px;
         width: 10px;
         font-size: 10px;

@@ -9,5 +9,9 @@ export class Site {
         public icon: string = '',
         public tags: Tag[] = [],
         public isSupportedApp: boolean = false
-    ) { }
-}
+        ) { }
+        
+        mdiicon() {
+            return "mdi-"+this.icon
+        }
+    }

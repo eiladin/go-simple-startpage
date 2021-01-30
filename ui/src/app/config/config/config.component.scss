@@ -1,3 +1,11 @@
+.iconify.icon {
+    font-size: 24px;
+}
+
+.top-link { 
+    padding-top:5px;
+}
+
 .card-container {    
     margin-top: 10px;
     max-width: 1000px;
@@ -49,7 +57,7 @@
         font-size: 50px;
         line-height: 50px;
 
-        mat-icon {
+        .iconify.icon {
             height: 50px;
             width: 50px;
             font-size: 38px;
@@ -60,6 +68,7 @@
 
 .site-icon {
     margin-right: 10px;
+    color: #70adbb;
 }
 
 .site-image {

@@ -1,6 +1,6 @@
 <mat-list-item (click)="navigate(site.uri)">
   <div mat-line class="status" [class.status-up]="site.isUp" [class.status-down]="!site.isUp"></div>
-  <mat-icon *ngIf="!site.isSupportedApp" class="site-icon">{{site.icon}}</mat-icon>
+  <span *ngIf="!site.isSupportedApp" class="site-icon iconify icon" [attr.data-icon]="site.mdiicon()"></span>
   <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/supportedapps/{{site.icon}}" />
   <h4 mat-line>{{site.friendlyName}}</h4>
   <p mat-line class="small">{{site.ip}}</p>

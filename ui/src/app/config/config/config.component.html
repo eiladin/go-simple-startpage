@@ -1,18 +1,18 @@
 <div>
     <mat-toolbar color='primary' id="top">
-        <a mat-icon-button routerLink="/dashboard">
-            <mat-icon>home</mat-icon>
+        <a mat-icon-button class="top-link" routerLink="/dashboard">
+            <span class="iconify icon" data-icon="mdi-home"></span>
         </a>
         <span>{{title}}</span>
         <span class="spacer"></span>
-        <button mat-icon-button (click)='saveConfig()'>
-            <mat-icon>save</mat-icon>
+        <button mat-icon-button class="top-link" (click)='saveConfig()'>
+            <span class="iconify icon" data-icon="mdi-content-save"></span>
         </button>
-        <button mat-icon-button (click)='exportConfig()'>
-            <mat-icon>file_download</mat-icon>
+        <button mat-icon-button class="top-link" (click)='exportConfig()'>
+            <span class="iconify icon" data-icon="mdi-download"></span>
         </button>
-        <button mat-icon-button (click)='importConfig()'>
-            <mat-icon>file_upload</mat-icon>
+        <button mat-icon-button class="top-link" (click)='importConfig()'>
+            <span class="iconify icon" data-icon="mdi-upload"></span>
         </button>
     </mat-toolbar>
 
@@ -47,7 +47,8 @@
             <mat-expansion-panel *ngFor="let site of config.sites; let i = index" hideToggle>
                 <mat-expansion-panel-header>
                     <mat-panel-title>
-                        <mat-icon *ngIf="!site.isSupportedApp">{{site.icon}}</mat-icon>
+                        <span class="iconify icon" *ngIf="!site.isSupportedApp" [attr.data-icon]="site.mdiicon()"></span>
+                        <!-- <mat-icon *ngIf="!site.isSupportedApp">{{site.icon}}</mat-icon> -->
                         <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/supportedapps/{{site.icon}}" />
                         <span class="friendly-name">{{site.friendlyName || 'Unknown'}}</span>
                     </mat-panel-title>
@@ -66,8 +67,6 @@
     </div>
 
     <button *hideItDevice="['mobile','tablet']" id="config-scroll-to-top" mat-icon-button color="primary" pageScroll href="#top" [pageScrollDuration]="750" [pageScrollEasing]="myEasing">
-        <mat-icon>
-            arrow_upward
-        </mat-icon>
+        <span class="iconify icon" data-icon="mdi-arrow-up"></span>
     </button>
 </div>

@@ -1,3 +1,4 @@
+# filepath: simple-startpage.yaml
 database:
   driver: "sqlite"
   name: "simple-startpage.db"
