@@ -18,7 +18,7 @@
   <mat-chip-list #tagList>
     <mat-chip *ngFor="let tag of site.tags; let idx = index" [removable]="true" (removed)="removeTag(tag)">
       {{tag.value}}
-      <mat-icon matChipRemove>cancel</mat-icon>
+      <mat-icon matChipRemove><span class="iconify icon chip-remove" data-icon="mdi-close-circle" matChipRemove (click)="removeTag(tag)"></span></mat-icon>
     </mat-chip>
     <input matInput placeholder="Tags" [matChipInputFor]="tagList" (matChipInputTokenEnd)="addTag($event)" />
   </mat-chip-list>

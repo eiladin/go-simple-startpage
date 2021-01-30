@@ -18,3 +18,12 @@
 .card-input > * {
     width: 100%;
 }
+
+
+.mat-chip-remove.chip-remove {
+    margin-left: 0;
+}
+
+.mat-standard-chip .mat-chip-remove.mat-icon {
+    opacity: 1.0;
+}
