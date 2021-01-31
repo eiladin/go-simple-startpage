@@ -102,8 +102,8 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 			{Name: "test-link-2"},
 		},
 		Sites: []models.Site{
-			{FriendlyName: "test-site-1"},
-			{FriendlyName: "test-site-2"},
+			{Name: "test-site-1"},
+			{Name: "test-site-2"},
 		},
 	}
 	suite.NoError(db.CreateNetwork(&net))
@@ -118,13 +118,13 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	suite.NoError(db.GetNetwork(&findNet))
 	// GetNetwork assertions
 	suite.Equal("test", findNet.Network, "Network should be 'test'")
-	suite.Equal("test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
+	suite.Equal("test-site-1", findNet.Sites[0].Name, "Site Name should be 'test-site-1'")
 	suite.Equal("test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
 
-	findSite := models.Site{ID: 1}
+	findSite := models.Site{Name: "test-site-1"}
 	suite.NoError(db.GetSite(&findSite))
 	// GetSite assertions
-	suite.Equal("test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
+	suite.Equal("test-site-1", findSite.Name, "Site Name should be 'test-site-1'")
 
 	missingSite := models.Site{ID: 3}
 	err = db.GetSite(&missingSite)

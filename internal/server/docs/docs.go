@@ -292,7 +292,7 @@ var doc = `{
         "models.Site": {
             "type": "object",
             "properties": {
-                "friendlyName": {
+                "Name": {
                     "type": "string"
                 },
                 "icon": {

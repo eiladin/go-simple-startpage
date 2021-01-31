@@ -29,20 +29,20 @@ func (suite *StatusSuite) TestNew() {
 
 func (suite *StatusSuite) TestGet() {
 	cases := []struct {
-		id      uint
+		name    string
 		wantErr error
 	}{
-		{id: 1, wantErr: nil},
-		{id: 2, wantErr: ErrNotFound},
+		{name: "test-site-1", wantErr: nil},
+		{name: "test-site-2", wantErr: ErrNotFound},
 	}
 
 	for _, c := range cases {
 		cfg := &config.Config{Timeout: 100}
 		r := new(mockRepo)
-		r.On("GetSite", &models.Site{ID: c.id}).Return(c.wantErr)
+		r.On("GetSite", &models.Site{Name: c.name}).Return(c.wantErr)
 		ss := service{repo: r, config: cfg}
 
-		status, err := ss.Get(c.id)
+		status, err := ss.Get(c.name)
 		r.AssertExpectations(suite.T())
 		if c.wantErr != nil {
 			suite.EqualError(err, c.wantErr.Error())

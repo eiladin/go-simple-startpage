@@ -27,7 +27,7 @@ type NetworkHandler struct {
 func (c *NetworkHandler) Create(ctx echo.Context) error {
 	net := new(models.Network)
 
-	if err := ctx.Bind(net); err != nil || (net.Network == "" && net.ID == 0 && net.Links == nil && net.Sites == nil) {
+	if err := ctx.Bind(net); err != nil || (net.Network == "" && net.Links == nil && net.Sites == nil) {
 		if err == nil {
 			err = errors.New("empty request recieved")
 		}

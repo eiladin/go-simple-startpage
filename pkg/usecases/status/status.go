@@ -12,7 +12,7 @@ var (
 )
 
 type IStatus interface {
-	Get(uint) (*models.Status, error)
+	Get(string) (*models.Status, error)
 }
 
 type repository interface {
@@ -34,8 +34,8 @@ func New(repo repository, cfg *config.Config) IStatus {
 	}
 }
 
-func (c *service) Get(id uint) (*models.Status, error) {
-	site := models.Site{ID: id}
+func (c *service) Get(name string) (*models.Status, error) {
+	site := models.Site{Name: name}
 
 	if err := c.repo.GetSite(&site); err != nil {
 		return nil, ErrNotFound

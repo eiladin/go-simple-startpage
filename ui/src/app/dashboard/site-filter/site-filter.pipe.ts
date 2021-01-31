@@ -18,7 +18,7 @@ export class SiteFilterPipe implements PipeTransform {
     }
 
     return items.filter(item => {
-      const name = item.friendlyName || '';
+      const name = item.name || '';
       const ip = item.ip || '';
       const isUp = !!item.isUp;
 

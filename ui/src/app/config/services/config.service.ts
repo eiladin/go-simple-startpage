@@ -22,8 +22,8 @@ export class ConfigService {
 
     public save(config: Config): Observable<Config> {
         const alphaSort = config.sites.sort((a, b) => {
-            if (a.friendlyName > b.friendlyName) { return 1; }
-            if (b.friendlyName < a.friendlyName) { return -1; }
+            if (a.name > b.name) { return 1; }
+            if (b.name < a.name) { return -1; }
             return 0;
         });
 

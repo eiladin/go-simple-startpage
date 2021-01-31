@@ -49,7 +49,7 @@ definitions:
     type: object
   models.Site:
     properties:
-      friendlyName:
+      Name:
         type: string
       icon:
         type: string

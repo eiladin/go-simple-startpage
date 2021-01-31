@@ -5,7 +5,7 @@
       <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/supportedapps/{{site.icon}}" />
     </div>
     <div class="site-info">
-      <div class="title">{{site.friendlyName | uppercase}}</div>
+      <div class="title">{{site.name | uppercase}}</div>
       <div class="small">{{site.ip}}</div>
     </div>
     <button *ngIf="site.isStatusLoaded" mat-mini-fab class="status mat-elevation-z2" [class.status-up]="site.isUp"

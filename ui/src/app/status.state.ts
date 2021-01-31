@@ -62,12 +62,14 @@ export class StatusState {
   updateStatus({ getState, patchState }: StateContext<Status>, action: UpdateStatus) {
     getState().sites
       .map(site =>
-        this.http.get<StatusSite>(environment.gateway + '/api/status/' + site.id)
+        this.http.get<StatusSite>(environment.gateway + '/api/status/' + site.name)
           .pipe(
             tap(resultSite => {
               patchState({
                 sites: getState().sites.map(origSite => {
-                  if (origSite.id === resultSite.id) {
+                  console.log(origSite)
+                  console.log(resultSite.name)
+                  if (origSite.name === resultSite.name) {
                     origSite.ip = resultSite.ip;
                     origSite.isUp = resultSite.isUp;
                     origSite.isStatusLoaded = true;

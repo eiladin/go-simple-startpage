@@ -10,14 +10,14 @@ import (
 )
 
 type Status struct {
-	ID   uint   `json:"id"`
+	Name string `json:"name"`
 	IsUp bool   `json:"isUp"`
 	IP   string `json:"ip"`
 }
 
 func NewStatus(timeout int, s *Site) Status {
 	res := Status{
-		ID:   s.ID,
+		Name: s.Name,
 		IsUp: false,
 	}
 	url, err := url.Parse(s.URI)
