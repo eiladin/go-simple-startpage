@@ -18,8 +18,8 @@ type mockStatusUseCase struct {
 	mock.Mock
 }
 
-func (m *mockStatusUseCase) Get(id uint) (*models.Status, error) {
-	args := m.Called(id)
+func (m *mockStatusUseCase) Get(name string) (*models.Status, error) {
+	args := m.Called(name)
 	data := args.Get(0).(models.Status)
 	return &data, args.Error(1)
 }
@@ -39,32 +39,30 @@ func (suite *StatusSuite) TestGet() {
 		throwErr error
 		wantErr  error
 	}{
-		{id: 1, param: "1", uri: "https://my.test.site", isUp: true, throwErr: nil, wantErr: nil},
-		{id: 1, param: "1", uri: "https://my.fail.site", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "1", uri: "https://^^invalidurl^^", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "1", uri: "ssh://localhost:22224", isUp: true, throwErr: nil, wantErr: nil},
-		{id: 1, param: "1", uri: "ssh://localhost:1234", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "1", uri: "https://500.test.site", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "abc", uri: "https://400.test.site", isUp: false, throwErr: errors.New("bad request"), wantErr: echo.ErrBadRequest},
+		{id: 1, param: "test-site-1", uri: "https://my.test.site", isUp: true, throwErr: nil, wantErr: nil},
+		{id: 1, param: "test-site-2", uri: "https://my.fail.site", isUp: false, throwErr: nil, wantErr: nil},
+		{id: 1, param: "test-site-3", uri: "https://^^invalidurl^^", isUp: false, throwErr: nil, wantErr: nil},
+		{id: 1, param: "test-site-4", uri: "ssh://localhost:22224", isUp: true, throwErr: nil, wantErr: nil},
+		{id: 1, param: "test-site-5", uri: "ssh://localhost:1234", isUp: false, throwErr: nil, wantErr: nil},
+		{id: 1, param: "test-site-6", uri: "https://500.test.site", isUp: false, throwErr: nil, wantErr: nil},
 		{id: 1, param: "", uri: "https://no-id.test.site", isUp: false, throwErr: errors.New("bad request"), wantErr: echo.ErrBadRequest},
-		{id: 12345, param: "12345", uri: "https://bigid.test.site", isUp: false, throwErr: status.ErrNotFound, wantErr: echo.ErrNotFound},
-		{id: 1, param: "1", uri: "https://error.test.site", isUp: false, throwErr: errors.New("internal server error"), wantErr: echo.ErrInternalServerError},
-		{id: 1, param: "0", uri: "https://my.test.site", isUp: false, throwErr: errors.New("bad request"), wantErr: echo.ErrBadRequest},
-		{id: 1, param: "1", uri: "https://timeout.test.site", isUp: false, throwErr: nil, wantErr: nil},
+		{id: 12345, param: "test-site-9", uri: "https://bigid.test.site", isUp: false, throwErr: status.ErrNotFound, wantErr: echo.ErrNotFound},
+		{id: 1, param: "test-site-10", uri: "https://error.test.site", isUp: false, throwErr: errors.New("internal server error"), wantErr: echo.ErrInternalServerError},
+		{id: 1, param: "tste-site-11", uri: "https://timeout.test.site", isUp: false, throwErr: nil, wantErr: nil},
 	}
 
 	for _, c := range cases {
 		uc := new(mockStatusUseCase)
 		if !errors.Is(c.wantErr, echo.ErrBadRequest) {
-			uc.On("Get", c.id).Return(models.Status{IsUp: c.isUp}, c.throwErr)
+			uc.On("Get", c.param).Return(models.Status{IsUp: c.isUp}, c.throwErr)
 		}
 		ss := StatusHandler{StatusUseCase: uc}
 
 		req := httptest.NewRequest("GET", "/", nil)
 		rec := httptest.NewRecorder()
 		ctx := app.NewContext(req, rec)
-		ctx.SetPath("/:id")
-		ctx.SetParamNames("id")
+		ctx.SetPath("/:name")
+		ctx.SetParamNames("name")
 		ctx.SetParamValues(c.param)
 		err := ss.Get(ctx)
 		uc.AssertExpectations(suite.T())

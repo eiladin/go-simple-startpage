@@ -31,7 +31,7 @@ func (suite RouteSuite) TestRegisterRoutes() {
 	suite.Contains(e, "POST /api/network")
 	suite.Contains(e, "GET /api/healthz")
 	suite.Contains(e, "GET /api/appconfig")
-	suite.Contains(e, "GET /api/status/:id")
+	suite.Contains(e, "GET /api/status/:name")
 }
 
 func TestRouteSuite(t *testing.T) {

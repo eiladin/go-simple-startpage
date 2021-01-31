@@ -53,7 +53,7 @@ func (suite ServerSuite) TestNew() {
 				"POST /api/network",
 				"GET /api/healthz",
 				"GET /api/appconfig",
-				"GET /api/status/:id",
+				"GET /api/status/:name",
 				"GET /swagger/doc.json",
 			}},
 		{
@@ -66,7 +66,7 @@ func (suite ServerSuite) TestNew() {
 				"POST /api/network",
 				"GET /api/healthz",
 				"GET /api/appconfig",
-				"GET /api/status/:id",
+				"GET /api/status/:name",
 				"GET /swagger/*",
 			}},
 	}

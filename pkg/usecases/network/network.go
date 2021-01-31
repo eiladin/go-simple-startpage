@@ -43,7 +43,7 @@ func (c *service) Create(net *models.Network) error {
 
 func sortSitesByName(sites []models.Site) {
 	sort.Slice(sites, func(p, q int) bool {
-		return sites[p].FriendlyName < sites[q].FriendlyName
+		return sites[p].Name < sites[q].Name
 	})
 }
 

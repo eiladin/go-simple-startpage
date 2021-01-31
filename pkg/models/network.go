@@ -17,7 +17,7 @@ type Network struct {
 }
 
 type NetworkID struct {
-	ID uint `json:"id" yaml:"id"`
+	ID uint `json:"id" yaml:"-"`
 }
 
 type Link struct {
@@ -31,12 +31,12 @@ type Link struct {
 }
 
 type Site struct {
-	ID             uint           `json:"id" gorm:"primaryKey" yaml:"id"`
+	ID             uint           `json:"-" gorm:"primaryKey" yaml:"-"`
 	CreatedAt      time.Time      `json:"-" yaml:"-"`
 	UpdatedAt      time.Time      `json:"-" yaml:"-"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index" yaml:"-"`
 	NetworkID      uint           `json:"-" yaml:"-"`
-	FriendlyName   string         `json:"friendlyName" yaml:"friendlyName"`
+	Name           string         `json:"name" yaml:"name"`
 	URI            string         `json:"uri" yaml:"uri"`
 	Icon           string         `json:"icon" yaml:"icon"`
 	IsSupportedApp bool           `json:"isSupportedApp" yaml:"isSupportedApp"`

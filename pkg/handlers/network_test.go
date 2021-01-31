@@ -73,8 +73,8 @@ func (suite *NetworkSuite) TestGet() {
 			network: models.Network{
 				Network: "test-network",
 				Sites: []models.Site{
-					{ID: 1, FriendlyName: "z"},
-					{ID: 2, FriendlyName: "a"},
+					{ID: 1, Name: "z"},
+					{ID: 2, Name: "a"},
 				},
 			},
 			err:      nil,
@@ -113,10 +113,8 @@ func (suite *NetworkSuite) TestGet() {
 			if suite.NoError(dec.Decode(&net)) {
 				suite.Equal("test-network", net.Network, "Get Network should return 'test-network'")
 				suite.Len(net.Sites, 2, "There should be 2 sites")
-				suite.Equal("z", net.Sites[0].FriendlyName, "The first site in the list should have FriendlyName 'z'")
-				suite.Equal(uint(1), net.Sites[0].ID, "The first site in the list should be ID '1'")
-				suite.Equal("a", net.Sites[1].FriendlyName, "The second site in the list should have FriendlyName 'a'")
-				suite.Equal(uint(2), net.Sites[1].ID, "The second site in the list should have ID '2'")
+				suite.Equal("z", net.Sites[0].Name, "The first site in the list should have Name 'z'")
+				suite.Equal("a", net.Sites[1].Name, "The second site in the list should have Name 'a'")
 			}
 		}
 	}

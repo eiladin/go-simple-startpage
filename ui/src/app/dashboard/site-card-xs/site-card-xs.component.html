@@ -2,6 +2,6 @@
   <div mat-line class="status" [class.status-up]="site.isUp" [class.status-down]="!site.isUp"></div>
   <span *ngIf="!site.isSupportedApp" class="site-icon iconify icon" [attr.data-icon]="site.mdiicon()"></span>
   <img *ngIf="site.isSupportedApp" class="site-image" src="/assets/supportedapps/{{site.icon}}" />
-  <h4 mat-line>{{site.friendlyName}}</h4>
+  <h4 mat-line>{{site.name | uppercase}}</h4>
   <p mat-line class="small">{{site.ip}}</p>
 </mat-list-item>

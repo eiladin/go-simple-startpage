@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/eiladin/go-simple-startpage/pkg/usecases/status"
 	"github.com/labstack/echo/v4"
@@ -24,18 +23,15 @@ type StatusHandler struct {
 // @Failure 400 {object} httperror.HTTPError
 // @Failure 404 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError
-// @Router /api/status/{id} [get]
+// @Router /api/status/{name} [get]
 func (c *StatusHandler) Get(ctx echo.Context) error {
 	// httpClient.Timeout = time.Millisecond * time.Duration(c.config.Timeout)
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil || id < 1 {
-		if err == nil {
-			err = errors.New("invalid id received: " + ctx.Param("id"))
-		}
-		return echo.ErrBadRequest.SetInternal(err)
+	name := ctx.Param("name")
+	if name == "" {
+		return echo.ErrBadRequest
 	}
 
-	s, err := c.StatusUseCase.Get(uint(id))
+	s, err := c.StatusUseCase.Get(name)
 	if err != nil {
 		if errors.Is(err, status.ErrNotFound) {
 			return echo.ErrNotFound

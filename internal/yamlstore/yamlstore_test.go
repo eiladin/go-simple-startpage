@@ -41,29 +41,41 @@ func (suite *YamlStoreSuite) TestFunctions() {
 			{Name: "test-link-2"},
 		},
 		Sites: []models.Site{
-			{FriendlyName: "test-site-1"},
-			{FriendlyName: "test-site-2"},
+			{
+				Name: "test-site-1",
+				Tags: []models.Tag{
+					{Value: "tag-1"},
+				},
+			},
+			{
+				Name: "test-site-2",
+				Tags: []models.Tag{
+					{Value: "tag-2"},
+				},
+			},
 		},
 	}
 	suite.NoError(f.CreateNetwork(&net))
 	// CreateNetwork assertions
-	suite.Equal(uint(1), net.ID, "Network ID should be '1'")
-	suite.Equal(uint(1), net.Sites[0].ID, "Site ID should be '1'")
-	suite.Equal(uint(2), net.Sites[1].ID, "Site ID should be '2'")
-	suite.Equal(uint(1), net.Links[0].ID, "Link ID should be '1'")
-	suite.Equal(uint(2), net.Links[1].ID, "Link ID should be '2'")
+	suite.Equal("test", net.Network, "Network should be 'test'")
+	suite.Equal("test-site-1", net.Sites[0].Name, "Site Name should be 'test-site-1'")
+	suite.Equal("test-site-2", net.Sites[1].Name, "Site Name should be 'test-site-2'")
+	suite.Equal("test-link-1", net.Links[0].Name, "Link Name should be 'test-link-1'")
+	suite.Equal("test-link-2", net.Links[1].Name, "Link Name should be 'test-link-2'")
+	suite.Equal("tag-1", net.Sites[0].Tags[0].Value, "Tag Value should be 'tag-1'")
+	suite.Equal("tag-2", net.Sites[1].Tags[0].Value, "Tag Value should be 'tag-2'")
 
 	findNet := models.Network{ID: 1}
 	suite.NoError(f.GetNetwork(&findNet))
 	// GetNetwork assertions
 	suite.Equal("test", findNet.Network, "Network should be 'test'")
-	suite.Equal("test-site-1", findNet.Sites[0].FriendlyName, "Site FriendlyName should be 'test-site-1'")
+	suite.Equal("test-site-1", findNet.Sites[0].Name, "Site Name should be 'test-site-1'")
 	suite.Equal("test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
 
-	findSite := models.Site{ID: 1}
+	findSite := models.Site{Name: "test-site-1"}
 	suite.NoError(f.GetSite(&findSite))
 	// GetSite assertions
-	suite.Equal("test-site-1", findSite.FriendlyName, "Site FriendlyName should be 'test-site-1'")
+	suite.Equal("test-site-1", findSite.Name, "Site Name should be 'test-site-1'")
 
 	missingSite := models.Site{ID: 3}
 	err = f.GetSite(&missingSite)

@@ -14,7 +14,7 @@ func RegisterRoutes(e *echo.Echo, prv *providers.Provider) {
 	e.POST("/api/network", netHandler.Create)
 
 	statusHandler := &StatusHandler{prv.Status}
-	e.GET("/api/status/:id", statusHandler.Get)
+	e.GET("/api/status/:name", statusHandler.Get)
 
 	cfgHandler := &ConfigHandler{prv.Config}
 	e.GET("/api/appconfig", cfgHandler.Get)

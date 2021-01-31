@@ -113,7 +113,7 @@ func (d *DB) GetNetwork(net *models.Network) error {
 }
 
 func (d *DB) GetSite(site *models.Site) error {
-	result := d.conn.First(site)
+	result := d.conn.Where("name = ?", site.Name).First(site)
 	return handleError(result.Error)
 }
 

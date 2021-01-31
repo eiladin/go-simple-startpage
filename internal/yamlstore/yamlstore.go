@@ -22,13 +22,6 @@ func New(filepath string) (store.Store, error) {
 }
 
 func (d *YamlStore) CreateNetwork(net *models.Network) error {
-	net.ID = 1
-	for i := range net.Sites {
-		net.Sites[i].ID = uint(i + 1)
-	}
-	for i := range net.Links {
-		net.Links[i].ID = uint(i + 1)
-	}
 	b, err := yaml.Marshal(net)
 	if err != nil {
 		return err
@@ -51,13 +44,15 @@ func (d *YamlStore) GetNetwork(net *models.Network) error {
 
 func (d *YamlStore) GetSite(site *models.Site) error {
 	net := models.Network{}
-	d.GetNetwork(&net)
+	err := d.GetNetwork(&net)
+	if err != nil {
+		return err
+	}
 
 	found := false
 	for _, s := range net.Sites {
-		if site.ID == s.ID {
-			site.ID = s.ID
-			site.FriendlyName = s.FriendlyName
+		if site.Name == s.Name {
+			site.Name = s.Name
 			site.CreatedAt = s.CreatedAt
 			site.Icon = s.Icon
 			site.IsSupportedApp = s.IsSupportedApp

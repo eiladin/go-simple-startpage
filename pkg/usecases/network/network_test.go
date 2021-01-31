@@ -86,16 +86,16 @@ func (suite *NetworkSuite) TestGet() {
 
 func (suite NetworkSuite) TestSortSitesByName() {
 	sites := []models.Site{
-		{ID: 1, FriendlyName: "z"},
-		{ID: 2, FriendlyName: "a"},
+		{ID: 1, Name: "z"},
+		{ID: 2, Name: "a"},
 	}
 
 	sortSitesByName(sites)
 
 	suite.Equal(uint(2), sites[0].ID)
-	suite.Equal("a", sites[0].FriendlyName)
+	suite.Equal("a", sites[0].Name)
 	suite.Equal(uint(1), sites[1].ID)
-	suite.Equal("z", sites[1].FriendlyName)
+	suite.Equal("z", sites[1].Name)
 }
 
 func TestNetworkSuite(t *testing.T) {
