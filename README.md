@@ -75,6 +75,10 @@ sites:
       - virtual machine      
 ```
 
+## Supported apps list
+
+You can find the list of supported apps (icons shipped with the application) here:
+[https://github.com/eiladin/go-simple-startpage/tree/master/ui/src/assets/supportedapps](https://github.com/eiladin/go-simple-startpage/tree/master/ui/src/assets/supportedapps)
 
 ## Building / Running 
 
