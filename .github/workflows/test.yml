@@ -26,9 +26,10 @@ jobs:
 
     - name: convert gcov to lcov
       uses: jandelgado/gcov2lcov-action@v1.0.5
-      infile: coverage.out
-      outfile: coverage.lcov
-      version: v1.0.8
+      with:
+        infile: coverage.out
+        outfile: coverage.lcov
+        version: v1.0.8
 
     - name: coverage report
       uses: romeovs/lcov-reporter-action@v0.2.11
