@@ -22,4 +22,16 @@ jobs:
         go-version: 1.14
 
     - name: Run test
-      run: go test ./...
+      run: go test ./... -v -tags=test -coverprofile=coverage.out
+
+    - name: convert gcov to lcov
+      uses: jandelgado/gcov2lcov-action@v1.0.5
+      infile: coverage.out
+      outfile: coverage.lcov
+      version: v1.0.8
+
+    - name: coverage report
+      uses: romeovs/lcov-reporter-action@v0.2.11
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        lcov-file: coverage.lcov
