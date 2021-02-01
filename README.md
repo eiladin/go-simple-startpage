@@ -7,6 +7,7 @@ This is an example app built with go and angular 11.
 - [Configuration](#configuration)
   * [Config.yaml](#configyaml)
   * [YAML configuration example](#yaml-configuration-example)
+- [Supported apps list](#supported-apps-list)
 - [Building / Running](#building--running)
 - [Testing with go serving the angular app](#testing-with-go-serving-the-angular-app)
 - [Debugging in a container (VS Code)](#debugging-in-a-container-vs-code)
