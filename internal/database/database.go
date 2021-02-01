@@ -86,7 +86,7 @@ func migrateDB(conn *gorm.DB) error {
 	return conn.AutoMigrate(
 		&models.Network{},
 		&models.Site{},
-		&models.Tag{},
+		&models.DBTag{},
 		&models.Link{},
 	)
 }
@@ -99,17 +99,32 @@ func handleError(err error) error {
 }
 
 func (d *DB) CreateNetwork(net *models.Network) error {
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Tag{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&models.DBTag{})
 	d.conn.Unscoped().Where("1 = 1").Delete(&models.Site{})
 	d.conn.Unscoped().Where("1 = 1").Delete(&models.Link{})
 	d.conn.Unscoped().Where("1 = 1").Delete(&models.Network{})
+	for i := range net.Sites {
+		for _, tag := range net.Sites[i].Tags {
+			net.Sites[i].DBTags = append(net.Sites[i].DBTags, models.DBTag{Value: tag})
+		}
+	}
 	result := d.conn.Create(&net)
 	return handleError(result.Error)
 }
 
 func (d *DB) GetNetwork(net *models.Network) error {
-	result := d.conn.Preload("Sites.Tags").Preload("Sites").Preload("Links").First(net)
-	return handleError(result.Error)
+	result := d.conn.Preload("Sites.DBTags").Preload("Sites").Preload("Links").First(net)
+	if result.Error != nil {
+		return handleError(result.Error)
+	}
+	for i := range net.Sites {
+		tags := []string{}
+		for j := range net.Sites[i].DBTags {
+			tags = append(tags, net.Sites[i].DBTags[j].Value)
+		}
+		net.Sites[i].Tags = tags
+	}
+	return nil
 }
 
 func (d *DB) GetSite(site *models.Site) error {

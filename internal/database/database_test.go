@@ -102,8 +102,20 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 			{Name: "test-link-2"},
 		},
 		Sites: []models.Site{
-			{Name: "test-site-1"},
-			{Name: "test-site-2"},
+			{
+				Name: "test-site-1",
+				DBTags: []models.DBTag{
+					{Value: "tag-1"},
+				},
+				Tags: []string{"tag-2"},
+			},
+			{
+				Name: "test-site-2",
+				DBTags: []models.DBTag{
+					{Value: "tag-3"},
+					{Value: "tag-4"},
+				},
+			},
 		},
 	}
 	suite.NoError(db.CreateNetwork(&net))
@@ -120,6 +132,12 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	suite.Equal("test", findNet.Network, "Network should be 'test'")
 	suite.Equal("test-site-1", findNet.Sites[0].Name, "Site Name should be 'test-site-1'")
 	suite.Equal("test-link-1", findNet.Links[0].Name, "Link Name should be 'test-link-1'")
+	suite.Equal(2, len(findNet.Sites[0].Tags), "Site 1 should have 2 tags")
+	suite.Equal(2, len(findNet.Sites[1].Tags), "Site 2 should have 2 tags")
+	suite.Equal("tag-1", findNet.Sites[0].Tags[0], "Site 1 should contain 'tag-1'")
+	suite.Equal("tag-2", findNet.Sites[0].Tags[1], "Site 1 should contain 'tag-2'")
+	suite.Equal("tag-3", findNet.Sites[1].Tags[0], "Site 2 should contain 'tag-3'")
+	suite.Equal("tag-4", findNet.Sites[1].Tags[1], "Site 2 should contain 'tag-4'")
 
 	findSite := models.Site{Name: "test-site-1"}
 	suite.NoError(db.GetSite(&findSite))

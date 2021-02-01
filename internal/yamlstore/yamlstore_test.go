@@ -43,15 +43,11 @@ func (suite *YamlStoreSuite) TestFunctions() {
 		Sites: []models.Site{
 			{
 				Name: "test-site-1",
-				Tags: []models.Tag{
-					{Value: "tag-1"},
-				},
+				Tags: []string{"tag-1"},
 			},
 			{
 				Name: "test-site-2",
-				Tags: []models.Tag{
-					{Value: "tag-2"},
-				},
+				Tags: []string{"tag-2"},
 			},
 		},
 	}
@@ -62,8 +58,8 @@ func (suite *YamlStoreSuite) TestFunctions() {
 	suite.Equal("test-site-2", net.Sites[1].Name, "Site Name should be 'test-site-2'")
 	suite.Equal("test-link-1", net.Links[0].Name, "Link Name should be 'test-link-1'")
 	suite.Equal("test-link-2", net.Links[1].Name, "Link Name should be 'test-link-2'")
-	suite.Equal("tag-1", net.Sites[0].Tags[0].Value, "Tag Value should be 'tag-1'")
-	suite.Equal("tag-2", net.Sites[1].Tags[0].Value, "Tag Value should be 'tag-2'")
+	suite.Equal("tag-1", net.Sites[0].Tags[0], "Tag Value should be 'tag-1'")
+	suite.Equal("tag-2", net.Sites[1].Tags[0], "Tag Value should be 'tag-2'")
 
 	findNet := models.Network{ID: 1}
 	suite.NoError(f.GetNetwork(&findNet))
