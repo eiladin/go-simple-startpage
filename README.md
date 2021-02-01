@@ -1,6 +1,80 @@
 # Go-Simple-Startpage
 
-This is an example app built with go and angular 10.
+This is an example app built with go and angular 11.
+
+<!-- toc -->
+
+- [Configuration](#configuration)
+  * [Config.yaml](#configyaml)
+  * [YAML configuration example](#yaml-configuration-example)
+- [Building / Running](#building--running)
+- [Testing with go serving the angular app](#testing-with-go-serving-the-angular-app)
+- [Debugging in a container (VS Code)](#debugging-in-a-container-vs-code)
+
+<!-- tocstop -->
+
+![preview](preview.png)
+
+## Configuration
+
+### Config.yaml
+
+| Key         | Description                                              | Default             |
+|-------------|----------------------------------------------------------|---------------------|
+| listen_port | port for the api to listen on                            | 3000                |
+| timeout     | timeout (in milliseconds) used for doing status check    | 2000                |
+| filepath    | path to the file to store yaml configuration             |                     |
+| database    |                                                          |                     |
+| > driver    | database drive to use (one of: sqlite, postgres, mysql)  | sqlite              |
+| > name      | database name                                            | simple-startpage.db |
+| > username  | auth credentials for the database (not used w/ sqlite)   |                     |
+| > password  | auth credentials for the database (not used w/ sqlite)   |                     |
+| > host      | hostname where the database resides (not used w/ sqlite) |                     |
+| > port      | port which the database listens on (not used w/ sqlite)  |                     |
+| > log       | if 'true' sql queries will be written to log             | false               |
+
+Example:
+```yaml
+database:
+  driver: "sqlite"
+  name: "simple-startpage.db"
+  username: "user"
+  password: "pass"
+  host: "localhost"
+  port: "7890"
+  log: "false"
+listen_port: "3000"
+timeout: "2000"
+```
+
+**Note**: If both filepath and database are provided, filepath will be used.
+
+### YAML configuration example
+```yaml
+network: My Home Network
+links:
+  - name: Self Hosted
+    uri: https://reddit.com/r/selfhosted
+  - name: Homelab
+    uri: https://reddit.com/r/homelab
+sites:
+  - name: wallabag
+    uri: https://wallabag.example.net
+    icon: wallabag.svg
+    isSupportedApp: true
+    tags:
+      - bookmarks
+      - container
+  - name: plex
+    uri: https://plex.example.net
+    icon: plex
+    isSupportedApp: false
+    tags:
+      - tv
+      - movies
+      - virtual machine      
+```
+
 
 ## Building / Running 
 

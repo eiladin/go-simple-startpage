@@ -38,6 +38,7 @@ func Load(version string, cfgFile string) *Config {
 		Database: Database{
 			Driver: "sqlite",
 			Name:   "simple-startpage.db",
+			Log:    false,
 		},
 	}
 
