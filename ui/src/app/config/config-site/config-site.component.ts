@@ -1,7 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Site } from '../../shared/models/site.model';
 import { MatChipInputEvent } from '@angular/material/chips';
-import { Tag } from '../../shared/models/tag.model';
 
 /**
  * Component for adding/editing sites
@@ -45,7 +44,7 @@ export class ConfigSiteComponent implements OnInit {
    * Method to remove a tag from a site
    * @param {Tag} tag
    */
-  public removeTag(tag: Tag) {
+  public removeTag(tag: string) {
     const index = this.site.tags.indexOf(tag);
     if (index >= 0) {
       this.site.tags.splice(index, 1);
@@ -60,7 +59,7 @@ export class ConfigSiteComponent implements OnInit {
     const input = event.input;
     const value = event.value;
     if ((value || '').trim()) {
-      this.site.tags.push({ value: value.trim() });
+      this.site.tags.push(value.trim());
     }
     if (input) {
       input.value = '';

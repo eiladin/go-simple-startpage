@@ -40,12 +40,13 @@ type Site struct {
 	URI            string         `json:"uri" yaml:"uri"`
 	Icon           string         `json:"icon" yaml:"icon"`
 	IsSupportedApp bool           `json:"isSupportedApp" yaml:"isSupportedApp"`
-	Tags           []Tag          `json:"tags" gorm:"foreignkey:SiteID" yaml:"tags"`
+	DBTags         []DBTag        `json:"-" gorm:"foreignkey:SiteID" yaml:"-"`
+	Tags           []string       `json:"tags" gorm:"-" yaml:"tags"`
 	IP             string         `json:"ip" gorm:"-" yaml:"-"`
 	IsUp           bool           `json:"isUp" gorm:"-" yaml:"-"`
 }
 
-type Tag struct {
+type DBTag struct {
 	ID        uint           `json:"-" gorm:"primaryKey" yaml:"-"`
 	CreatedAt time.Time      `json:"-" yaml:"-"`
 	UpdatedAt time.Time      `json:"-" yaml:"-"`

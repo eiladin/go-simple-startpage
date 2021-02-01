@@ -35,7 +35,7 @@ export class SiteFilterPipe implements PipeTransform {
       }
 
       if (item.tags) {
-        return (item.tags.filter(tag => tag.value.toLowerCase().indexOf(filter.data.toLowerCase()) !== -1)).length;
+        return (item.tags.filter(tag => tag.toLowerCase().indexOf(filter.data.toLowerCase()) !== -1)).length;
       }
 
       return 0;
