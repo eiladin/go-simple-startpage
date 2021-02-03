@@ -22,11 +22,8 @@ func New(filepath string) (store.Store, error) {
 }
 
 func (d *YamlStore) CreateNetwork(net *models.Network) error {
-	b, err := yaml.Marshal(net)
-	if err != nil {
-		return err
-	}
-	_, err = os.OpenFile(d.filepath, os.O_CREATE|os.O_WRONLY, 0644)
+	b, _ := yaml.Marshal(net)
+	_, err := os.OpenFile(d.filepath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}

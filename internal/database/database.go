@@ -20,6 +20,8 @@ import (
 // Compile-time proof of interface implementation.
 var _ store.Store = (*DB)(nil)
 
+var validDrivers = []string{"sqlite", "postgres", "mysql"}
+
 type DB struct {
 	conn *gorm.DB
 }
@@ -41,7 +43,7 @@ func New(config *config.Database) (store.Store, error) {
 		return nil, connectionRefusedErr(err.Error())
 	}
 	d.conn = conn
-	err = migrateDB(conn)
+	err = migrateDB(conn, config)
 	if err != nil {
 		return nil, migrationFailedErr(err.Error())
 	}
@@ -82,13 +84,26 @@ func getDSN(c *config.Database) gorm.Dialector {
 	return sqlite.Open("simple-startpage.db")
 }
 
-func migrateDB(conn *gorm.DB) error {
-	return conn.AutoMigrate(
-		&models.Network{},
-		&models.Site{},
-		&models.DBTag{},
-		&models.Link{},
-	)
+func validDriver(driver string) bool {
+	for _, d := range validDrivers {
+		if d == driver {
+			return true
+		}
+	}
+	return false
+}
+
+func migrateDB(conn *gorm.DB, cfg *config.Database) error {
+	if validDriver(cfg.Driver) {
+		return conn.AutoMigrate(
+			&models.Network{},
+			&models.Site{},
+			&models.DBTag{},
+			&models.Link{},
+		)
+	} else {
+		return fmt.Errorf("not a valid driver %s", cfg.Driver)
+	}
 }
 
 func handleError(err error) error {
@@ -133,9 +148,6 @@ func (d *DB) GetSite(site *models.Site) error {
 }
 
 func (d *DB) Ping() error {
-	sqlDB, err := d.conn.DB()
-	if err != nil {
-		return err
-	}
+	sqlDB, _ := d.conn.DB()
 	return sqlDB.Ping()
 }
