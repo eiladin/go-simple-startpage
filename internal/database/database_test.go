@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
@@ -14,6 +15,28 @@ import (
 
 type DatabaseSuite struct {
 	suite.Suite
+}
+
+func (suite *DatabaseSuite) TestMigrationError() {
+	cfg := &config.Database{
+		Driver: "fake",
+	}
+	store, err := New(cfg)
+	defer os.Remove("simple-startpage.db")
+	suite.Nil(store)
+	suite.Contains(err.Error(), migrationFailedErr(""), "A migration failed error should be raised")
+}
+
+func (suite *DatabaseSuite) TestNetworkNotFoundError() {
+	cfg := &config.Database{
+		Driver: "sqlite",
+		Name:   ":memory:",
+	}
+	db, err := New(cfg)
+	suite.NoError(err)
+	net := models.Network{}
+	err = db.GetNetwork(&net)
+	suite.EqualError(err, store.ErrNotFound.Error())
 }
 
 func (suite *DatabaseSuite) TestGetDSN() {
@@ -58,7 +81,7 @@ func (suite *DatabaseSuite) TestOpenError() {
 func (suite *DatabaseSuite) TestMigrateDB() {
 	conn, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	suite.NoError(err)
-	err = migrateDB(conn)
+	err = migrateDB(conn, &config.Database{Driver: "sqlite"})
 	suite.NoError(err)
 }
 
@@ -75,6 +98,12 @@ func (suite *DatabaseSuite) TestHandleError() {
 		err := handleError(c.Err)
 		suite.EqualError(err, c.Expected.Error())
 	}
+}
+
+func (suite *DatabaseSuite) TestGetGormConfig() {
+	getGormConfig(&config.Database{
+		Log: true,
+	})
 }
 
 func (suite *DatabaseSuite) TestPing() {

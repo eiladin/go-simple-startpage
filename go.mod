@@ -9,11 +9,11 @@ require (
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
-	github.com/swaggo/echo-swagger v1.0.0
-	github.com/swaggo/swag v1.6.7
-	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
-	gorm.io/driver/mysql v1.0.2
-	gorm.io/driver/postgres v1.0.2
-	gorm.io/driver/sqlite v1.1.3
-	gorm.io/gorm v1.20.2
+	github.com/swaggo/echo-swagger v1.1.0
+	github.com/swaggo/swag v1.7.0
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gorm.io/driver/mysql v1.0.4
+	gorm.io/driver/postgres v1.0.8
+	gorm.io/driver/sqlite v1.1.4
+	gorm.io/gorm v1.20.12
 )

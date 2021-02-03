@@ -30,6 +30,18 @@ func (suite *YamlStoreSuite) TestFileNotFound() {
 	suite.Error(err)
 }
 
+func (suite *YamlStoreSuite) TestCreateFail() {
+	suite.NoError(os.Mkdir("tmp", 0000))
+	defer os.RemoveAll("tmp")
+	filename := "./tmp/test-file"
+	f, err := New(filename)
+	suite.NoError(err)
+	net := models.Network{
+		Network: "test",
+	}
+	suite.Error(f.CreateNetwork(&net))
+}
+
 func (suite *YamlStoreSuite) TestFunctions() {
 	f, err := New("./testfile.yaml")
 	suite.NoError(err)
