@@ -1,6 +1,6 @@
 <div class="dashboard">
     <mat-toolbar color='primary'>
-        <button *showItDevice="['mobile','tablet']" mat-icon-button (click)="linkList.toggle()"><mat-icon>menu</mat-icon></button>
+        <button *showItDevice="['mobile','tablet']" mat-icon-button class="top-link" (click)="linkList.toggle()"><span class="iconify icon" data-icon="mdi-menu"></span></button>
         <span *isDesktop>{{(status$ | async)?.network}}</span>        
         <mat-form-field class="search-input" hideRequiredMarker="true" floatLabel="never">
             <input matInput [(ngModel)]="filterArgs.data" placeholder="Filter" />
