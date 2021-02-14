@@ -12,11 +12,11 @@
 
 .card-input {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
 }
 
-.card-input > * {
-    width: 100%;
+.card-input>* {
+    flex: 1 1 320px;
 }
 
 
@@ -26,4 +26,8 @@
 
 .mat-standard-chip .mat-chip-remove.mat-icon {
     opacity: 1.0;
+}
+
+td {
+    padding-right: 8px;
 }
