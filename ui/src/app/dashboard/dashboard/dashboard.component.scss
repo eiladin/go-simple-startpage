@@ -59,6 +59,10 @@ mat-sidenav {
     bottom: 0;
 }
 
+.toolbar {
+    z-index: 2;
+}
+
 .down-count {
     color: #ff5722;
 }

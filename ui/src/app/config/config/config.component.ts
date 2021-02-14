@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
 
 import { Config } from '../../shared/models/config.model';
 import { Link } from '../../shared/models/link.model';
 import { Site } from '../../shared/models/site.model';
 import { ConfigService } from '../services/config.service';
-import { EasingLogic } from 'ngx-page-scroll-core';
+import { PageScrollInstance, PageScrollService, EasingLogic } from 'ngx-page-scroll-core';
 @Component({
   selector: 'app-config',
   templateUrl: './config.component.html',
@@ -27,6 +28,9 @@ export class ConfigComponent implements OnInit {
    */
   public panelOpenState = [];
 
+  @ViewChild('cardContainer')
+  public cardContainer: ElementRef;
+
   public myEasing: EasingLogic = (t: number, b: number, c: number, d: number): number => {
       // easeInOutExpo easing
       if (t === 0) { return b; }
@@ -38,20 +42,26 @@ export class ConfigComponent implements OnInit {
   }
 
   constructor(
+    @Inject(DOCUMENT) private document: any,
     private configService: ConfigService,
-    private titleService: Title
+    private titleService: Title,
+    private pageScrollService: PageScrollService
   ) { }
 
   ngOnInit() {
     this.titleService.setTitle(this.title);
-    window.onscroll = () => this.hasScrolled();
+    const el = document.getElementById('cardContainer');
+    if (el) {
+      el.onscroll = () => this.hasScrolled();
+    }
     this.getConfig();
   }
 
   public hasScrolled() {
     const el = document.getElementById('config-scroll-to-top');
-    if (el) {
-      if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+    const top = document.getElementById('cardContainer');
+    if (el && top) {
+      if (top.scrollTop > 100 || top.scrollTop > 100) {
         el.style.display = 'block';
       } else {
         el.style.display = 'none';
@@ -98,7 +108,7 @@ export class ConfigComponent implements OnInit {
     this.config.sites.push(site);
   }
 
-  public deleteLink(link) {
+  public deleteLink(link: Link) {
     const idx = this.config.links.indexOf(link);
     this.config.links.splice(idx, 1);
   }
@@ -107,5 +117,16 @@ export class ConfigComponent implements OnInit {
     console.log(site);
     const idx = this.config.sites.indexOf(site);
     this.config.sites.splice(idx, 1);
+  }
+
+  public scrollToTop() {
+    const instance: PageScrollInstance = this.pageScrollService.create({
+      document: this.document,
+      scrollTarget: "#top",
+      scrollViews: [this.cardContainer.nativeElement],
+      easingLogic: this.myEasing,
+      advancedInlineOffsetCalculation: true,
+    });
+    this.pageScrollService.start(instance);
   }
 }

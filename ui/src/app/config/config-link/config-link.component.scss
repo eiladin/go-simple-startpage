@@ -1,8 +1,12 @@
-.card-input {
-    display: flex;
-    flex-direction: column;
+.card-input mat-form-field {
+    margin-right: 20px;
 }
 
-.card-input > * {
-    width: 100%;
+.card-input {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.card-input>* {
+    flex: 1 1 320px;
 }
