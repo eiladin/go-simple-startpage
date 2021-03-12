@@ -13,7 +13,6 @@ definitions:
     properties:
       errors:
         $ref: '#/definitions/models.HealthcheckErrors'
-        type: object
       status:
         type: string
     type: object
@@ -49,37 +48,30 @@ definitions:
     type: object
   models.Site:
     properties:
-      Name:
-        type: string
       icon:
         type: string
-      id:
-        type: integer
       ip:
         type: string
       isSupportedApp:
         type: boolean
       isUp:
         type: boolean
+      name:
+        type: string
       tags:
         items:
-          $ref: '#/definitions/models.Tag'
+          type: string
         type: array
       uri:
         type: string
     type: object
   models.Status:
     properties:
-      id:
-        type: integer
       ip:
         type: string
       isUp:
         type: boolean
-    type: object
-  models.Tag:
-    properties:
-      value:
+      name:
         type: string
     type: object
 info:
@@ -178,7 +170,7 @@ paths:
       summary: Add Network
       tags:
       - Network
-  /api/status/{id}:
+  /api/status/{name}:
     get:
       consumes:
       - application/json

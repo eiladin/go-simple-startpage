@@ -162,7 +162,7 @@ var doc = `{
                 }
             }
         },
-        "/api/status/{id}": {
+        "/api/status/{name}": {
             "get": {
                 "description": "get status given a site id",
                 "consumes": [
@@ -234,7 +234,6 @@ var doc = `{
             "type": "object",
             "properties": {
                 "errors": {
-                    "type": "object",
                     "$ref": "#/definitions/models.HealthcheckErrors"
                 },
                 "status": {
@@ -292,14 +291,8 @@ var doc = `{
         "models.Site": {
             "type": "object",
             "properties": {
-                "Name": {
-                    "type": "string"
-                },
                 "icon": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "ip": {
                     "type": "string"
@@ -310,10 +303,13 @@ var doc = `{
                 "isUp": {
                     "type": "boolean"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "tags": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Tag"
+                        "type": "string"
                     }
                 },
                 "uri": {
@@ -324,21 +320,13 @@ var doc = `{
         "models.Status": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "ip": {
                     "type": "string"
                 },
                 "isUp": {
                     "type": "boolean"
-                }
-            }
-        },
-        "models.Tag": {
-            "type": "object",
-            "properties": {
-                "value": {
+                },
+                "name": {
                     "type": "string"
                 }
             }

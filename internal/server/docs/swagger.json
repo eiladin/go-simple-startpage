@@ -144,7 +144,7 @@
                 }
             }
         },
-        "/api/status/{id}": {
+        "/api/status/{name}": {
             "get": {
                 "description": "get status given a site id",
                 "consumes": [
@@ -216,7 +216,6 @@
             "type": "object",
             "properties": {
                 "errors": {
-                    "type": "object",
                     "$ref": "#/definitions/models.HealthcheckErrors"
                 },
                 "status": {
@@ -274,14 +273,8 @@
         "models.Site": {
             "type": "object",
             "properties": {
-                "Name": {
-                    "type": "string"
-                },
                 "icon": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "ip": {
                     "type": "string"
@@ -292,10 +285,13 @@
                 "isUp": {
                     "type": "boolean"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "tags": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Tag"
+                        "type": "string"
                     }
                 },
                 "uri": {
@@ -306,21 +302,13 @@
         "models.Status": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "ip": {
                     "type": "string"
                 },
                 "isUp": {
                     "type": "boolean"
-                }
-            }
-        },
-        "models.Tag": {
-            "type": "object",
-            "properties": {
-                "value": {
+                },
+                "name": {
                     "type": "string"
                 }
             }
