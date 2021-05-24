@@ -67,8 +67,6 @@ export class StatusState {
             tap(resultSite => {
               patchState({
                 sites: getState().sites.map(origSite => {
-                  console.log(origSite)
-                  console.log(resultSite.name)
                   if (origSite.name === resultSite.name) {
                     origSite.ip = resultSite.ip;
                     origSite.isUp = resultSite.isUp;
