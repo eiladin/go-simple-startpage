@@ -23,14 +23,14 @@ jobs:
       run: go test ./... -v -tags=test -coverprofile=coverage.out
 
     - name: convert gcov to lcov
-      if: ${{ github.event_name == 'pull_request' }}
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot' }}
       uses: jandelgado/gcov2lcov-action@v1.0.5
       with:
         infile: coverage.out
         outfile: coverage.lcov
 
     - name: coverage report
-      if: ${{ github.event_name == 'pull_request' }}
+      if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot' }}
       uses: romeovs/lcov-reporter-action@v0.2.11
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
