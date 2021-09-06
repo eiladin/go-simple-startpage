@@ -1,31 +1,30 @@
-package handlers
+package config
 
 import (
 	"errors"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/config"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-type mockConfigUseCase struct {
+type mockUseCase struct {
 	mock.Mock
 }
 
-func (m *mockConfigUseCase) Get() (*config.Config, error) {
+func (m *mockUseCase) Get() (*Config, error) {
 	args := m.Called()
-	data := args.Get(0).(config.Config)
+	data := args.Get(0).(Config)
 	return &data, args.Error(1)
 }
 
-type ConfigSuite struct {
+type HandlerSuite struct {
 	suite.Suite
 }
 
-func (suite ConfigSuite) TestGet() {
+func (suite HandlerSuite) TestGet() {
 	cases := []struct {
 		throwErr error
 		wantErr  error
@@ -39,10 +38,10 @@ func (suite ConfigSuite) TestGet() {
 	ctx := app.NewContext(req, rec)
 
 	for _, c := range cases {
-		uc := new(mockConfigUseCase)
-		uc.On("Get").Return(config.Config{}, c.throwErr)
+		uc := new(mockUseCase)
+		uc.On("Get").Return(Config{}, c.throwErr)
 
-		cs := ConfigHandler{ConfigUseCase: uc}
+		cs := Handler{UseCase: uc}
 		err := cs.Get(ctx)
 		if c.wantErr == nil {
 			suite.NoError(err)
@@ -53,6 +52,6 @@ func (suite ConfigSuite) TestGet() {
 	}
 }
 
-func TestConfigSuite(t *testing.T) {
-	suite.Run(t, new(ConfigSuite))
+func TestHandlerSuite(t *testing.T) {
+	suite.Run(t, new(HandlerSuite))
 }

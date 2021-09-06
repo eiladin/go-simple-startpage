@@ -4,49 +4,49 @@ definitions:
       version:
         type: string
     type: object
+  healthcheck.Healthcheck:
+    properties:
+      errors:
+        $ref: '#/definitions/healthcheck.HealthcheckErrors'
+      status:
+        type: string
+    type: object
+  healthcheck.HealthcheckErrors:
+    properties:
+      database:
+        type: string
+    type: object
   httperror.HTTPError:
     properties:
       message:
         type: object
     type: object
-  models.Healthcheck:
-    properties:
-      errors:
-        $ref: '#/definitions/models.HealthcheckErrors'
-      status:
-        type: string
-    type: object
-  models.HealthcheckErrors:
-    properties:
-      database:
-        type: string
-    type: object
-  models.Link:
+  network.Link:
     properties:
       name:
         type: string
       uri:
         type: string
     type: object
-  models.Network:
+  network.Network:
     properties:
       links:
         items:
-          $ref: '#/definitions/models.Link'
+          $ref: '#/definitions/network.Link'
         type: array
       network:
         type: string
       sites:
         items:
-          $ref: '#/definitions/models.Site'
+          $ref: '#/definitions/network.Site'
         type: array
     type: object
-  models.NetworkID:
+  network.NetworkID:
     properties:
       id:
         type: integer
     type: object
-  models.Site:
+  network.Site:
     properties:
       icon:
         type: string
@@ -65,7 +65,7 @@ definitions:
       uri:
         type: string
     type: object
-  models.Status:
+  status.Status:
     properties:
       ip:
         type: string
@@ -110,11 +110,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Healthcheck'
+            $ref: '#/definitions/healthcheck.Healthcheck'
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/models.Healthcheck'
+            $ref: '#/definitions/healthcheck.Healthcheck'
       summary: Get Health
       tags:
       - HealthCheck
@@ -129,7 +129,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Network'
+            $ref: '#/definitions/network.Network'
         "404":
           description: Not Found
           schema:
@@ -151,14 +151,14 @@ paths:
         name: network
         required: true
         schema:
-          $ref: '#/definitions/models.Network'
+          $ref: '#/definitions/network.Network'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.NetworkID'
+            $ref: '#/definitions/network.NetworkID'
         "400":
           description: Bad Request
           schema:
@@ -187,7 +187,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Status'
+            $ref: '#/definitions/status.Status'
         "400":
           description: Bad Request
           schema:

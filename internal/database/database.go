@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
@@ -96,10 +96,10 @@ func validDriver(driver string) bool {
 func migrateDB(conn *gorm.DB, cfg *config.Database) error {
 	if validDriver(cfg.Driver) {
 		return conn.AutoMigrate(
-			&models.Network{},
-			&models.Site{},
-			&models.DBTag{},
-			&models.Link{},
+			&network.Network{},
+			&network.Site{},
+			&network.DBTag{},
+			&network.Link{},
 		)
 	} else {
 		return fmt.Errorf("not a valid driver %s", cfg.Driver)
@@ -113,21 +113,21 @@ func handleError(err error) error {
 	return err
 }
 
-func (d *DB) CreateNetwork(net *models.Network) error {
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.DBTag{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Site{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Link{})
-	d.conn.Unscoped().Where("1 = 1").Delete(&models.Network{})
+func (d *DB) CreateNetwork(net *network.Network) error {
+	d.conn.Unscoped().Where("1 = 1").Delete(&network.DBTag{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&network.Site{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&network.Link{})
+	d.conn.Unscoped().Where("1 = 1").Delete(&network.Network{})
 	for i := range net.Sites {
 		for _, tag := range net.Sites[i].Tags {
-			net.Sites[i].DBTags = append(net.Sites[i].DBTags, models.DBTag{Value: tag})
+			net.Sites[i].DBTags = append(net.Sites[i].DBTags, network.DBTag{Value: tag})
 		}
 	}
 	result := d.conn.Create(&net)
 	return handleError(result.Error)
 }
 
-func (d *DB) GetNetwork(net *models.Network) error {
+func (d *DB) GetNetwork(net *network.Network) error {
 	result := d.conn.Preload("Sites.DBTags").Preload("Sites").Preload("Links").First(net)
 	if result.Error != nil {
 		return handleError(result.Error)
@@ -142,7 +142,7 @@ func (d *DB) GetNetwork(net *models.Network) error {
 	return nil
 }
 
-func (d *DB) GetSite(site *models.Site) error {
+func (d *DB) GetSite(site *network.Site) error {
 	result := d.conn.Where("name = ?", site.Name).First(site)
 	return handleError(result.Error)
 }

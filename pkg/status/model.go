@@ -1,4 +1,4 @@
-package models
+package status
 
 import (
 	"crypto/tls"
@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 )
 
 type Status struct {
@@ -15,7 +17,7 @@ type Status struct {
 	IP   string `json:"ip"`
 }
 
-func NewStatus(timeout int, s *Site) Status {
+func NewStatus(timeout int, s *network.Site) Status {
 	res := Status{
 		Name: s.Name,
 		IsUp: false,

@@ -1,4 +1,4 @@
-package handlers
+package network
 
 import (
 	"encoding/json"
@@ -7,33 +7,31 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/network"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-type mockNetworkUseCase struct {
+type mockUseCase struct {
 	mock.Mock
 }
 
-func (m *mockNetworkUseCase) Get() (*models.Network, error) {
+func (m *mockUseCase) Get() (*Network, error) {
 	args := m.Called()
-	data := args.Get(0).(models.Network)
+	data := args.Get(0).(Network)
 	return &data, args.Error(1)
 }
 
-func (m *mockNetworkUseCase) Create(net *models.Network) error {
+func (m *mockUseCase) Create(net *Network) error {
 	args := m.Called(net)
 	return args.Error(0)
 }
 
-type NetworkSuite struct {
+type HandlerSuite struct {
 	suite.Suite
 }
 
-func (suite *NetworkSuite) TestCreate() {
+func (suite *HandlerSuite) TestCreate() {
 	cases := []struct {
 		body        string
 		networkName string
@@ -51,28 +49,28 @@ func (suite *NetworkSuite) TestCreate() {
 		req := httptest.NewRequest("POST", "/", strings.NewReader(c.body))
 		req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
 		ctx := app.NewContext(req, rec)
-		uc := new(mockNetworkUseCase)
+		uc := new(mockUseCase)
 		if !errors.Is(c.err, echo.ErrBadRequest) {
-			uc.On("Create", &models.Network{Network: c.networkName}).Return(c.err)
+			uc.On("Create", &Network{Network: c.networkName}).Return(c.err)
 		}
 
-		h := NetworkHandler{NetworkUseCase: uc}
+		h := Handler{UseCase: uc}
 		err := h.Create(ctx)
 		suite.Equal(err, c.err)
 		uc.AssertExpectations(suite.T())
 	}
 }
 
-func (suite *NetworkSuite) TestGet() {
+func (suite *HandlerSuite) TestGet() {
 	cases := []struct {
-		network  models.Network
+		network  Network
 		err      error
 		expected error
 	}{
 		{
-			network: models.Network{
+			network: Network{
 				Network: "test-network",
-				Sites: []models.Site{
+				Sites: []Site{
 					{ID: 1, Name: "z"},
 					{ID: 2, Name: "a"},
 				},
@@ -81,13 +79,13 @@ func (suite *NetworkSuite) TestGet() {
 			expected: nil,
 		},
 		{
-			network:  models.Network{},
+			network:  Network{},
 			err:      errors.New("not implemented"),
 			expected: echo.ErrInternalServerError,
 		},
 		{
-			network:  models.Network{},
-			err:      network.ErrNotFound,
+			network:  Network{},
+			err:      ErrNotFound,
 			expected: echo.ErrNotFound,
 		},
 	}
@@ -98,9 +96,9 @@ func (suite *NetworkSuite) TestGet() {
 	ctx := app.NewContext(req, rec)
 
 	for _, c := range cases {
-		uc := new(mockNetworkUseCase)
+		uc := new(mockUseCase)
 		uc.On("Get").Return(c.network, c.err)
-		ns := NetworkHandler{NetworkUseCase: uc}
+		ns := Handler{UseCase: uc}
 
 		err := ns.Get(ctx)
 
@@ -109,7 +107,7 @@ func (suite *NetworkSuite) TestGet() {
 			suite.EqualError(err, c.expected.Error())
 		} else {
 			dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
-			var net models.Network
+			var net Network
 			if suite.NoError(dec.Decode(&net)) {
 				suite.Equal("test-network", net.Network, "Get Network should return 'test-network'")
 				suite.Len(net.Sites, 2, "There should be 2 sites")
@@ -120,6 +118,6 @@ func (suite *NetworkSuite) TestGet() {
 	}
 }
 
-func TestNetworkSuite(t *testing.T) {
-	suite.Run(t, new(NetworkSuite))
+func TestHandlerSuite(t *testing.T) {
+	suite.Run(t, new(HandlerSuite))
 }

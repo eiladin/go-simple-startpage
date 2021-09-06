@@ -1,15 +1,14 @@
-package handlers
+package status
 
 import (
 	"errors"
 	"net/http"
 
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/status"
 	"github.com/labstack/echo/v4"
 )
 
-type StatusHandler struct {
-	StatusUseCase status.IStatus
+type Handler struct {
+	UseCase IStatus
 }
 
 // Get godoc
@@ -19,21 +18,21 @@ type StatusHandler struct {
 // @Accept  json
 // @Produce  json
 // @Param  id path int true "Site ID"
-// @Success 200 {object} models.Status
+// @Success 200 {object} Status
 // @Failure 400 {object} httperror.HTTPError
 // @Failure 404 {object} httperror.HTTPError
 // @Failure 500 {object} httperror.HTTPError
 // @Router /api/status/{name} [get]
-func (c *StatusHandler) Get(ctx echo.Context) error {
+func (c *Handler) Get(ctx echo.Context) error {
 	// httpClient.Timeout = time.Millisecond * time.Duration(c.config.Timeout)
 	name := ctx.Param("name")
 	if name == "" {
 		return echo.ErrBadRequest
 	}
 
-	s, err := c.StatusUseCase.Get(name)
+	s, err := c.UseCase.Get(name)
 	if err != nil {
-		if errors.Is(err, status.ErrNotFound) {
+		if errors.Is(err, ErrNotFound) {
 			return echo.ErrNotFound
 		}
 		return echo.ErrInternalServerError.SetInternal(err)

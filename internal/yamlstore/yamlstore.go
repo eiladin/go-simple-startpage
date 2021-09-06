@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"gopkg.in/yaml.v3"
 )
@@ -21,7 +21,7 @@ func New(filepath string) (store.Store, error) {
 	return &d, nil
 }
 
-func (d *YamlStore) CreateNetwork(net *models.Network) error {
+func (d *YamlStore) CreateNetwork(net *network.Network) error {
 	b, _ := yaml.Marshal(net)
 	_, err := os.OpenFile(d.filepath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -31,7 +31,7 @@ func (d *YamlStore) CreateNetwork(net *models.Network) error {
 	return err
 }
 
-func (d *YamlStore) GetNetwork(net *models.Network) error {
+func (d *YamlStore) GetNetwork(net *network.Network) error {
 	yamlFile, err := ioutil.ReadFile(d.filepath)
 	if err != nil {
 		return err
@@ -39,8 +39,8 @@ func (d *YamlStore) GetNetwork(net *models.Network) error {
 	return yaml.Unmarshal(yamlFile, net)
 }
 
-func (d *YamlStore) GetSite(site *models.Site) error {
-	net := models.Network{}
+func (d *YamlStore) GetSite(site *network.Site) error {
+	net := network.Network{}
 	err := d.GetNetwork(&net)
 	if err != nil {
 		return err

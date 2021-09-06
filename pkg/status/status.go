@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 )
 
 var (
@@ -12,11 +12,11 @@ var (
 )
 
 type IStatus interface {
-	Get(string) (*models.Status, error)
+	Get(string) (*Status, error)
 }
 
 type repository interface {
-	GetSite(*models.Site) error
+	GetSite(*network.Site) error
 }
 
 // Compile-time proof of interface implementation.
@@ -34,13 +34,13 @@ func New(repo repository, cfg *config.Config) IStatus {
 	}
 }
 
-func (c *service) Get(name string) (*models.Status, error) {
-	site := models.Site{Name: name}
+func (c *service) Get(name string) (*Status, error) {
+	site := network.Site{Name: name}
 
 	if err := c.repo.GetSite(&site); err != nil {
 		return nil, ErrNotFound
 	}
 
-	res := models.NewStatus(c.config.Timeout, &site)
+	res := NewStatus(c.config.Timeout, &site)
 	return &res, nil
 }

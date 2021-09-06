@@ -43,5 +43,4 @@ func (c *service) Check() http.Handler {
 
 		healthcheck.WithChecker("database", healthcheck.CheckerFunc(c.checkDB)),
 	)
-
 }

@@ -3,8 +3,6 @@ package network
 import (
 	"errors"
 	"sort"
-
-	"github.com/eiladin/go-simple-startpage/pkg/models"
 )
 
 var (
@@ -12,13 +10,13 @@ var (
 )
 
 type INetwork interface {
-	Get() (*models.Network, error)
-	Create(*models.Network) error
+	Get() (*Network, error)
+	Create(*Network) error
 }
 
 type repository interface {
-	CreateNetwork(*models.Network) error
-	GetNetwork(*models.Network) error
+	CreateNetwork(*Network) error
+	GetNetwork(*Network) error
 }
 
 // Compile-time proof of interface implementation.
@@ -34,21 +32,21 @@ func New(repo repository) INetwork {
 	}
 }
 
-func (c *service) Create(net *models.Network) error {
+func (c *service) Create(net *Network) error {
 	if err := c.repo.CreateNetwork(net); err != nil {
 		return err
 	}
 	return nil
 }
 
-func sortSitesByName(sites []models.Site) {
+func sortSitesByName(sites []Site) {
 	sort.Slice(sites, func(p, q int) bool {
 		return sites[p].Name < sites[q].Name
 	})
 }
 
-func (c *service) Get() (*models.Network, error) {
-	var net models.Network
+func (c *service) Get() (*Network, error) {
+	var net Network
 
 	if err := c.repo.GetNetwork(&net); err != nil {
 		return nil, ErrNotFound

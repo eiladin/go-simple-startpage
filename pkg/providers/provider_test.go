@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -22,17 +22,17 @@ func (m *mockStore) Ping() error {
 	return args.Error(0)
 }
 
-func (m *mockStore) CreateNetwork(net *models.Network) error {
+func (m *mockStore) CreateNetwork(net *network.Network) error {
 	args := m.Called(net)
 	return args.Error(0)
 }
 
-func (m *mockStore) GetNetwork(net *models.Network) error {
+func (m *mockStore) GetNetwork(net *network.Network) error {
 	args := m.Called(net)
 	return args.Error(0)
 }
 
-func (m *mockStore) GetSite(site *models.Site) error {
+func (m *mockStore) GetSite(site *network.Site) error {
 	args := m.Called(site)
 	return args.Error(0)
 }

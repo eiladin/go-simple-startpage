@@ -1,12 +1,12 @@
 package providers
 
 import (
+	"github.com/eiladin/go-simple-startpage/pkg/config"
 	cfg "github.com/eiladin/go-simple-startpage/pkg/config"
+	"github.com/eiladin/go-simple-startpage/pkg/healthcheck"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
+	"github.com/eiladin/go-simple-startpage/pkg/status"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/config"
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/healthcheck"
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/network"
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/status"
 )
 
 type Provider struct {

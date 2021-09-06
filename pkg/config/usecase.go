@@ -1,26 +1,22 @@
 package config
 
-import (
-	"github.com/eiladin/go-simple-startpage/pkg/config"
-)
-
 type IConfig interface {
-	Get() (*config.Config, error)
+	Get() (*Config, error)
 }
 
 // Compile-time proof of interface implementation.
 var _ IConfig = (*service)(nil)
 
 type service struct {
-	config *config.Config
+	config *Config
 }
 
-func New(cfg *config.Config) IConfig {
+func New(cfg *Config) IConfig {
 	return &service{
 		config: cfg,
 	}
 }
 
-func (c *service) Get() (*config.Config, error) {
+func (c *service) Get() (*Config, error) {
 	return c.config, nil
 }

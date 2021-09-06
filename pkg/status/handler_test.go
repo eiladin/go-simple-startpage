@@ -1,4 +1,4 @@
-package handlers
+package status
 
 import (
 	"encoding/json"
@@ -7,28 +7,26 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/status"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-type mockStatusUseCase struct {
+type mockUseCase struct {
 	mock.Mock
 }
 
-func (m *mockStatusUseCase) Get(name string) (*models.Status, error) {
+func (m *mockUseCase) Get(name string) (*Status, error) {
 	args := m.Called(name)
-	data := args.Get(0).(models.Status)
+	data := args.Get(0).(Status)
 	return &data, args.Error(1)
 }
 
-type StatusSuite struct {
+type HandlerSuite struct {
 	suite.Suite
 }
 
-func (suite *StatusSuite) TestGet() {
+func (suite *HandlerSuite) TestGet() {
 	app := echo.New()
 
 	cases := []struct {
@@ -46,17 +44,17 @@ func (suite *StatusSuite) TestGet() {
 		{id: 1, param: "test-site-5", uri: "ssh://localhost:1234", isUp: false, throwErr: nil, wantErr: nil},
 		{id: 1, param: "test-site-6", uri: "https://500.test.site", isUp: false, throwErr: nil, wantErr: nil},
 		{id: 1, param: "", uri: "https://no-id.test.site", isUp: false, throwErr: errors.New("bad request"), wantErr: echo.ErrBadRequest},
-		{id: 12345, param: "test-site-9", uri: "https://bigid.test.site", isUp: false, throwErr: status.ErrNotFound, wantErr: echo.ErrNotFound},
+		{id: 12345, param: "test-site-9", uri: "https://bigid.test.site", isUp: false, throwErr: ErrNotFound, wantErr: echo.ErrNotFound},
 		{id: 1, param: "test-site-10", uri: "https://error.test.site", isUp: false, throwErr: errors.New("internal server error"), wantErr: echo.ErrInternalServerError},
 		{id: 1, param: "tste-site-11", uri: "https://timeout.test.site", isUp: false, throwErr: nil, wantErr: nil},
 	}
 
 	for _, c := range cases {
-		uc := new(mockStatusUseCase)
+		uc := new(mockUseCase)
 		if !errors.Is(c.wantErr, echo.ErrBadRequest) {
-			uc.On("Get", c.param).Return(models.Status{IsUp: c.isUp}, c.throwErr)
+			uc.On("Get", c.param).Return(Status{IsUp: c.isUp}, c.throwErr)
 		}
-		ss := StatusHandler{StatusUseCase: uc}
+		ss := Handler{UseCase: uc}
 
 		req := httptest.NewRequest("GET", "/", nil)
 		rec := httptest.NewRecorder()
@@ -70,7 +68,7 @@ func (suite *StatusSuite) TestGet() {
 			suite.EqualError(err, c.wantErr.Error(), "%s should return %s", c.uri, c.wantErr.Error())
 		} else {
 			dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
-			res := models.Status{}
+			res := Status{}
 			err := dec.Decode(&res)
 			suite.NoError(err)
 			suite.Equal(c.isUp, res.IsUp, "%s isUp should be %t", c.uri, c.isUp)
@@ -78,6 +76,6 @@ func (suite *StatusSuite) TestGet() {
 	}
 }
 
-func TestStatusSuite(t *testing.T) {
-	suite.Run(t, new(StatusSuite))
+func TestHandlerSuite(t *testing.T) {
+	suite.Run(t, new(HandlerSuite))
 }

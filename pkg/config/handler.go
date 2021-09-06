@@ -1,14 +1,13 @@
-package handlers
+package config
 
 import (
 	"net/http"
 
-	"github.com/eiladin/go-simple-startpage/pkg/usecases/config"
 	"github.com/labstack/echo/v4"
 )
 
-type ConfigHandler struct {
-	ConfigUseCase config.IConfig
+type Handler struct {
+	UseCase IConfig
 }
 
 // Get godoc
@@ -19,8 +18,8 @@ type ConfigHandler struct {
 // @Produce  json
 // @Success 200 {object} config.Config
 // @Router /api/appconfig [get]
-func (c ConfigHandler) Get(ctx echo.Context) error {
-	cfg, err := c.ConfigUseCase.Get()
+func (c Handler) Get(ctx echo.Context) error {
+	cfg, err := c.UseCase.Get()
 	if err != nil {
 		return echo.ErrInternalServerError.SetInternal(err)
 	}

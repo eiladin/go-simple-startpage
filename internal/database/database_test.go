@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/sqlite"
@@ -34,7 +34,7 @@ func (suite *DatabaseSuite) TestNetworkNotFoundError() {
 	}
 	db, err := New(cfg)
 	suite.NoError(err)
-	net := models.Network{}
+	net := network.Network{}
 	err = db.GetNetwork(&net)
 	suite.EqualError(err, store.ErrNotFound.Error())
 }
@@ -124,23 +124,23 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	db, err := New(&c)
 	suite.NoError(err)
 
-	net := models.Network{
+	net := network.Network{
 		Network: "test",
-		Links: []models.Link{
+		Links: []network.Link{
 			{Name: "test-link-1"},
 			{Name: "test-link-2"},
 		},
-		Sites: []models.Site{
+		Sites: []network.Site{
 			{
 				Name: "test-site-1",
-				DBTags: []models.DBTag{
+				DBTags: []network.DBTag{
 					{Value: "tag-1"},
 				},
 				Tags: []string{"tag-2"},
 			},
 			{
 				Name: "test-site-2",
-				DBTags: []models.DBTag{
+				DBTags: []network.DBTag{
 					{Value: "tag-3"},
 					{Value: "tag-4"},
 				},
@@ -155,7 +155,7 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	suite.Equal(uint(1), net.Links[0].ID, "Link ID should be '1'")
 	suite.Equal(uint(2), net.Links[1].ID, "Link ID should be '2'")
 
-	findNet := models.Network{ID: 1}
+	findNet := network.Network{ID: 1}
 	suite.NoError(db.GetNetwork(&findNet))
 	// GetNetwork assertions
 	suite.Equal("test", findNet.Network, "Network should be 'test'")
@@ -168,12 +168,12 @@ func (suite *DatabaseSuite) TestDBFunctions() {
 	suite.Equal("tag-3", findNet.Sites[1].Tags[0], "Site 2 should contain 'tag-3'")
 	suite.Equal("tag-4", findNet.Sites[1].Tags[1], "Site 2 should contain 'tag-4'")
 
-	findSite := models.Site{Name: "test-site-1"}
+	findSite := network.Site{Name: "test-site-1"}
 	suite.NoError(db.GetSite(&findSite))
 	// GetSite assertions
 	suite.Equal("test-site-1", findSite.Name, "Site Name should be 'test-site-1'")
 
-	missingSite := models.Site{ID: 3}
+	missingSite := network.Site{ID: 3}
 	err = db.GetSite(&missingSite)
 	suite.EqualError(err, store.ErrNotFound.Error())
 }

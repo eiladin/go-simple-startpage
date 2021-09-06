@@ -19,16 +19,16 @@ func (m *mockRepo) Ping() error {
 	return args.Error(0)
 }
 
-type HealthcheckSuite struct {
+type UseCaseSuite struct {
 	suite.Suite
 }
 
-func (suite *HealthcheckSuite) TestNew() {
+func (suite *UseCaseSuite) TestNew() {
 	s := New(&mockRepo{})
 	suite.NotNil(s)
 }
 
-func (suite *HealthcheckSuite) TestCheckDB() {
+func (suite *UseCaseSuite) TestCheckDB() {
 	cases := []struct {
 		Database config.Database
 		Error    error
@@ -51,11 +51,11 @@ func (suite *HealthcheckSuite) TestCheckDB() {
 	}
 }
 
-func (suite *HealthcheckSuite) TestCheck() {
+func (suite *UseCaseSuite) TestCheck() {
 	hs := service{repo: &mockRepo{}}
 	handler := hs.Check()
 	suite.NotNil(handler)
 }
-func TestHealthcheckSuite(t *testing.T) {
-	suite.Run(t, new(HealthcheckSuite))
+func TestUseCaseSuite(t *testing.T) {
+	suite.Run(t, new(UseCaseSuite))
 }

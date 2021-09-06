@@ -1,4 +1,4 @@
-package models
+package status
 
 import (
 	"net"
@@ -7,15 +7,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/suite"
 )
 
-type StatusSuite struct {
+type ModelSuite struct {
 	suite.Suite
 }
 
-func (suite *StatusSuite) TestHttp() {
+func (suite *ModelSuite) TestHttp() {
 	cases := []struct {
 		url     string
 		timeout int
@@ -46,7 +47,7 @@ func (suite *StatusSuite) TestHttp() {
 	}
 }
 
-func (suite *StatusSuite) TestTCP() {
+func (suite *ModelSuite) TestTCP() {
 	ln, err := net.Listen("tcp", "[::]:22222")
 	suite.NoError(err)
 	defer ln.Close()
@@ -57,24 +58,24 @@ func (suite *StatusSuite) TestTCP() {
 	suite.NoError(err, "ssh://localhost:22222 should not error")
 }
 
-func (suite *StatusSuite) TestGetIP() {
+func (suite *ModelSuite) TestGetIP() {
 	url, err := url.Parse("http://localhost")
 	suite.NoError(err)
 	ip := getIP(url)
 	suite.Contains([]string{"127.0.0.1", "::1"}, ip, "http://localhost should return the following ips: [127.0.0.1, ::1]")
 }
 
-func (suite *StatusSuite) TestNewStatus() {
+func (suite *ModelSuite) TestNewStatus() {
 	cases := []struct {
-		site Site
+		site network.Site
 		isUp bool
 	}{
-		{site: Site{URI: "https://my.test.site"}, isUp: true},
-		{site: Site{URI: "https://my.fail.site"}, isUp: false},
-		{site: Site{URI: "https://^^invalidurl^^"}, isUp: false},
-		{site: Site{URI: "ssh://localhost:22223"}, isUp: true},
-		{site: Site{URI: "ssh://localhost:1234"}, isUp: false},
-		{site: Site{URI: "https://err.test.site"}, isUp: false},
+		{site: network.Site{URI: "https://my.test.site"}, isUp: true},
+		{site: network.Site{URI: "https://my.fail.site"}, isUp: false},
+		{site: network.Site{URI: "https://^^invalidurl^^"}, isUp: false},
+		{site: network.Site{URI: "ssh://localhost:22223"}, isUp: true},
+		{site: network.Site{URI: "ssh://localhost:1234"}, isUp: false},
+		{site: network.Site{URI: "https://err.test.site"}, isUp: false},
 	}
 
 	httpmock.ActivateNonDefault(&httpClient)
@@ -93,6 +94,6 @@ func (suite *StatusSuite) TestNewStatus() {
 	}
 }
 
-func TestStatusSuite(t *testing.T) {
-	suite.Run(t, new(StatusSuite))
+func TestModelSuite(t *testing.T) {
+	suite.Run(t, new(ModelSuite))
 }

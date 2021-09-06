@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/eiladin/go-simple-startpage/pkg/models"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -13,32 +12,32 @@ type mockRepo struct {
 	mock.Mock
 }
 
-func (m *mockRepo) CreateNetwork(net *models.Network) error {
+func (m *mockRepo) CreateNetwork(net *Network) error {
 	args := m.Called(net)
 	return args.Error(0)
 }
 
-func (m *mockRepo) GetNetwork(net *models.Network) error {
+func (m *mockRepo) GetNetwork(net *Network) error {
 	args := m.Called(net)
 	return args.Error(0)
 }
 
-type NetworkSuite struct {
+type UseCaseSuite struct {
 	suite.Suite
 }
 
-func (suite *NetworkSuite) TestNew() {
+func (suite *UseCaseSuite) TestNew() {
 	s := New(&mockRepo{})
 	suite.NotNil(s)
 }
 
-func (suite *NetworkSuite) TestCreate() {
+func (suite *UseCaseSuite) TestCreate() {
 	cases := []struct {
-		input *models.Network
+		input *Network
 		err   error
 	}{
-		{input: &models.Network{}, err: nil},
-		{input: &models.Network{Network: "error"}, err: errors.New("Create Error")},
+		{input: &Network{}, err: nil},
+		{input: &Network{Network: "error"}, err: errors.New("Create Error")},
 	}
 
 	for _, c := range cases {
@@ -51,21 +50,21 @@ func (suite *NetworkSuite) TestCreate() {
 	}
 }
 
-func (suite *NetworkSuite) TestGet() {
+func (suite *UseCaseSuite) TestGet() {
 	cases := []struct {
-		network     models.Network
+		network     Network
 		err         error
-		expected    *models.Network
+		expected    *Network
 		expectedErr error
 	}{
 		{
-			network:     models.Network{},
+			network:     Network{},
 			err:         nil,
-			expected:    &models.Network{},
+			expected:    &Network{},
 			expectedErr: nil,
 		},
 		{
-			network:     models.Network{},
+			network:     Network{},
 			err:         errors.New("get error"),
 			expected:    nil,
 			expectedErr: ErrNotFound,
@@ -74,7 +73,7 @@ func (suite *NetworkSuite) TestGet() {
 
 	for _, c := range cases {
 		repo := new(mockRepo)
-		repo.On("GetNetwork", &models.Network{}).Return(c.err)
+		repo.On("GetNetwork", &Network{}).Return(c.err)
 		ns := service{repo: repo}
 		net, err := ns.Get()
 
@@ -84,8 +83,8 @@ func (suite *NetworkSuite) TestGet() {
 	}
 }
 
-func (suite NetworkSuite) TestSortSitesByName() {
-	sites := []models.Site{
+func (suite UseCaseSuite) TestSortSitesByName() {
+	sites := []Site{
 		{ID: 1, Name: "z"},
 		{ID: 2, Name: "a"},
 	}
@@ -98,6 +97,6 @@ func (suite NetworkSuite) TestSortSitesByName() {
 	suite.Equal("z", sites[1].Name)
 }
 
-func TestNetworkSuite(t *testing.T) {
-	suite.Run(t, new(NetworkSuite))
+func TestUseCaseSuite(t *testing.T) {
+	suite.Run(t, new(UseCaseSuite))
 }

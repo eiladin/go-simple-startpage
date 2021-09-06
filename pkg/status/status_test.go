@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
-	"github.com/eiladin/go-simple-startpage/pkg/models"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -13,7 +13,7 @@ type mockRepo struct {
 	mock.Mock
 }
 
-func (m *mockRepo) GetSite(site *models.Site) error {
+func (m *mockRepo) GetSite(site *network.Site) error {
 	args := m.Called(site)
 	return args.Error(0)
 }
@@ -39,7 +39,7 @@ func (suite *StatusSuite) TestGet() {
 	for _, c := range cases {
 		cfg := &config.Config{Timeout: 100}
 		r := new(mockRepo)
-		r.On("GetSite", &models.Site{Name: c.name}).Return(c.wantErr)
+		r.On("GetSite", &network.Site{Name: c.name}).Return(c.wantErr)
 		ss := service{repo: r, config: cfg}
 
 		status, err := ss.Get(c.name)

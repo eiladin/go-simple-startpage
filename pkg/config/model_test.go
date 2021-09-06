@@ -10,11 +10,11 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type ConfigSuite struct {
+type ModelSuite struct {
 	suite.Suite
 }
 
-func (suite *ConfigSuite) SetupTest() {
+func (suite *ModelSuite) SetupTest() {
 	viper.Reset()
 }
 
@@ -42,7 +42,7 @@ timeout: "3000"
 	assert.NoError(t, ioutil.WriteFile(cfgFile, content, 0644))
 }
 
-func (suite *ConfigSuite) TestEnvConfig() {
+func (suite *ModelSuite) TestEnvConfig() {
 	cfgFile := "./not-found.yaml"
 	os.Setenv("GSS_FILEPATH", "filepath.yaml")
 	os.Setenv("GSS_DATABASE_NAME", "name1")
@@ -65,7 +65,7 @@ func (suite *ConfigSuite) TestEnvConfig() {
 	os.Unsetenv("GSS_ENVIRONMENT")
 }
 
-func (suite *ConfigSuite) TestIsProduction() {
+func (suite *ModelSuite) TestIsProduction() {
 	cases := []struct {
 		Environment string
 		Expected    bool
@@ -88,7 +88,7 @@ func (suite *ConfigSuite) TestIsProduction() {
 	os.Unsetenv("GSS_ENVIRONMENT")
 }
 
-func (suite *ConfigSuite) TestConfigFile() {
+func (suite *ModelSuite) TestConfigFile() {
 	viper.Reset()
 	cfgFile := "./test-config-file.yml"
 	createConfigFile(suite.T(), cfgFile)
@@ -102,7 +102,7 @@ func (suite *ConfigSuite) TestConfigFile() {
 	suite.Equal("1.2.3", c.Version, "Version should be '1.2.3'")
 }
 
-func (suite *ConfigSuite) TestDefaultConfigFile() {
+func (suite *ModelSuite) TestDefaultConfigFile() {
 	viper.Reset()
 	cfgFile := "./config.yml"
 	createConfigFile(suite.T(), cfgFile)
@@ -116,7 +116,7 @@ func (suite *ConfigSuite) TestDefaultConfigFile() {
 	suite.Equal("1.2.3", c.Version, "Version should be '1.2.3'")
 }
 
-func (suite *ConfigSuite) TestConfigFileErr() {
+func (suite *ModelSuite) TestConfigFileErr() {
 	cfgFile := "./test-config-file-error.yml"
 	createErrorConfigFile(suite.T(), cfgFile)
 	defer os.RemoveAll(cfgFile)
@@ -128,6 +128,6 @@ func (suite *ConfigSuite) TestConfigFileErr() {
 	suite.Equal("1.2.3", c.Version, "Version should be '1.2.3'")
 }
 
-func TestConfigSuite(t *testing.T) {
-	suite.Run(t, new(ConfigSuite))
+func TestModelSuite(t *testing.T) {
+	suite.Run(t, new(ModelSuite))
 }
