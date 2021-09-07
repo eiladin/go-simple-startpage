@@ -14,3 +14,9 @@ classicBuild: ## Build docker eiladin/go-simple-startpage:$(tag)
 
 classicPublish: classicBuild ## Push docker eiladin/go-simple-startpage:$(tag) to docker hub with a classic docker build
 	docker push eiladin/go-simple-startpage:$(tag)
+
+test: ## Run unit tests
+	go test ./... -version
+
+test-coverage: ## Gather code coverage
+	go test ./... -coverprofile=coverage.out -covermode=atomic

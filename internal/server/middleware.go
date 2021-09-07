@@ -39,10 +39,10 @@ func getMiddleware(c *config.Config) []echo.MiddlewareFunc {
 		middleware.CORS(),
 		middleware.RequestID(),
 		middleware.Secure(),
-		// middleware.CSRFWithConfig(middleware.CSRFConfig{
-		// 	Skipper:      csrfSkipper,
-		// 	CookieSecure: true,
-		// }),
+		middleware.CSRFWithConfig(middleware.CSRFConfig{
+			Skipper:      csrfSkipper,
+			CookieSecure: true,
+		}),
 		middleware.Recover(),
 		middleware.GzipWithConfig(middleware.GzipConfig{
 			Skipper: gzipSkipper,
