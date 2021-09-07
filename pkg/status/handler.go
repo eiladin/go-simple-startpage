@@ -1,7 +1,13 @@
 package status
 
 import (
+	"crypto/tls"
 	"errors"
+	"fmt"
+	"net"
+	"net/http"
+	"net/url"
+	"time"
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
 	"github.com/eiladin/go-simple-startpage/pkg/network"
@@ -41,6 +47,63 @@ func (c *handler) Get(name string) (*Status, error) {
 		return nil, ErrNotFound
 	}
 
-	res := NewStatus(c.config.Timeout, &site)
-	return &res, nil
+	return checkSiteStatus(c.config.Timeout, site), nil
+}
+
+func checkSiteStatus(timeout int, site network.Site) *Status {
+	url, err := url.Parse(site.URI)
+	if err != nil {
+		return &Status{Name: site.Name}
+	}
+
+	return &Status{
+		Name: site.Name,
+		IsUp: testConnection(timeout, url),
+		IP:   getIP(url),
+	}
+}
+
+func testConnection(timeout int, url *url.URL) bool {
+	if url.Scheme == "ssh" {
+		return testSSH(url) == nil
+	} else {
+		return testHTTP(timeout, url) == nil
+	}
+}
+
+func getIP(u *url.URL) string {
+	host := u.Hostname()
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return ""
+	}
+	return ips[0].String()
+}
+
+func testSSH(u *url.URL) error {
+	conn, err := net.Dial("tcp", u.Host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	return nil
+}
+
+var httpClient = http.Client{
+	Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
+}
+
+func testHTTP(timeout int, u *url.URL) error {
+	httpClient.Timeout = time.Millisecond * time.Duration(timeout)
+	r, err := httpClient.Get(u.String())
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+	if r.StatusCode < 200 || (r.StatusCode >= 300 && r.StatusCode != 401) {
+		return fmt.Errorf("invalid status: %d", r.StatusCode)
+	}
+	return nil
 }
