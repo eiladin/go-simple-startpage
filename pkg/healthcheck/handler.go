@@ -1,22 +1,44 @@
 package healthcheck
 
 import (
-	"github.com/labstack/echo/v4"
+	"context"
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/etherlabsio/healthcheck"
 )
 
-type Handler struct {
-	UseCase IHealthcheck
+type IHandler interface {
+	Check() http.Handler
 }
 
-// Get godoc
-// @Summary Get Health
-// @Description run healthcheck
-// @Tags HealthCheck
-// @Accept  json
-// @Produce  json
-// @Success 200 {object} Healthcheck
-// @Failure 503 {object} Healthcheck
-// @Router /api/healthz [get]
-func (c *Handler) Get() echo.HandlerFunc {
-	return echo.WrapHandler(c.UseCase.Check())
+type repository interface {
+	Ping() error
+}
+
+// Compile-time proof of interface implementation.
+var _ IHandler = (*handler)(nil)
+
+type handler struct {
+	repo repository
+}
+
+func New(repo repository) IHandler {
+	return &handler{repo: repo}
+}
+
+func (c *handler) checkDB(ctx context.Context) error {
+	if err := c.repo.Ping(); err != nil {
+		return fmt.Errorf("unable to connect to database %w", err)
+	}
+	return nil
+}
+
+func (c *handler) Check() http.Handler {
+	return healthcheck.Handler(
+		healthcheck.WithTimeout(5*time.Second),
+
+		healthcheck.WithChecker("database", healthcheck.CheckerFunc(c.checkDB)),
+	)
 }

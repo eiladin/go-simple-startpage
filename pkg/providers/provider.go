@@ -9,20 +9,20 @@ import (
 	"github.com/eiladin/go-simple-startpage/pkg/store"
 )
 
-type Provider struct {
-	Network     network.INetwork
-	Healthcheck healthcheck.IHealthcheck
-	Status      status.IStatus
-	Config      config.IConfig
+type Handlers struct {
+	Network     network.IHandler
+	Healthcheck healthcheck.IHandler
+	Status      status.IHandler
+	Config      config.IHandler
 }
 
-func InitProvider(cfg *cfg.Config, store store.Store) *Provider {
+func InitProvider(cfg *cfg.Config, store store.Store) *Handlers {
 	net := network.New(store)
 	hc := healthcheck.New(store)
 	status := status.New(store, cfg)
 	ch := config.New(cfg)
 
-	return &Provider{
+	return &Handlers{
 		Network:     net,
 		Healthcheck: hc,
 		Status:      status,
