@@ -1,27 +1,22 @@
 package config
 
-import (
-	"net/http"
-
-	"github.com/labstack/echo/v4"
-)
-
-type Handler struct {
-	UseCase IConfig
+type IHandler interface {
+	Get() (*Config, error)
 }
 
-// Get godoc
-// @Summary Get AppConfig
-// @Description get application configuration
-// @Tags AppConfig
-// @Accept  json
-// @Produce  json
-// @Success 200 {object} config.Config
-// @Router /api/appconfig [get]
-func (c Handler) Get(ctx echo.Context) error {
-	cfg, err := c.UseCase.Get()
-	if err != nil {
-		return echo.ErrInternalServerError.SetInternal(err)
+// Compile-time proof of interface implementation.
+var _ IHandler = (*handler)(nil)
+
+type handler struct {
+	config *Config
+}
+
+func New(cfg *Config) IHandler {
+	return &handler{
+		config: cfg,
 	}
-	return ctx.JSON(http.StatusOK, cfg)
+}
+
+func (c *handler) Get() (*Config, error) {
+	return c.config, nil
 }

@@ -9,17 +9,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterRoutes(e *echo.Echo, prv *providers.Provider) {
-	healthzHandler := &healthcheck.Handler{UseCase: prv.Healthcheck}
-	e.GET("/api/healthz", healthzHandler.Get())
+func RegisterRoutes(e *echo.Echo, prv *providers.Handlers) {
+	healthzService := &healthcheck.Service{Handler: prv.Healthcheck}
+	e.GET("/api/healthz", healthzService.Get())
 
-	netHandler := &network.Handler{UseCase: prv.Network}
+	netHandler := &network.Service{Handler: prv.Network}
 	e.GET("/api/network", netHandler.Get)
 	e.POST("/api/network", netHandler.Create)
 
-	statusHandler := &status.Handler{UseCase: prv.Status}
+	statusHandler := &status.Service{Handler: prv.Status}
 	e.GET("/api/status/:name", statusHandler.Get)
 
-	cfgHandler := &config.Handler{UseCase: prv.Config}
+	cfgHandler := &config.Service{Handler: prv.Config}
 	e.GET("/api/appconfig", cfgHandler.Get)
 }

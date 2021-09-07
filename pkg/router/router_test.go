@@ -17,37 +17,47 @@ type RouteSuite struct {
 	suite.Suite
 }
 
-type mockHealthcheckUseCase struct {
+type mockHealthCheckHandler struct {
 	mock.Mock
 }
 
-func (m *mockHealthcheckUseCase) Check() http.Handler {
+func (m *mockHealthCheckHandler) Check() http.Handler {
 	m.Called()
 	return nil
 }
 
-type mockNetworkUseCase struct {
+type mockNetworkHandler struct {
 	mock.Mock
 }
 
-func (m *mockNetworkUseCase) Get() (*network.Network, error) {
+func (m *mockNetworkHandler) Get() (*network.Network, error) {
 	args := m.Called()
 	data := args.Get(0).(network.Network)
 	return &data, args.Error(1)
 }
 
-func (m *mockNetworkUseCase) Create(net *network.Network) error {
+func (m *mockNetworkHandler) Create(net *network.Network) error {
 	args := m.Called(net)
 	return args.Error(0)
 }
 
-type mockConfigUseCase struct {
+type mockConfigHandler struct {
 	mock.Mock
 }
 
-func (m *mockConfigUseCase) Get() (*config.Config, error) {
+func (m *mockConfigHandler) Get() (*config.Config, error) {
 	args := m.Called()
 	data := args.Get(0).(config.Config)
+	return &data, args.Error(1)
+}
+
+type mockStatusHandler struct {
+	mock.Mock
+}
+
+func (m *mockStatusHandler) Get(name string) (*status.Status, error) {
+	args := m.Called(name)
+	data := args.Get(0).(status.Status)
 	return &data, args.Error(1)
 }
 
@@ -55,25 +65,15 @@ type HandlerSuite struct {
 	suite.Suite
 }
 
-type mockStatusUseCase struct {
-	mock.Mock
-}
-
-func (m *mockStatusUseCase) Get(name string) (*status.Status, error) {
-	args := m.Called(name)
-	data := args.Get(0).(status.Status)
-	return &data, args.Error(1)
-}
-
 func (suite RouteSuite) TestRegisterRoutes() {
 	app := echo.New()
-	huc := &mockHealthcheckUseCase{}
-	huc.On("Check").Return(nil)
-	RegisterRoutes(app, &providers.Provider{
-		Healthcheck: huc,
-		Config:      &mockConfigUseCase{},
-		Network:     &mockNetworkUseCase{},
-		Status:      &mockStatusUseCase{},
+	healthHandler := &mockHealthCheckHandler{}
+	healthHandler.On("Check").Return(nil)
+	RegisterRoutes(app, &providers.Handlers{
+		Healthcheck: healthHandler,
+		Config:      &mockConfigHandler{},
+		Network:     &mockNetworkHandler{},
+		Status:      &mockStatusHandler{},
 	})
 
 	e := []string{}

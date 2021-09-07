@@ -1,78 +1,138 @@
 package status
 
 import (
-	"encoding/json"
-	"errors"
-	"net/http/httptest"
-	"strings"
+	"net"
+	"net/http"
+	"net/url"
 	"testing"
+	"time"
 
-	"github.com/labstack/echo/v4"
+	"github.com/eiladin/go-simple-startpage/pkg/config"
+	"github.com/eiladin/go-simple-startpage/pkg/network"
+	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
-type mockUseCase struct {
+type mockRepo struct {
 	mock.Mock
 }
 
-func (m *mockUseCase) Get(name string) (*Status, error) {
-	args := m.Called(name)
-	data := args.Get(0).(Status)
-	return &data, args.Error(1)
+func (m *mockRepo) GetSite(site *network.Site) error {
+	args := m.Called(site)
+	return args.Error(0)
 }
 
 type HandlerSuite struct {
 	suite.Suite
 }
 
-func (suite *HandlerSuite) TestGet() {
-	app := echo.New()
+func (suite *HandlerSuite) TestNew() {
+	h := New(&mockRepo{}, &config.Config{})
+	suite.NotNil(h)
+}
 
+func (suite *HandlerSuite) TestGet() {
 	cases := []struct {
-		id       uint
-		param    string
-		uri      string
-		isUp     bool
-		throwErr error
-		wantErr  error
+		name    string
+		wantErr error
 	}{
-		{id: 1, param: "test-site-1", uri: "https://my.test.site", isUp: true, throwErr: nil, wantErr: nil},
-		{id: 1, param: "test-site-2", uri: "https://my.fail.site", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "test-site-3", uri: "https://^^invalidurl^^", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "test-site-4", uri: "ssh://localhost:22224", isUp: true, throwErr: nil, wantErr: nil},
-		{id: 1, param: "test-site-5", uri: "ssh://localhost:1234", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "test-site-6", uri: "https://500.test.site", isUp: false, throwErr: nil, wantErr: nil},
-		{id: 1, param: "", uri: "https://no-id.test.site", isUp: false, throwErr: errors.New("bad request"), wantErr: echo.ErrBadRequest},
-		{id: 12345, param: "test-site-9", uri: "https://bigid.test.site", isUp: false, throwErr: ErrNotFound, wantErr: echo.ErrNotFound},
-		{id: 1, param: "test-site-10", uri: "https://error.test.site", isUp: false, throwErr: errors.New("internal server error"), wantErr: echo.ErrInternalServerError},
-		{id: 1, param: "tste-site-11", uri: "https://timeout.test.site", isUp: false, throwErr: nil, wantErr: nil},
+		{name: "test-site-1", wantErr: nil},
+		{name: "test-site-2", wantErr: ErrNotFound},
 	}
 
 	for _, c := range cases {
-		uc := new(mockUseCase)
-		if !errors.Is(c.wantErr, echo.ErrBadRequest) {
-			uc.On("Get", c.param).Return(Status{IsUp: c.isUp}, c.throwErr)
-		}
-		ss := Handler{UseCase: uc}
+		cfg := &config.Config{Timeout: 100}
+		r := new(mockRepo)
+		r.On("GetSite", &network.Site{Name: c.name}).Return(c.wantErr)
+		ss := handler{repo: r, config: cfg}
 
-		req := httptest.NewRequest("GET", "/", nil)
-		rec := httptest.NewRecorder()
-		ctx := app.NewContext(req, rec)
-		ctx.SetPath("/:name")
-		ctx.SetParamNames("name")
-		ctx.SetParamValues(c.param)
-		err := ss.Get(ctx)
-		uc.AssertExpectations(suite.T())
+		status, err := ss.Get(c.name)
+		r.AssertExpectations(suite.T())
 		if c.wantErr != nil {
-			suite.EqualError(err, c.wantErr.Error(), "%s should return %s", c.uri, c.wantErr.Error())
+			suite.EqualError(err, c.wantErr.Error())
 		} else {
-			dec := json.NewDecoder(strings.NewReader(rec.Body.String()))
-			res := Status{}
-			err := dec.Decode(&res)
 			suite.NoError(err)
-			suite.Equal(c.isUp, res.IsUp, "%s isUp should be %t", c.uri, c.isUp)
+			suite.NotNil(status)
 		}
+	}
+}
+
+func (suite *HandlerSuite) TestHttp() {
+	cases := []struct {
+		url     string
+		timeout int
+		wantErr bool
+	}{
+		{url: "https://my.test.site", timeout: 0, wantErr: false},
+		{url: "https://timeout.test.site", timeout: 100, wantErr: true},
+	}
+
+	httpmock.ActivateNonDefault(&httpClient)
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
+	httpmock.RegisterResponder("GET", "https://timeout.test.site", func(req *http.Request) (*http.Response, error) {
+		time.Sleep(2 * time.Second)
+		return httpmock.NewStringResponse(200, "success"), nil
+	})
+
+	for _, c := range cases {
+		url, err := url.Parse(c.url)
+		suite.NoError(err)
+		err = testHTTP(c.timeout, url)
+		if c.wantErr {
+			suite.Error(err)
+		} else {
+			suite.NoError(err)
+		}
+	}
+}
+
+func (suite *HandlerSuite) TestTCP() {
+	ln, err := net.Listen("tcp", "[::]:22222")
+	suite.NoError(err)
+	defer ln.Close()
+
+	url, err := url.Parse("ssh://localhost:22222")
+	suite.NoError(err)
+	err = testSSH(url)
+	suite.NoError(err, "ssh://localhost:22222 should not error")
+}
+
+func (suite *HandlerSuite) TestGetIP() {
+	url, err := url.Parse("http://localhost")
+	suite.NoError(err)
+	ip := getIP(url)
+	suite.Contains([]string{"127.0.0.1", "::1"}, ip, "http://localhost should return the following ips: [127.0.0.1, ::1]")
+}
+
+func (suite *HandlerSuite) TestNewStatus() {
+	cases := []struct {
+		site network.Site
+		isUp bool
+	}{
+		{site: network.Site{URI: "https://my.test.site"}, isUp: true},
+		{site: network.Site{URI: "https://my.fail.site"}, isUp: false},
+		{site: network.Site{URI: "https://^^invalidurl^^"}, isUp: false},
+		{site: network.Site{URI: "ssh://localhost:22223"}, isUp: true},
+		{site: network.Site{URI: "ssh://localhost:1234"}, isUp: false},
+		{site: network.Site{URI: "https://err.test.site"}, isUp: false},
+	}
+
+	httpmock.ActivateNonDefault(&httpClient)
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("GET", "https://my.test.site", httpmock.NewStringResponder(200, "success"))
+	httpmock.RegisterResponder("GET", "https://err.test.site", httpmock.NewStringResponder(101, "redirect"))
+
+	ln, err := net.Listen("tcp", "[::]:22223")
+	suite.NoError(err)
+	defer ln.Close()
+
+	for _, c := range cases {
+		s := checkSiteStatus(0, c.site)
+		suite.Equal(c.isUp, s.IsUp, "site %s isUp should be %t", c.site.URI, c.isUp)
 	}
 }
 
