@@ -6,7 +6,6 @@ import (
 
 	"github.com/eiladin/go-simple-startpage/pkg/config"
 	"github.com/eiladin/go-simple-startpage/pkg/network"
-	"github.com/eiladin/go-simple-startpage/pkg/providers"
 	"github.com/eiladin/go-simple-startpage/pkg/status"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
@@ -61,15 +60,56 @@ func (m *mockStatusHandler) Get(name string) (*status.Status, error) {
 	return &data, args.Error(1)
 }
 
+type mockStore struct {
+	mock.Mock
+}
+
+func (m *mockStore) Ping() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m *mockStore) CreateNetwork(net *network.Network) error {
+	args := m.Called(net)
+	return args.Error(0)
+}
+
+func (m *mockStore) GetNetwork(net *network.Network) error {
+	args := m.Called(net)
+	return args.Error(0)
+}
+
+func (m *mockStore) GetSite(site *network.Site) error {
+	args := m.Called(site)
+	return args.Error(0)
+}
+
 type HandlerSuite struct {
 	suite.Suite
+}
+
+func (suite *RouteSuite) TestDefaultHandlers() {
+	s := new(mockStore)
+	s.On("Ping").Return(nil)
+	s.On("CreateNetwork", nil).Return(nil)
+	s.On("GetNetwork", nil).Return(nil)
+	s.On("GetSite", nil).Return(nil)
+	handlers := DefaultHandlers(&config.Config{}, &mockStore{})
+	suite.NotNil(handlers.Config)
+	suite.NotNil(handlers.Healthcheck)
+	suite.NotNil(handlers.Network)
+	suite.NotNil(handlers.Status)
+	s.AssertNotCalled(suite.T(), "Ping")
+	s.AssertNotCalled(suite.T(), "CreateNetwork", nil)
+	s.AssertNotCalled(suite.T(), "GetNetwork", nil)
+	s.AssertNotCalled(suite.T(), "GetSite", nil)
 }
 
 func (suite RouteSuite) TestRegisterRoutes() {
 	app := echo.New()
 	healthHandler := &mockHealthCheckHandler{}
 	healthHandler.On("Check").Return(nil)
-	RegisterRoutes(app, &providers.Handlers{
+	RegisterRoutes(app, &Handlers{
 		Healthcheck: healthHandler,
 		Config:      &mockConfigHandler{},
 		Network:     &mockNetworkHandler{},
