@@ -11,6 +11,7 @@ ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN="${GITHUB_TOKEN}"
 RUN if [ "${INSTALL_NODE}" = "true" ]; then su vscode -c "source /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
 RUN curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+RUN su vscode -c "go install github.com/swaggo/swag/cmd/swag@latest"
 
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
