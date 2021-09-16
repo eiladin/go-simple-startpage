@@ -11,7 +11,7 @@ type handler struct {
 	config *Config
 }
 
-func New(cfg *Config) IHandler {
+func NewHandler(cfg *Config) IHandler {
 	return &handler{
 		config: cfg,
 	}

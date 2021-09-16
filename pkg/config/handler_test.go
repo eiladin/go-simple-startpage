@@ -11,7 +11,7 @@ type HandlerSuite struct {
 }
 
 func (suite HandlerSuite) TestGet() {
-	s := New(&Config{
+	s := NewHandler(&Config{
 		Version: "test",
 	})
 

@@ -33,7 +33,7 @@ type handler struct {
 	config *config.Config
 }
 
-func New(repo repository, cfg *config.Config) IHandler {
+func NewHandler(repo repository, cfg *config.Config) IHandler {
 	return &handler{
 		repo:   repo,
 		config: cfg,

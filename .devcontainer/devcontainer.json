@@ -4,18 +4,28 @@
 		"dockerfile": "Dockerfile",
 		"args": {
 			// Update the VARIANT arg to pick a version of Go: 1, 1.15, 1.14
-			"VARIANT": "1.15",
+			"VARIANT": "1",
 			// Options
 			"INSTALL_NODE": "true",
-			"NODE_VERSION": "lts/*"
+			"NODE_VERSION": "lts/*",
+			"GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
 		}
 	},
 	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 
 	// Set *default* container specific settings.json values on container create.
-	"settings": { 
-		"terminal.integrated.shell.linux": "/bin/bash",
-		"go.useGoProxyToCheckForToolUpdates": false,
+	"settings": {
+		"terminal.integrated.profiles.linux": {
+			"bash": {
+				"path": "bash",
+				"icon": "terminal-bash"
+			},
+			"zsh": {
+				"path": "zsh"
+			}
+		},
+		"terminal.integrated.defaultProfile.linux": "zsh",
+		"go.toolsManagement.checkForUpdates": "local",
 		"go.useLanguageServer": true,
 		"go.gopath": "/go",
 		"go.goroot": "/usr/local/go",

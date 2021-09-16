@@ -27,7 +27,7 @@ type HandlerSuite struct {
 }
 
 func (suite *HandlerSuite) TestNew() {
-	s := New(&mockRepo{})
+	s := NewHandler(&mockRepo{})
 	suite.NotNil(s)
 }
 

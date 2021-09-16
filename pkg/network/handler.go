@@ -26,7 +26,7 @@ type handler struct {
 	repo repository
 }
 
-func New(repo repository) IHandler {
+func NewHandler(repo repository) IHandler {
 	return &handler{
 		repo: repo,
 	}

@@ -17,10 +17,10 @@ type Handlers struct {
 }
 
 func DefaultHandlers(cfg *config.Config, store store.Store) *Handlers {
-	net := network.New(store)
-	hc := healthcheck.New(store)
-	status := status.New(store, cfg)
-	ch := config.New(cfg)
+	net := network.NewHandler(store)
+	hc := healthcheck.NewHandler(store)
+	status := status.NewHandler(store, cfg)
+	ch := config.NewHandler(cfg)
 
 	return &Handlers{
 		Network:     net,
