@@ -25,24 +25,46 @@
                 </mat-form-field>
             </mat-card>
 
-            <h3 class="mat-subheading-1">Links</h3>
-            <mat-accordion>
-                <mat-expansion-panel *ngFor="let link of config.links">
-                    <mat-expansion-panel-header>
-                        <mat-panel-title>
-                            {{link.name || 'Unknown'}}
-                        </mat-panel-title>
-                    </mat-expansion-panel-header>
-                    <app-config-link [link]="link"></app-config-link>
-                    <mat-action-row>
-                        <button mat-button color="warn" (click)="deleteLink(link)">Delete</button>
-                    </mat-action-row>
-                </mat-expansion-panel>
-            </mat-accordion>
+            <br />
+
             <div class="actions">
                 <span class="spacer"></span>
                 <button mat-button color="primary" (click)="addLink()">Add Link</button>
             </div>
+
+            <table mat-table [dataSource]="linkTableDataSource">
+                <ng-container [matColumnDef]="col" *ngFor="let col of linkTableColumns">
+                    <th mat-header-cell *matHeaderCellDef> 
+                        <span *ngIf="col !== 'isEdit'">
+                            {{col}} 
+                        </span>
+                    </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div [ngSwitch]="linkTableDataSchema[col]" *ngIf="!element.isEdit">
+                          <div class="btn-edit" *ngSwitchCase="'isEdit'" >
+                            <button mat-button class="button-remove" (click)="deleteLink(element)">Delete</button>
+                            <button mat-button (click)="element.isEdit = !element.isEdit">Edit</button>
+                          </div>
+                          <span *ngSwitchDefault>
+                            {{element[col.toLowerCase()]}}
+                          </span>
+                        </div>
+                        <div *ngIf="element.isEdit">
+                          <div class="btn-edit" *ngIf="col === 'isEdit'; else dataField">
+                            <button mat-button (click)="element.isEdit = !element.isEdit">Done</button>
+                          </div>
+                          <ng-template #dataField>
+                            <mat-form-field>
+                              <mat-label>{{col}}</mat-label>
+                              <input [type]="linkTableDataSchema[col]" matInput [(ngModel)]="element[col.toLowerCase()]">
+                            </mat-form-field>
+                          </ng-template>
+                        </div>
+                      </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="linkTableColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: linkTableColumns;"></tr>
+            </table>
 
             <h3 class="mat-subheading-1">Sites</h3>
             <mat-accordion>
