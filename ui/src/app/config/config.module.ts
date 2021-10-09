@@ -9,6 +9,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTableModule } from '@angular/material/table'
 import { ResponsiveModule } from 'ngx-responsive';
 import { NgxPageScrollCoreModule } from 'ngx-page-scroll-core';
 import { NgxPageScrollModule } from 'ngx-page-scroll';
@@ -18,7 +19,6 @@ import { ConfigComponent } from './config/config.component';
 import { ConfigService } from './services/config.service';
 import { ConfigRoutingModule } from './config.routes';
 import { ConfigSiteComponent } from './config-site/config-site.component';
-import { ConfigLinkComponent } from './config-link/config-link.component';
 
 @NgModule({
   imports: [
@@ -33,12 +33,13 @@ import { ConfigLinkComponent } from './config-link/config-link.component';
     MatListModule,
     MatSlideToggleModule,
     MatSnackBarModule,
+    MatTableModule,
     MatToolbarModule,
     ResponsiveModule.forRoot(),
     NgxPageScrollCoreModule,
     NgxPageScrollModule,
   ],
-  declarations: [ConfigComponent, ConfigSiteComponent, ConfigLinkComponent],
+  declarations: [ConfigComponent, ConfigSiteComponent],
   providers: [ConfigService]
 })
 export class ConfigModule { }

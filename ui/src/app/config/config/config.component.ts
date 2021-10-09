@@ -7,6 +7,8 @@ import { Link } from '../../shared/models/link.model';
 import { Site } from '../../shared/models/site.model';
 import { ConfigService } from '../services/config.service';
 import { PageScrollInstance, PageScrollService, EasingLogic } from 'ngx-page-scroll-core';
+// import { threadId } from 'worker_threads';
+
 @Component({
   selector: 'app-config',
   templateUrl: './config.component.html',
@@ -27,6 +29,14 @@ export class ConfigComponent implements OnInit {
    * list of expanded / collapsed panels
    */
   public panelOpenState = [];
+
+  public linkTableDataSource;
+  public linkTableColumns: string[] = ['Name', 'URI', 'isEdit']
+  public linkTableDataSchema = {
+    "Name": "text",
+    "URI": "text",
+    "isEdit": "isEdit"
+  }
 
   @ViewChild('cardContainer')
   public cardContainer: ElementRef;
@@ -76,10 +86,12 @@ export class ConfigComponent implements OnInit {
       for (let site of this.config.sites) {
         this.panelOpenState.push(false);
       }
+      this.linkTableDataSource = this.config.links;
     });
   }
 
   public saveConfig() {
+    this.config.links = this.linkTableDataSource;
     this.configService.save(this.config).subscribe();
   }
 
@@ -100,7 +112,8 @@ export class ConfigComponent implements OnInit {
    */
   public addLink() {
     const link = new Link();
-    this.config.links.push(link);
+    link["isEdit"] = true;
+    this.linkTableDataSource = [link, ...this.linkTableDataSource];
   }
 
   public addSite() {
@@ -109,8 +122,9 @@ export class ConfigComponent implements OnInit {
   }
 
   public deleteLink(link: Link) {
-    const idx = this.config.links.indexOf(link);
-    this.config.links.splice(idx, 1);
+    this.linkTableDataSource = this.linkTableDataSource.filter(u => {      
+      return u !== link;
+    })
   }
 
   public deleteSite(site: Site) {
